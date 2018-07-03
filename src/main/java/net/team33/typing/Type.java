@@ -171,14 +171,15 @@ public abstract class Type<T> {
             @Override
             Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
                 return Optional.ofNullable(map.get(((TypeVariable<?>) type).getName()))
-                        .map(Compound::getRawClass)
+                        .map(cmp -> cmp.rawClass)
                         .orElseThrow(() -> new IllegalStateException(
                                 String.format("<%s> is not in %s", type, map)));
             }
 
             @Override
             List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map) {
-                return map.get(type.getTypeName()).getParameters();
+                //noinspection AssignmentOrReturnOfFieldWithMutableType
+                return map.get(type.getTypeName()).parameters;
             }
         };
 
@@ -198,19 +199,18 @@ public abstract class Type<T> {
         abstract List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map);
     }
 
-    private static class Compound {
+    private static final class Compound {
 
         @SuppressWarnings("rawtypes")
         private final Class rawClass;
         private final List<Compound> parameters;
-        private transient volatile String presentation;
 
         private Compound(final Class<?> rawClass, final List<Compound> parameters) {
             this.rawClass = rawClass;
             final int expectedLength = rawClass.getTypeParameters().length;
             final int actualLength = parameters.size();
             if (0 == actualLength) {
-                this.parameters = Collections.emptyList();
+                this.parameters = emptyList();
             } else if (expectedLength == actualLength) {
                 this.parameters = unmodifiableList(new ArrayList<>(parameters));
             } else {
@@ -226,48 +226,12 @@ public abstract class Type<T> {
         }
 
         @SuppressWarnings("OverloadedVarargsMethod")
-        public Compound(final Class<?> rawClass, final Compound... parameters) {
+        private Compound(final Class<?> rawClass, final Compound... parameters) {
             this(rawClass, asList(parameters));
         }
 
-        public Compound(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+        private Compound(final java.lang.reflect.Type type, final Map<String, Compound> map) {
             this(type, Spec.valueOf(type), map);
-        }
-
-        @SuppressWarnings("rawtypes")
-        public final Class getRawClass() {
-            return rawClass;
-        }
-
-        public final List<Compound> getParameters() {
-            // is already unmodifiable ...
-            // noinspection AssignmentOrReturnOfFieldWithMutableType
-            return parameters;
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(rawClass, parameters);
-        }
-
-        @Override
-        public final boolean equals(final Object obj) {
-            return (this == obj) || ((obj instanceof Type.Compound) && isEqual((Compound) obj));
-        }
-
-        private boolean isEqual(final Compound other) {
-            return rawClass.equals(other.rawClass) && parameters.equals(other.parameters);
-        }
-
-        @Override
-        public final String toString() {
-            return Optional.ofNullable(presentation).orElseGet(() -> {
-                presentation = rawClass.getSimpleName() + (
-                        parameters.isEmpty() ? "" : parameters.stream()
-                                .map(Compound::toString)
-                                .collect(joining(", ", "<", ">")));
-                return presentation;
-            });
         }
     }
 }
