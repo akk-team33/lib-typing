@@ -3,7 +3,6 @@ package net.team33.typing;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
@@ -36,7 +34,7 @@ public abstract class Type<T> {
         try {
             final Proto proto = new Proto(typeArgument(getClass()), Collections.emptyMap());
             this.rawClass = proto.rawClass;
-            this.parameters = toTypes(proto.parameters);
+            this.parameters = proto.parameters;
         } catch (final RuntimeException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -49,15 +47,7 @@ public abstract class Type<T> {
 
     private Type(final Proto proto) {
         this.rawClass = proto.rawClass;
-        this.parameters = toTypes(proto.parameters);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static List<Type> toTypes(final Collection<Proto> parameters) {
-        return unmodifiableList(parameters.stream()
-                .map(cmp -> new Type(cmp) {
-                })
-                .collect(toList()));
+        this.parameters = proto.parameters;
     }
 
     private static java.lang.reflect.Type typeArgument(final Class<?> thisClass) {
@@ -124,6 +114,7 @@ public abstract class Type<T> {
         });
     }
 
+    @SuppressWarnings({"AnonymousInnerClassMayBeStatic", "rawtypes"})
     private enum Spec {
 
         CLASS {
@@ -138,7 +129,7 @@ public abstract class Type<T> {
             }
 
             @Override
-            List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
+            List<Type> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return emptyList();
             }
         },
@@ -155,9 +146,11 @@ public abstract class Type<T> {
             }
 
             @Override
-            List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
+            List<Type> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return Stream.of(((ParameterizedType) type).getActualTypeArguments())
                         .map(arg -> new Proto(arg, map))
+                        .map(proto -> new Type(proto) {
+                        })
                         .collect(toList());
             }
         },
@@ -177,7 +170,7 @@ public abstract class Type<T> {
             }
 
             @Override
-            List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
+            List<Type> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 //noinspection AssignmentOrReturnOfFieldWithMutableType
                 return map.get(type.getTypeName()).parameters;
             }
@@ -196,16 +189,17 @@ public abstract class Type<T> {
 
         abstract Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Proto> map);
 
-        abstract List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map);
+        abstract List<Type> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map);
     }
 
+    @SuppressWarnings("rawtypes")
     private static final class Proto {
 
         @SuppressWarnings("rawtypes")
         private final Class rawClass;
-        private final List<Proto> parameters;
+        private final List<Type> parameters;
 
-        private Proto(final Class<?> rawClass, final List<Proto> parameters) {
+        private Proto(final Class<?> rawClass, final List<Type> parameters) {
             this.rawClass = rawClass;
             final int expectedLength = rawClass.getTypeParameters().length;
             final int actualLength = parameters.size();
@@ -223,11 +217,6 @@ public abstract class Type<T> {
 
         private Proto(final java.lang.reflect.Type type, final Spec spec, final Map<String, Proto> map) {
             this(spec.rawClass(type, map), spec.parameters(type, map));
-        }
-
-        @SuppressWarnings("OverloadedVarargsMethod")
-        private Proto(final Class<?> rawClass, final Proto... parameters) {
-            this(rawClass, asList(parameters));
         }
 
         private Proto(final java.lang.reflect.Type type, final Map<String, Proto> map) {
