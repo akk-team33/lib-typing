@@ -17,7 +17,11 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-@SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods", "unused", "AnonymousInnerClass"})
+@SuppressWarnings({
+        "AbstractClassWithOnlyOneDirectInheritor",
+        "AbstractClassWithoutAbstractMethods",
+        "AnonymousInnerClass",
+        "unused"})
 public abstract class Type<T> {
 
     @SuppressWarnings("rawtypes")
@@ -25,7 +29,7 @@ public abstract class Type<T> {
     @SuppressWarnings("rawtypes")
     private final List<Type> parameters;
 
-    private transient volatile String representation;
+    private transient volatile String representation = null;
 
     @SuppressWarnings("WeakerAccess")
     protected Type() {
@@ -48,6 +52,7 @@ public abstract class Type<T> {
         this.parameters = toTypes(compound.parameters);
     }
 
+    @SuppressWarnings("rawtypes")
     private static List<Type> toTypes(final Collection<Compound> parameters) {
         return unmodifiableList(parameters.stream()
                 .map(cmp -> new Type(cmp) {
@@ -87,6 +92,7 @@ public abstract class Type<T> {
         return rawClass;
     }
 
+    @SuppressWarnings("rawtypes")
     public final List<Type> getParameters() {
         // is already unmodifiable ...
         // noinspection AssignmentOrReturnOfFieldWithMutableType
@@ -122,17 +128,27 @@ public abstract class Type<T> {
 
         CLASS {
             @Override
+            boolean matches(final java.lang.reflect.Type type) {
+                return type instanceof Class;
+            }
+
+            @Override
             Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
                 return (Class<?>) type;
             }
 
             @Override
             List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map) {
-                return Collections.emptyList();
+                return emptyList();
             }
         },
 
         PARAMETERIZED_TYPE {
+            @Override
+            boolean matches(final java.lang.reflect.Type type) {
+                return type instanceof ParameterizedType;
+            }
+
             @Override
             Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
                 return (Class<?>) ((ParameterizedType) type).getRawType();
@@ -147,6 +163,11 @@ public abstract class Type<T> {
         },
 
         TYPE_VARIABLE {
+            @Override
+            boolean matches(final java.lang.reflect.Type type) {
+                return type instanceof TypeVariable;
+            }
+
             @Override
             Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
                 return Optional.ofNullable(map.get(((TypeVariable<?>) type).getName()))
@@ -163,15 +184,14 @@ public abstract class Type<T> {
 
         @SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "ChainOfInstanceofChecks"})
         public static Spec valueOf(final java.lang.reflect.Type type) {
-            if (type instanceof Class)
-                return CLASS;
-            else if (type instanceof ParameterizedType)
-                return PARAMETERIZED_TYPE;
-            else if (type instanceof TypeVariable)
-                return TYPE_VARIABLE;
-            else
-                throw new IllegalArgumentException("Unsupported type: " + type.getClass().getCanonicalName());
+            return Stream.of(values())
+                    .filter(value -> value.matches(type))
+                    .findAny()
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Unsupported type: " + type.getClass().getCanonicalName()));
         }
+
+        abstract boolean matches(final java.lang.reflect.Type type);
 
         abstract Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map);
 
