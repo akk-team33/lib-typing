@@ -34,9 +34,9 @@ public abstract class Type<T> {
     @SuppressWarnings("WeakerAccess")
     protected Type() {
         try {
-            final Compound compound = new Compound(typeArgument(getClass()), Collections.emptyMap());
-            this.rawClass = compound.rawClass;
-            this.parameters = toTypes(compound.parameters);
+            final Proto proto = new Proto(typeArgument(getClass()), Collections.emptyMap());
+            this.rawClass = proto.rawClass;
+            this.parameters = toTypes(proto.parameters);
         } catch (final RuntimeException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -47,13 +47,13 @@ public abstract class Type<T> {
         this.parameters = emptyList();
     }
 
-    private Type(final Compound compound) {
-        this.rawClass = compound.rawClass;
-        this.parameters = toTypes(compound.parameters);
+    private Type(final Proto proto) {
+        this.rawClass = proto.rawClass;
+        this.parameters = toTypes(proto.parameters);
     }
 
     @SuppressWarnings("rawtypes")
-    private static List<Type> toTypes(final Collection<Compound> parameters) {
+    private static List<Type> toTypes(final Collection<Proto> parameters) {
         return unmodifiableList(parameters.stream()
                 .map(cmp -> new Type(cmp) {
                 })
@@ -133,12 +133,12 @@ public abstract class Type<T> {
             }
 
             @Override
-            Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+            Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return (Class<?>) type;
             }
 
             @Override
-            List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+            List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return emptyList();
             }
         },
@@ -150,14 +150,14 @@ public abstract class Type<T> {
             }
 
             @Override
-            Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+            Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return (Class<?>) ((ParameterizedType) type).getRawType();
             }
 
             @Override
-            List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+            List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return Stream.of(((ParameterizedType) type).getActualTypeArguments())
-                        .map(arg -> new Compound(arg, map))
+                        .map(arg -> new Proto(arg, map))
                         .collect(toList());
             }
         },
@@ -169,7 +169,7 @@ public abstract class Type<T> {
             }
 
             @Override
-            Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+            Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 return Optional.ofNullable(map.get(((TypeVariable<?>) type).getName()))
                         .map(cmp -> cmp.rawClass)
                         .orElseThrow(() -> new IllegalStateException(
@@ -177,7 +177,7 @@ public abstract class Type<T> {
             }
 
             @Override
-            List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+            List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map) {
                 //noinspection AssignmentOrReturnOfFieldWithMutableType
                 return map.get(type.getTypeName()).parameters;
             }
@@ -194,18 +194,18 @@ public abstract class Type<T> {
 
         abstract boolean matches(final java.lang.reflect.Type type);
 
-        abstract Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Compound> map);
+        abstract Class<?> rawClass(final java.lang.reflect.Type type, final Map<String, Proto> map);
 
-        abstract List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map);
+        abstract List<Proto> parameters(final java.lang.reflect.Type type, final Map<String, Proto> map);
     }
 
-    private static final class Compound {
+    private static final class Proto {
 
         @SuppressWarnings("rawtypes")
         private final Class rawClass;
-        private final List<Compound> parameters;
+        private final List<Proto> parameters;
 
-        private Compound(final Class<?> rawClass, final List<Compound> parameters) {
+        private Proto(final Class<?> rawClass, final List<Proto> parameters) {
             this.rawClass = rawClass;
             final int expectedLength = rawClass.getTypeParameters().length;
             final int actualLength = parameters.size();
@@ -221,16 +221,16 @@ public abstract class Type<T> {
             }
         }
 
-        private Compound(final java.lang.reflect.Type type, final Spec spec, final Map<String, Compound> map) {
+        private Proto(final java.lang.reflect.Type type, final Spec spec, final Map<String, Proto> map) {
             this(spec.rawClass(type, map), spec.parameters(type, map));
         }
 
         @SuppressWarnings("OverloadedVarargsMethod")
-        private Compound(final Class<?> rawClass, final Compound... parameters) {
+        private Proto(final Class<?> rawClass, final Proto... parameters) {
             this(rawClass, asList(parameters));
         }
 
-        private Compound(final java.lang.reflect.Type type, final Map<String, Compound> map) {
+        private Proto(final java.lang.reflect.Type type, final Map<String, Proto> map) {
             this(type, Spec.valueOf(type), map);
         }
     }
