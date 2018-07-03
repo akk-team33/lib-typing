@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
 public class TypeTest {
 
     private static final Type<List<String>> LIST_OF_STRING =
@@ -22,58 +23,70 @@ public class TypeTest {
     @Test(expected = IllegalStateException.class)
     public final void failDirectGeneric() {
         final Direct<String> direct = new Direct<>();
-        Assert.fail("expected to Fail but was " + direct.getCompound());
+        Assert.fail("expected to Fail but was " + direct);
     }
 
     @Test(expected = IllegalStateException.class)
     public final void failIndirect() {
         final Type<?> indirect = new Indirect();
-        Assert.fail("expected to Fail but was " + indirect.getCompound());
+        Assert.fail("expected to Fail but was " + indirect);
     }
 
     @Test
     public final void simple() {
-        Assert.assertEquals(
-                new Type.Compound(String.class),
-                STRING_TYPE.getCompound()
-        );
+        Assert.assertSame(String.class, STRING_TYPE.getRawClass());
+        Assert.assertEquals(0, STRING_TYPE.getParameters().size());
+        Assert.assertEquals(STRING_TYPE, new Type<String>() {
+        });
     }
 
     @Test
     public final void list() {
-        Assert.assertEquals(
-                new Type.Compound(List.class, new Type.Compound(String.class)),
-                LIST_OF_STRING.getCompound()
-        );
+        Assert.assertSame(List.class, LIST_OF_STRING.getRawClass());
+        Assert.assertEquals(1, LIST_OF_STRING.getParameters().size());
+
+        final Type<?> stringType = LIST_OF_STRING.getParameters().get(0);
+        Assert.assertSame(String.class, stringType.getRawClass());
+        Assert.assertEquals(0, stringType.getParameters().size());
+
+        Assert.assertEquals(LIST_OF_STRING, new Type<List<String>>() {
+        });
     }
 
     @SuppressWarnings("rawtypes")
     @Test
     public final void rawList() {
-        Assert.assertEquals(
-                new Type.Compound(List.class),
-                new Type<List>() {
-                }.getCompound()
-        );
+        final Type<List> rawList = new Type<List>() {
+        };
+        Assert.assertSame(List.class, rawList.getRawClass());
+        Assert.assertEquals(0, rawList.getParameters().size());
+        Assert.assertEquals(rawList, new Type<List>() {
+        });
     }
 
     @Test
     public final void map() {
+        Assert.assertSame(Map.class, MAP_OF_LIST_TO_MAP.getRawClass());
+        Assert.assertEquals(2, MAP_OF_LIST_TO_MAP.getParameters().size());
+
+        final Type<?> stringListType = MAP_OF_LIST_TO_MAP.getParameters().get(0);
+        Assert.assertSame(List.class, stringListType.getRawClass());
+        Assert.assertEquals(1, stringListType.getParameters().size());
+
+        final Type<?> stringType = stringListType.getParameters().get(0);
+        Assert.assertSame(String.class, stringType.getRawClass());
+        Assert.assertEquals(0, stringType.getParameters().size());
+
         Assert.assertEquals(
-                new Type.Compound(
-                        Map.class,
-                        new Type.Compound(List.class, new Type.Compound(String.class)),
-                        new Type.Compound(
-                                Map.class,
-                                new Type.Compound(Double.class),
-                                new Type.Compound(Set.class, new Type.Compound(Integer.class)))),
-                MAP_OF_LIST_TO_MAP.getCompound()
+                MAP_OF_LIST_TO_MAP,
+                new Type<Map<List<String>, Map<Double, Set<Integer>>>>() {
+                }
         );
     }
 
     @SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
     @Test
-    public final void equals() {
+    public final void testEquals() {
         Assert.assertEquals(
                 new StringSet1(),
                 new StringSet2()

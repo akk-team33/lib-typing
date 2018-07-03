@@ -32,6 +32,10 @@ public abstract class Type<T> {
         compound = new Compound(aClass);
     }
 
+    private Type(final Compound compound) {
+        this.compound = compound;
+    }
+
     private static java.lang.reflect.Type typeArgument(final Class<?> thisClass) {
         final java.lang.reflect.Type type = thisClass.getGenericSuperclass();
         return direct(parameterized(type)).getActualTypeArguments()[0];
@@ -59,8 +63,16 @@ public abstract class Type<T> {
         };
     }
 
-    public final Compound getCompound() {
-        return compound;
+    @SuppressWarnings("rawtypes")
+    public final Class getRawClass() {
+        return compound.getRawClass();
+    }
+
+    public final List<Type> getParameters() {
+        // is already unmodifiable ...
+        // noinspection AssignmentOrReturnOfFieldWithMutableType
+        return compound.parameters.stream().map(cmp -> new Type(cmp) {
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -138,7 +150,7 @@ public abstract class Type<T> {
         abstract List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map);
     }
 
-    public static class Compound {
+    private static class Compound {
 
         @SuppressWarnings("rawtypes")
         private final Class rawClass;
