@@ -1,4 +1,4 @@
-package net.team33.random;
+package net.team33.typing;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
