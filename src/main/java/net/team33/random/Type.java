@@ -3,37 +3,56 @@ package net.team33.random;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
-@SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods", "unused"})
+@SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods", "unused", "AnonymousInnerClass"})
 public abstract class Type<T> {
 
-    private final Compound compound;
+    @SuppressWarnings("rawtypes")
+    private final Class rawClass;
+    @SuppressWarnings("rawtypes")
+    private final List<Type> parameters;
+
+    private transient volatile String representation;
 
     @SuppressWarnings("WeakerAccess")
     protected Type() {
         try {
-            compound = new Compound(typeArgument(getClass()), Collections.emptyMap());
+            final Compound compound = new Compound(typeArgument(getClass()), Collections.emptyMap());
+            this.rawClass = compound.rawClass;
+            this.parameters = toTypes(compound.parameters);
         } catch (final RuntimeException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     private Type(final Class<T> aClass) {
-        compound = new Compound(aClass);
+        this.rawClass = aClass;
+        this.parameters = emptyList();
     }
 
     private Type(final Compound compound) {
-        this.compound = compound;
+        this.rawClass = compound.rawClass;
+        this.parameters = toTypes(compound.parameters);
+    }
+
+    private static List<Type> toTypes(final Collection<Compound> parameters) {
+        return unmodifiableList(parameters.stream()
+                .map(cmp -> new Type(cmp) {
+                })
+                .collect(toList()));
     }
 
     private static java.lang.reflect.Type typeArgument(final Class<?> thisClass) {
@@ -65,29 +84,38 @@ public abstract class Type<T> {
 
     @SuppressWarnings("rawtypes")
     public final Class getRawClass() {
-        return compound.getRawClass();
+        return rawClass;
     }
 
     public final List<Type> getParameters() {
         // is already unmodifiable ...
         // noinspection AssignmentOrReturnOfFieldWithMutableType
-        return compound.parameters.stream().map(cmp -> new Type(cmp) {
-        }).collect(Collectors.toList());
-    }
-
-    @Override
-    public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof Type<?>) && compound.equals(((Type<?>) obj).compound));
+        return parameters;
     }
 
     @Override
     public final int hashCode() {
-        return compound.hashCode();
+        return Objects.hash(rawClass, parameters);
+    }
+
+    @Override
+    public final boolean equals(final Object obj) {
+        return (this == obj) || ((obj instanceof Type) && isEqual((Type<?>) obj));
+    }
+
+    private boolean isEqual(final Type<?> other) {
+        return rawClass.equals(other.rawClass) && parameters.equals(other.parameters);
     }
 
     @Override
     public final String toString() {
-        return compound.toString();
+        return Optional.ofNullable(representation).orElseGet(() -> {
+            representation = rawClass.getSimpleName() + (
+                    parameters.isEmpty() ? "" : parameters.stream()
+                            .map(Type::toString)
+                            .collect(joining(", ", "<", ">")));
+            return representation;
+        });
     }
 
     private enum Spec {
@@ -114,7 +142,7 @@ public abstract class Type<T> {
             List<Compound> parameters(final java.lang.reflect.Type type, final Map<String, Compound> map) {
                 return Stream.of(((ParameterizedType) type).getActualTypeArguments())
                         .map(arg -> new Compound(arg, map))
-                        .collect(Collectors.toList());
+                        .collect(toList());
             }
         },
 
@@ -217,7 +245,7 @@ public abstract class Type<T> {
                 presentation = rawClass.getSimpleName() + (
                         parameters.isEmpty() ? "" : parameters.stream()
                                 .map(Compound::toString)
-                                .collect(Collectors.joining(", ", "<", ">")));
+                                .collect(joining(", ", "<", ">")));
                 return presentation;
             });
         }
