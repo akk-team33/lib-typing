@@ -97,6 +97,16 @@ public class TypeTest {
         );
     }
 
+    @Test
+    public final void testContainer() throws NoSuchFieldException {
+        final Type<Container<String, Set<Integer>, Map<String, Double>>> containerType =
+                new Type<Container<String, Set<Integer>, Map<String, Double>>>() {
+                };
+        final java.lang.reflect.Type mapType = Container.class.getField("mapContent").getGenericType();
+        final java.lang.reflect.Type listType = Container.class.getField("listContent").getGenericType();
+        //Type.of(mapType, containerType);
+    }
+
     private static class Direct<T> extends Type<T> {
     }
 
@@ -114,5 +124,11 @@ public class TypeTest {
 
     @SuppressWarnings("EmptyClass")
     private static class StringSet2 extends Type<Set<String>> {
+    }
+
+    public static class Container<K, V, E> {
+
+        public Map<K, V> mapContent;
+        public List<E> listContent;
     }
 }

@@ -18,8 +18,7 @@ import static java.util.stream.Collectors.toList;
 @SuppressWarnings({
         "AbstractClassWithOnlyOneDirectInheritor",
         "AbstractClassWithoutAbstractMethods",
-        "AnonymousInnerClass",
-        "unused"})
+        "AnonymousInnerClass"})
 public abstract class Type<T> {
 
     @SuppressWarnings("rawtypes")
@@ -72,6 +71,7 @@ public abstract class Type<T> {
         }
     }
 
+    @SuppressWarnings("unused")
     public static <T> Type<T> of(final Class<T> aClass) {
         return new Type<T>(aClass) {
         };
