@@ -16,9 +16,9 @@ import static java.util.stream.Collectors.joining;
 public abstract class Generic<T> {
 
     @SuppressWarnings("rawtypes")
-    private final Class rawClass;
+    private final Class<?> rawClass;
     @SuppressWarnings("rawtypes")
-    private final Map<String, Generic> parameters;
+    private final Map<String, Generic<?>> parameters;
 
     private transient volatile String representation = null;
 
@@ -30,12 +30,12 @@ public abstract class Generic<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public final Class getRawClass() {
+    public final Class<?> getRawClass() {
         return rawClass;
     }
 
     @SuppressWarnings("rawtypes")
-    public final Map<String, Generic> getParameters() {
+    public final Map<String, Generic<?>> getParameters() {
         return parameters;
     }
 

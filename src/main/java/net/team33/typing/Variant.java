@@ -20,15 +20,15 @@ abstract class Variant {
                 .orElseThrow(() -> new IllegalArgumentException("Unspecified Type: " + type.getClass()));
     }
 
-    abstract Class getRawClass();
+    abstract Class<?> getRawClass();
 
-    abstract Map<String, Generic> getParameters();
+    abstract Map<String, Generic<?>> getParameters();
 
     private enum Selection {
 
         SIMPLE_CLASS(
-                type -> type instanceof Class,
-                type -> new Simple((Class) type)),
+                type -> type instanceof Class<?>,
+                type -> new Simple((Class<?>) type)),
 
         PARAMETERIZED_TYPE(
                 type -> type instanceof ParameterizedType,
@@ -49,19 +49,19 @@ abstract class Variant {
 
     private static final class Simple extends Variant {
 
-        private final Class rawClass;
+        private final Class<?> rawClass;
 
-        private Simple(final Class rawClass) {
+        private Simple(final Class<?> rawClass) {
             this.rawClass = rawClass;
         }
 
         @Override
-        Class getRawClass() {
+        Class<?> getRawClass() {
             return rawClass;
         }
 
         @Override
-        Map<String, Generic> getParameters() {
+        Map<String, Generic<?>> getParameters() {
             return Collections.emptyMap();
         }
     }
@@ -75,12 +75,13 @@ abstract class Variant {
         }
 
         @Override
-        Class getRawClass() {
-            return (Class) type.getRawType();
+        Class<?> getRawClass() {
+            return (Class<?>) type.getRawType();
         }
 
         @Override
-        Map<String, Generic> getParameters() {
+        Map<String, Generic<?>> getParameters() {
+            //Stream.of(type.getActualTypeArguments()).collect(Collectors.toMap(tt -> ));
             throw new UnsupportedOperationException("not yet implemented");
         }
     }
@@ -94,12 +95,12 @@ abstract class Variant {
         }
 
         @Override
-        Class getRawClass() {
+        Class<?> getRawClass() {
             throw new UnsupportedOperationException("not yet implemented");
         }
 
         @Override
-        Map<String, Generic> getParameters() {
+        Map<String, Generic<?>> getParameters() {
             throw new UnsupportedOperationException("not yet implemented");
         }
     }
