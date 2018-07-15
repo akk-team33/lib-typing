@@ -4,9 +4,11 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("rawtypes")
@@ -81,8 +83,19 @@ abstract class Variant {
 
         @Override
         Map<String, Generic<?>> getParameters() {
-            //Stream.of(type.getActualTypeArguments()).collect(Collectors.toMap(tt -> ));
-            throw new UnsupportedOperationException("not yet implemented");
+            final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
+                    .map(TypeVariable::getName)
+                    .collect(Collectors.toList());
+            final List<Generic<?>> actual = Stream.of(type.getActualTypeArguments())
+                    .map(Variant::of)
+                    .map(Parameterized::newGeneric)
+                    .collect(Collectors.toList());
+            return new ParameterMap(formal, actual);
+        }
+
+        private static Generic<?> newGeneric(final Variant variant) {
+            return new Generic(variant) {
+            };
         }
     }
 

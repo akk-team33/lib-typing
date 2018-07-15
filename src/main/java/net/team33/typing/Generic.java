@@ -12,7 +12,8 @@ import static java.util.stream.Collectors.joining;
         "MethodMayBeStatic",
         "ClassNamePrefixedWithPackageName",
         "AbstractClassWithOnlyOneDirectInheritor",
-        "AbstractClassWithoutAbstractMethods"})
+        "AbstractClassWithoutAbstractMethods",
+        "unused"})
 public abstract class Generic<T> {
 
     @SuppressWarnings("rawtypes")
@@ -25,6 +26,11 @@ public abstract class Generic<T> {
     protected Generic() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0]);
+        rawClass = variant.getRawClass();
+        parameters = variant.getParameters();
+    }
+
+    Generic(final Variant variant) {
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
     }
