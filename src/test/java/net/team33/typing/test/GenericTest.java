@@ -1,11 +1,14 @@
 package net.team33.typing.test;
 
 import net.team33.typing.Generic;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 @SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
 public class GenericTest {
@@ -14,6 +17,7 @@ public class GenericTest {
     public final void simple() {
         assertStringType(new Generic<String>() {
         });
+        assertStringType(Generic.of(String.class));
     }
 
     @Test
@@ -22,26 +26,57 @@ public class GenericTest {
     }
 
     @Test
-    public final void list() {
+    public final void stringList() {
         assertStringListType(new Generic<List<String>>() {
         });
     }
 
+    @Test
+    public final void rawList() {
+        //noinspection rawtypes
+        assertRawList(new Generic<List>() {
+        });
+        assertRawList(Generic.of(List.class));
+    }
+
+    @Test
+    public final void mapStringToListOfString() {
+        assertMapStringToListOfString(new Generic<Map<String, List<String>>>() {
+        });
+    }
+
+    private static void assertMapStringToListOfString(final Generic<?> mapType) {
+        assertSame(Map.class, mapType.getRawClass());
+
+        final Map<String, Generic<?>> parameters = mapType.getParameters();
+        assertEquals(2, parameters.size());
+        assertStringType(parameters.get("K"));
+        assertStringListType(parameters.get("V"));
+    }
+
+    private static void assertRawList(final Generic<?> rawListType) {
+        assertSame(List.class, rawListType.getRawClass());
+
+        final Map<String, Generic<?>> parameters = rawListType.getParameters();
+        assertEquals(0, parameters.size());
+        assertNull(parameters.get("E"));
+    }
+
     public static void assertStringListType(final Generic<?> stringListType) {
-        Assert.assertSame(List.class, stringListType.getRawClass());
+        assertSame(List.class, stringListType.getRawClass());
 
         final Map<String, Generic<?>> parameters = stringListType.getParameters();
-        Assert.assertEquals(1, parameters.size());
+        assertEquals(1, parameters.size());
         assertStringType(parameters.get("E"));
 
-        Assert.assertEquals(stringListType, new Generic<List<String>>() {
+        assertEquals(stringListType, new Generic<List<String>>() {
         });
     }
 
     private static void assertStringType(final Generic<?> stringType) {
-        Assert.assertSame(String.class, stringType.getRawClass());
-        Assert.assertEquals(0, stringType.getParameters().size());
-        Assert.assertEquals(stringType, new Generic<String>() {
+        assertSame(String.class, stringType.getRawClass());
+        assertEquals(0, stringType.getParameters().size());
+        assertEquals(stringType, new Generic<String>() {
         });
     }
 

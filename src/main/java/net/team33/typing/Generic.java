@@ -1,6 +1,7 @@
 package net.team33.typing;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -8,12 +9,6 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
-@SuppressWarnings({
-        "MethodMayBeStatic",
-        "ClassNamePrefixedWithPackageName",
-        "AbstractClassWithOnlyOneDirectInheritor",
-        "AbstractClassWithoutAbstractMethods",
-        "unused"})
 public abstract class Generic<T> {
 
     @SuppressWarnings("rawtypes")
@@ -33,6 +28,16 @@ public abstract class Generic<T> {
     Generic(final Variant variant) {
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
+    }
+
+    private Generic(final Class<T> simpleClass) {
+        rawClass = simpleClass;
+        parameters = Collections.emptyMap();
+    }
+
+    public static <T> Generic<T> of(final Class<T> simpleClass) {
+        return new Generic<T>(simpleClass) {
+        };
     }
 
     @SuppressWarnings("rawtypes")
