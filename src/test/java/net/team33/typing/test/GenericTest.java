@@ -45,6 +45,19 @@ public class GenericTest {
         });
     }
 
+    @Test
+    public final void memberType() throws NoSuchFieldException {
+        final Generic<Container<String, String, List<String>>> containerType =
+                new Generic<Container<String, String, List<String>>>() {
+                };
+        final Generic<?> listType = containerType.getMemberType(
+                Container.class.getField("listContent").getGenericType());
+        final Generic<?> mapType = containerType.getMemberType(
+                Container.class.getField("mapContent").getGenericType());
+        assertStringListType(listType);
+        assertMapStringToListOfString(mapType);
+    }
+
     private static void assertMapStringToListOfString(final Generic<?> mapType) {
         assertSame(Map.class, mapType.getRawClass());
 
@@ -85,5 +98,11 @@ public class GenericTest {
         private StringType() {
             super();
         }
+    }
+
+    public static class Container<E, K, V> {
+
+        public List<E> listContent;
+        public Map<K, V> mapContent;
     }
 }

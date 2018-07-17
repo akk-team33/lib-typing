@@ -1,6 +1,7 @@
 package net.team33.typing;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +21,7 @@ public abstract class Generic<T> {
 
     protected Generic() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0]);
+        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], Collections.emptyMap());
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
     }
@@ -48,6 +49,11 @@ public abstract class Generic<T> {
     @SuppressWarnings("rawtypes")
     public final Map<String, Generic<?>> getParameters() {
         return parameters;
+    }
+
+    public final Generic<?> getMemberType(final Type type) {
+        return new Generic(Variant.of(type, parameters)) {
+        };
     }
 
     @Override
