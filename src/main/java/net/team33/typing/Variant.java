@@ -3,9 +3,7 @@ package net.team33.typing;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -15,7 +13,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("rawtypes")
 abstract class Variant {
 
-    static Variant of(final Type type, final Map<String, Generic<?>> parameters) {
+    static Variant of(final Type type, final Parameters parameters) {
         return Stream.of(Selection.values())
                 .filter(selection -> selection.matching.test(type))
                 .findAny()
@@ -25,7 +23,7 @@ abstract class Variant {
 
     abstract Class<?> getRawClass();
 
-    abstract Map<String, Generic<?>> getParameters();
+    abstract Parameters getParameters();
 
     private enum Selection {
 
@@ -42,9 +40,9 @@ abstract class Variant {
                 (type, map) -> new Variable((TypeVariable<?>) type, map));
 
         private final Predicate<Type> matching;
-        private final BiFunction<Type, Map<String, Generic<?>>, Variant> mapping;
+        private final BiFunction<Type, Parameters, Variant> mapping;
 
-        Selection(final Predicate<Type> matching, final BiFunction<Type, Map<String, Generic<?>>, Variant> mapping) {
+        Selection(final Predicate<Type> matching, final BiFunction<Type, Parameters, Variant> mapping) {
             this.matching = matching;
             this.mapping = mapping;
         }
@@ -64,17 +62,17 @@ abstract class Variant {
         }
 
         @Override
-        Map<String, Generic<?>> getParameters() {
-            return Collections.emptyMap();
+        Parameters getParameters() {
+            return Parameters.EMPTY;
         }
     }
 
     private static final class Parameterized extends Variant {
 
         private final ParameterizedType type;
-        private final Map<String, Generic<?>> parameters;
+        private final Parameters parameters;
 
-        private Parameterized(final ParameterizedType type, final Map<String, Generic<?>> parameters) {
+        private Parameterized(final ParameterizedType type, final Parameters parameters) {
             this.type = type;
             this.parameters = parameters;
         }
@@ -85,7 +83,7 @@ abstract class Variant {
         }
 
         @Override
-        Map<String, Generic<?>> getParameters() {
+        Parameters getParameters() {
             final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
                     .map(TypeVariable::getName)
                     .collect(Collectors.toList());
@@ -93,7 +91,7 @@ abstract class Variant {
                     .map(type1 -> of(type1, parameters))
                     .map(Parameterized::newGeneric)
                     .collect(Collectors.toList());
-            return new ParameterMap(formal, actual);
+            return new Parameters(formal, actual);
         }
 
         private static Generic<?> newGeneric(final Variant variant) {
@@ -106,7 +104,7 @@ abstract class Variant {
 
         private final Generic<?> generic;
 
-        private Variable(final TypeVariable<?> type, final Map<String, Generic<?>> parameters) {
+        private Variable(final TypeVariable<?> type, final Parameters parameters) {
             final String name = type.getName();
             this.generic = Optional.ofNullable(parameters.get(name))
                     .orElseThrow(() -> new IllegalArgumentException(
@@ -119,7 +117,7 @@ abstract class Variant {
         }
 
         @Override
-        Map<String, Generic<?>> getParameters() {
+        Parameters getParameters() {
             return generic.getParameters();
         }
     }

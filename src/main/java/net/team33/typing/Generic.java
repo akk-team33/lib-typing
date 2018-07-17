@@ -2,26 +2,25 @@ package net.team33.typing;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
+@SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class Generic<T> {
 
     @SuppressWarnings("rawtypes")
     private final Class<?> rawClass;
     @SuppressWarnings("rawtypes")
-    private final Map<String, Generic<?>> parameters;
+    private final Parameters parameters;
 
     private transient volatile String representation = null;
 
     protected Generic() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], Collections.emptyMap());
+        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], Parameters.EMPTY);
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
     }
@@ -33,7 +32,7 @@ public abstract class Generic<T> {
 
     private Generic(final Class<T> simpleClass) {
         rawClass = simpleClass;
-        parameters = Collections.emptyMap();
+        parameters = Parameters.EMPTY;
     }
 
     public static <T> Generic<T> of(final Class<T> simpleClass) {
@@ -47,7 +46,7 @@ public abstract class Generic<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public final Map<String, Generic<?>> getParameters() {
+    public final Parameters getParameters() {
         return parameters;
     }
 
@@ -73,9 +72,10 @@ public abstract class Generic<T> {
     @Override
     public final String toString() {
         return Optional.ofNullable(representation).orElseGet(() -> {
+            final List<Generic<?>> actual = parameters.getActual();
             representation = rawClass.getSimpleName() + (
-                    parameters.isEmpty() ? "" : parameters.entrySet().stream()
-                            .map(Entry::toString)
+                    actual.isEmpty() ? "" : actual.stream()
+                            .map(Generic::toString)
                             .collect(joining(", ", "<", ">")));
             return representation;
         });

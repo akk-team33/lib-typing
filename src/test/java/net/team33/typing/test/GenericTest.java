@@ -1,14 +1,16 @@
 package net.team33.typing.test;
 
 import net.team33.typing.Generic;
+import net.team33.typing.Parameters;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
 public class GenericTest {
@@ -61,8 +63,8 @@ public class GenericTest {
     private static void assertMapStringToListOfString(final Generic<?> mapType) {
         assertSame(Map.class, mapType.getRawClass());
 
-        final Map<String, Generic<?>> parameters = mapType.getParameters();
-        assertEquals(2, parameters.size());
+        final Parameters parameters = mapType.getParameters();
+        assertEquals(2, parameters.getActual().size());
         assertStringType(parameters.get("K"));
         assertStringListType(parameters.get("V"));
     }
@@ -70,16 +72,30 @@ public class GenericTest {
     private static void assertRawList(final Generic<?> rawListType) {
         assertSame(List.class, rawListType.getRawClass());
 
-        final Map<String, Generic<?>> parameters = rawListType.getParameters();
-        assertEquals(0, parameters.size());
-        assertNull(parameters.get("E"));
+        final Parameters parameters = rawListType.getParameters();
+        assertEquals(0, parameters.getActual().size());
+        assertException(() -> parameters.get("E"), IllegalArgumentException.class);
+    }
+
+    private static void assertException(final Runnable runnable, final Class<? extends Throwable> exceptionClass) {
+        try {
+            runnable.run();
+            fail("expected: " + exceptionClass.getCanonicalName());
+        } catch (final Throwable caught) {
+            assertTrue(
+                    String.format(
+                            "expected %s but was %s",
+                            exceptionClass.getCanonicalName(),
+                            caught.getClass().getCanonicalName()),
+                    exceptionClass.isInstance(caught));
+        }
     }
 
     public static void assertStringListType(final Generic<?> stringListType) {
         assertSame(List.class, stringListType.getRawClass());
 
-        final Map<String, Generic<?>> parameters = stringListType.getParameters();
-        assertEquals(1, parameters.size());
+        final Parameters parameters = stringListType.getParameters();
+        assertEquals(1, parameters.getActual().size());
         assertStringType(parameters.get("E"));
 
         assertEquals(stringListType, new Generic<List<String>>() {
@@ -88,16 +104,13 @@ public class GenericTest {
 
     private static void assertStringType(final Generic<?> stringType) {
         assertSame(String.class, stringType.getRawClass());
-        assertEquals(0, stringType.getParameters().size());
+        assertEquals(0, stringType.getParameters().getActual().size());
         assertEquals(stringType, new Generic<String>() {
         });
     }
 
     @SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods", "EmptyClass"})
-    private static class StringType extends Generic<String> {
-        private StringType() {
-            super();
-        }
+    private static final class StringType extends Generic<String> {
     }
 
     public static class Container<E, K, V> {
