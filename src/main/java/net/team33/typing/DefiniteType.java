@@ -9,7 +9,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
-public abstract class Generic<T> {
+public abstract class DefiniteType<T> {
 
     @SuppressWarnings("rawtypes")
     private final Class<?> rawClass;
@@ -18,25 +18,25 @@ public abstract class Generic<T> {
 
     private transient volatile String representation = null;
 
-    protected Generic() {
+    protected DefiniteType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], Parameters.EMPTY);
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
     }
 
-    Generic(final Variant variant) {
+    DefiniteType(final Variant variant) {
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
     }
 
-    private Generic(final Class<T> simpleClass) {
+    private DefiniteType(final Class<T> simpleClass) {
         rawClass = simpleClass;
         parameters = Parameters.EMPTY;
     }
 
-    public static <T> Generic<T> of(final Class<T> simpleClass) {
-        return new Generic<T>(simpleClass) {
+    public static <T> DefiniteType<T> of(final Class<T> simpleClass) {
+        return new DefiniteType<T>(simpleClass) {
         };
     }
 
@@ -50,8 +50,8 @@ public abstract class Generic<T> {
         return parameters;
     }
 
-    public final Generic<?> getMemberType(final Type type) {
-        return new Generic(Variant.of(type, parameters)) {
+    public final DefiniteType<?> getMemberType(final Type type) {
+        return new DefiniteType(Variant.of(type, parameters)) {
         };
     }
 
@@ -62,20 +62,20 @@ public abstract class Generic<T> {
 
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof Generic) && isEqual((Generic<?>) obj));
+        return (this == obj) || ((obj instanceof DefiniteType) && isEqual((DefiniteType<?>) obj));
     }
 
-    private boolean isEqual(final Generic<?> other) {
+    private boolean isEqual(final DefiniteType<?> other) {
         return rawClass.equals(other.rawClass) && parameters.equals(other.parameters);
     }
 
     @Override
     public final String toString() {
         return Optional.ofNullable(representation).orElseGet(() -> {
-            final List<Generic<?>> actual = parameters.getActual();
+            final List<DefiniteType<?>> actual = parameters.getActual();
             representation = rawClass.getSimpleName() + (
                     actual.isEmpty() ? "" : actual.stream()
-                            .map(Generic::toString)
+                            .map(DefiniteType::toString)
                             .collect(joining(", ", "<", ">")));
             return representation;
         });

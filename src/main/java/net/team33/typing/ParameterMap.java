@@ -10,25 +10,40 @@ import java.util.Set;
 
 import static java.util.Collections.unmodifiableList;
 
-class ParameterMap extends AbstractMap<String, Generic<?>> {
+class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
 
     private final List<String> formal;
-    private final List<Generic<?>> actual;
+    private final List<DefiniteType<?>> actual;
 
-    ParameterMap(final List<String> formal, final List<Generic<?>> actual) {
-        this.formal = unmodifiableList(new ArrayList<>(formal));
-        this.actual = unmodifiableList(new ArrayList<>(actual));
+    ParameterMap(final List<String> formal, final List<DefiniteType<?>> actual) {
+        if (formal.size() == actual.size()) {
+            this.formal = unmodifiableList(new ArrayList<>(formal));
+            this.actual = unmodifiableList(new ArrayList<>(actual));
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "formal and actual must match in size but was%n\tformal: %s%n\tactual: %s", formal, actual));
+        }
+    }
+
+    public final List<String> getFormal() {
+        // noinspection AssignmentOrReturnOfFieldWithMutableType
+        return formal;
+    }
+
+    public final List<DefiniteType<?>> getActual() {
+        // noinspection AssignmentOrReturnOfFieldWithMutableType
+        return actual;
     }
 
     @Override
-    public final Set<Entry<String, Generic<?>>> entrySet() {
+    public final Set<Entry<String, DefiniteType<?>>> entrySet() {
         return new EntrySet();
     }
 
-    private class EntrySet extends AbstractSet<Entry<String, Generic<?>>> {
+    private class EntrySet extends AbstractSet<Entry<String, DefiniteType<?>>> {
 
         @Override
-        public final Iterator<Entry<String, Generic<?>>> iterator() {
+        public final Iterator<Entry<String, DefiniteType<?>>> iterator() {
             return new EntryIterator();
         }
 
@@ -38,7 +53,7 @@ class ParameterMap extends AbstractMap<String, Generic<?>> {
         }
     }
 
-    private class EntryIterator implements Iterator<Entry<String, Generic<?>>> {
+    private class EntryIterator implements Iterator<Entry<String, DefiniteType<?>>> {
 
         private int index = 0;
 
@@ -48,18 +63,16 @@ class ParameterMap extends AbstractMap<String, Generic<?>> {
         }
 
         @Override
-        public final Entry<String, Generic<?>> next() {
+        public final Entry<String, DefiniteType<?>> next() {
             try {
-                final Entry<String, Generic<?>> result = new SimpleImmutableEntry<String, Generic<?>>(
+                final Entry<String, DefiniteType<?>> result = new SimpleImmutableEntry<>(
                         formal.get(index),
                         actual.get(index)
                 );
                 index += 1;
                 return result;
             } catch (final IndexOutOfBoundsException caught) {
-                final NoSuchElementException toThrow = new NoSuchElementException(caught.getMessage());
-                toThrow.addSuppressed(caught);
-                throw toThrow;
+                throw new NoSuchElementException(caught.getMessage());
             }
         }
     }

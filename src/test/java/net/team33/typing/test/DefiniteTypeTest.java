@@ -1,6 +1,6 @@
 package net.team33.typing.test;
 
-import net.team33.typing.Generic;
+import net.team33.typing.DefiniteType;
 import net.team33.typing.Parameters;
 import org.junit.Test;
 
@@ -13,13 +13,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
-public class GenericTest {
+public class DefiniteTypeTest {
 
     @Test
     public final void simple() {
-        assertStringType(new Generic<String>() {
+        assertStringType(new DefiniteType<String>() {
         });
-        assertStringType(Generic.of(String.class));
+        assertStringType(DefiniteType.of(String.class));
     }
 
     @Test
@@ -29,38 +29,38 @@ public class GenericTest {
 
     @Test
     public final void stringList() {
-        assertStringListType(new Generic<List<String>>() {
+        assertStringListType(new DefiniteType<List<String>>() {
         });
     }
 
     @Test
     public final void rawList() {
         //noinspection rawtypes
-        assertRawList(new Generic<List>() {
+        assertRawList(new DefiniteType<List>() {
         });
-        assertRawList(Generic.of(List.class));
+        assertRawList(DefiniteType.of(List.class));
     }
 
     @Test
     public final void mapStringToListOfString() {
-        assertMapStringToListOfString(new Generic<Map<String, List<String>>>() {
+        assertMapStringToListOfString(new DefiniteType<Map<String, List<String>>>() {
         });
     }
 
     @Test
     public final void memberType() throws NoSuchFieldException {
-        final Generic<Container<String, String, List<String>>> containerType =
-                new Generic<Container<String, String, List<String>>>() {
+        final DefiniteType<Container<String, String, List<String>>> containerType =
+                new DefiniteType<Container<String, String, List<String>>>() {
                 };
-        final Generic<?> listType = containerType.getMemberType(
+        final DefiniteType<?> listType = containerType.getMemberType(
                 Container.class.getField("listContent").getGenericType());
-        final Generic<?> mapType = containerType.getMemberType(
+        final DefiniteType<?> mapType = containerType.getMemberType(
                 Container.class.getField("mapContent").getGenericType());
         assertStringListType(listType);
         assertMapStringToListOfString(mapType);
     }
 
-    private static void assertMapStringToListOfString(final Generic<?> mapType) {
+    private static void assertMapStringToListOfString(final DefiniteType<?> mapType) {
         assertSame(Map.class, mapType.getRawClass());
 
         final Parameters parameters = mapType.getParameters();
@@ -69,7 +69,7 @@ public class GenericTest {
         assertStringListType(parameters.get("V"));
     }
 
-    private static void assertRawList(final Generic<?> rawListType) {
+    private static void assertRawList(final DefiniteType<?> rawListType) {
         assertSame(List.class, rawListType.getRawClass());
 
         final Parameters parameters = rawListType.getParameters();
@@ -91,26 +91,26 @@ public class GenericTest {
         }
     }
 
-    public static void assertStringListType(final Generic<?> stringListType) {
+    public static void assertStringListType(final DefiniteType<?> stringListType) {
         assertSame(List.class, stringListType.getRawClass());
 
         final Parameters parameters = stringListType.getParameters();
         assertEquals(1, parameters.getActual().size());
         assertStringType(parameters.get("E"));
 
-        assertEquals(stringListType, new Generic<List<String>>() {
+        assertEquals(stringListType, new DefiniteType<List<String>>() {
         });
     }
 
-    private static void assertStringType(final Generic<?> stringType) {
+    private static void assertStringType(final DefiniteType<?> stringType) {
         assertSame(String.class, stringType.getRawClass());
         assertEquals(0, stringType.getParameters().getActual().size());
-        assertEquals(stringType, new Generic<String>() {
+        assertEquals(stringType, new DefiniteType<String>() {
         });
     }
 
     @SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods", "EmptyClass"})
-    private static final class StringType extends Generic<String> {
+    private static final class StringType extends DefiniteType<String> {
     }
 
     public static class Container<E, K, V> {

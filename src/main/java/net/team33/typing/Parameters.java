@@ -15,9 +15,9 @@ public class Parameters {
     public static final Parameters EMPTY = new Parameters();
 
     private final List<String> formal;
-    private final List<Generic<?>> actual;
+    private final List<DefiniteType<?>> actual;
 
-    Parameters(final List<String> formal, final List<Generic<?>> actual) {
+    Parameters(final List<String> formal, final List<DefiniteType<?>> actual) {
         if (formal.size() == actual.size()) {
             this.formal = unmodifiableList(new ArrayList<>(formal));
             this.actual = unmodifiableList(new ArrayList<>(actual));
@@ -30,6 +30,18 @@ public class Parameters {
     Parameters() {
         this.formal = emptyList();
         this.actual = emptyList();
+    }
+
+    public final List<String> getFormal() {
+        // already is immutable ...
+        // noinspection AssignmentOrReturnOfFieldWithMutableType
+        return formal;
+    }
+
+    public final List<DefiniteType<?>> getActual() {
+        // already is immutable ...
+        // noinspection AssignmentOrReturnOfFieldWithMutableType
+        return actual;
     }
 
     @Override
@@ -53,19 +65,7 @@ public class Parameters {
                 .collect(Collectors.joining(", ", "<", ">"));
     }
 
-    public final List<String> getFormal() {
-        // already is immutable ...
-        // noinspection AssignmentOrReturnOfFieldWithMutableType
-        return formal;
-    }
-
-    public final List<Generic<?>> getActual() {
-        // already is immutable ...
-        // noinspection AssignmentOrReturnOfFieldWithMutableType
-        return actual;
-    }
-
-    public final Generic<?> get(final String name) {
+    public final DefiniteType<?> get(final String name) {
         try {
             return actual.get(formal.indexOf(name));
         } catch (final IndexOutOfBoundsException caught) {

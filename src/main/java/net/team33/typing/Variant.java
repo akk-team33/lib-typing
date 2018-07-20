@@ -87,38 +87,38 @@ abstract class Variant {
             final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
                     .map(TypeVariable::getName)
                     .collect(Collectors.toList());
-            final List<Generic<?>> actual = Stream.of(type.getActualTypeArguments())
+            final List<DefiniteType<?>> actual = Stream.of(type.getActualTypeArguments())
                     .map(type1 -> of(type1, parameters))
                     .map(Parameterized::newGeneric)
                     .collect(Collectors.toList());
             return new Parameters(formal, actual);
         }
 
-        private static Generic<?> newGeneric(final Variant variant) {
-            return new Generic(variant) {
+        private static DefiniteType<?> newGeneric(final Variant variant) {
+            return new DefiniteType(variant) {
             };
         }
     }
 
     private static final class Variable extends Variant {
 
-        private final Generic<?> generic;
+        private final DefiniteType<?> definite;
 
         private Variable(final TypeVariable<?> type, final Parameters parameters) {
             final String name = type.getName();
-            this.generic = Optional.ofNullable(parameters.get(name))
+            this.definite = Optional.ofNullable(parameters.get(name))
                     .orElseThrow(() -> new IllegalArgumentException(
                             String.format("Variable <%s> not found in parameters %s", name, parameters)));
         }
 
         @Override
         Class<?> getRawClass() {
-            return generic.getRawClass();
+            return definite.getRawClass();
         }
 
         @Override
         Parameters getParameters() {
-            return generic.getParameters();
+            return definite.getParameters();
         }
     }
 }
