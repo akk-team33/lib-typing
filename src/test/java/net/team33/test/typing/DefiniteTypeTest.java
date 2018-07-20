@@ -1,4 +1,4 @@
-package net.team33.typing.test;
+package net.team33.test.typing;
 
 import net.team33.typing.DefiniteType;
 import net.team33.typing.Parameters;
