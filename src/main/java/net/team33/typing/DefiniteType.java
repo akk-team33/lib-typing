@@ -2,9 +2,15 @@ package net.team33.typing;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 
@@ -42,24 +48,19 @@ public abstract class DefiniteType<T> {
 
     private transient volatile String representation = null;
 
-    private void eg() {
-        final DefiniteType<String> stringType
-                = DefiniteType.of(String.class);
-    }
-
     /**
      * @see DefiniteType
      */
     protected DefiniteType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
-        rawClass = variant.getRawClass();
-        parameters = variant.getParameters();
+        final Stage stage = stage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
+        rawClass = stage.getRawClass();
+        parameters = stage.getParameters();
     }
 
-    DefiniteType(final Variant variant) {
-        rawClass = variant.getRawClass();
-        parameters = variant.getParameters();
+    DefiniteType(final Stage stage) {
+        rawClass = stage.getRawClass();
+        parameters = stage.getParameters();
     }
 
     private DefiniteType(final Class<T> simpleClass) {
@@ -79,8 +80,8 @@ public abstract class DefiniteType<T> {
         return rawClass;
     }
 
-    public final ParameterMap getParameters() {
-        //noinspection AssignmentOrReturnOfFieldWithMutableType
+    public final Map<String, DefiniteType<?>> getParameters() {
+        // noinspection AssignmentOrReturnOfFieldWithMutableType
         return parameters;
     }
 
@@ -93,7 +94,7 @@ public abstract class DefiniteType<T> {
     }
 
     public final DefiniteType<?> getMemberType(final Type type) {
-        return new DefiniteType(Variant.of(type, parameters)) {
+        return new DefiniteType(stage(type, parameters)) {
         };
     }
 
@@ -121,5 +122,119 @@ public abstract class DefiniteType<T> {
                             .collect(joining(", ", "<", ">")));
             return representation;
         });
+    }
+
+    static Stage stage(final Type type, final ParameterMap parameters) {
+        return Stream.of(Selection.values())
+                .filter(selection -> selection.matching.test(type))
+                .findAny()
+                .map(selection -> selection.mapping.apply(type, parameters))
+                .orElseThrow(() -> new IllegalArgumentException("Unspecified Type: " + type.getClass()));
+    }
+
+    private enum Selection {
+
+        SIMPLE_CLASS(
+                type -> type instanceof Class<?>,
+                (type, map) -> new ClassStage((Class<?>) type)),
+
+        PARAMETERIZED_TYPE(
+                type -> type instanceof ParameterizedType,
+                (type, map) -> new ParameterizedStage((ParameterizedType) type, map)),
+
+        TYPE_VARIABLE(
+                type -> type instanceof TypeVariable,
+                (type, map) -> new TypeVariableStage((TypeVariable<?>) type, map));
+
+        private final Predicate<Type> matching;
+        private final BiFunction<Type, ParameterMap, Stage> mapping;
+
+        Selection(final Predicate<Type> matching, final BiFunction<Type, ParameterMap, Stage> mapping) {
+            this.matching = matching;
+            this.mapping = mapping;
+        }
+    }
+
+    private abstract static class Stage {
+
+        abstract Class<?> getRawClass();
+
+        abstract ParameterMap getParameters();
+    }
+
+    private static final class ClassStage extends Stage {
+
+        private final Class<?> rawClass;
+
+        private ClassStage(final Class<?> rawClass) {
+            this.rawClass = rawClass;
+        }
+
+        @Override
+        Class<?> getRawClass() {
+            return rawClass;
+        }
+
+        @Override
+        ParameterMap getParameters() {
+            // noinspection AssignmentOrReturnOfFieldWithMutableType
+            return ParameterMap.EMPTY;
+        }
+    }
+
+    private static final class ParameterizedStage extends Stage {
+
+        private final ParameterizedType type;
+        private final ParameterMap parameters;
+
+        private ParameterizedStage(final ParameterizedType type, final ParameterMap parameters) {
+            this.type = type;
+            this.parameters = parameters;
+        }
+
+        @Override
+        Class<?> getRawClass() {
+            return (Class<?>) type.getRawType();
+        }
+
+        @Override
+        ParameterMap getParameters() {
+            final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
+                    .map(TypeVariable::getName)
+                    .collect(Collectors.toList());
+            final List<DefiniteType<?>> actual = Stream.of(type.getActualTypeArguments())
+                    .map(type1 -> stage(type1, parameters))
+                    .map(ParameterizedStage::newGeneric)
+                    .collect(Collectors.toList());
+            return new ParameterMap(formal, actual);
+        }
+
+        private static DefiniteType<?> newGeneric(final Stage stage) {
+            return new DefiniteType(stage) {
+            };
+        }
+    }
+
+    private static final class TypeVariableStage extends Stage {
+
+        private final DefiniteType<?> definite;
+
+        private TypeVariableStage(final TypeVariable<?> type, final ParameterMap parameters) {
+            final String name = type.getName();
+            this.definite = Optional.ofNullable(parameters.get(name))
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            String.format("Variable <%s> not found in parameters %s", name, parameters)));
+        }
+
+        @Override
+        Class<?> getRawClass() {
+            return definite.getRawClass();
+        }
+
+        @Override
+        ParameterMap getParameters() {
+            // noinspection AssignmentOrReturnOfFieldWithMutableType
+            return definite.parameters;
+        }
     }
 }
