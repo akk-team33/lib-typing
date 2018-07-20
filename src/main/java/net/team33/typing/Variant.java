@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("rawtypes")
 abstract class Variant {
 
-    static Variant of(final Type type, final Parameters parameters) {
+    static Variant of(final Type type, final ParameterMap parameters) {
         return Stream.of(Selection.values())
                 .filter(selection -> selection.matching.test(type))
                 .findAny()
@@ -23,7 +23,7 @@ abstract class Variant {
 
     abstract Class<?> getRawClass();
 
-    abstract Parameters getParameters();
+    abstract ParameterMap getParameters();
 
     private enum Selection {
 
@@ -40,9 +40,9 @@ abstract class Variant {
                 (type, map) -> new Variable((TypeVariable<?>) type, map));
 
         private final Predicate<Type> matching;
-        private final BiFunction<Type, Parameters, Variant> mapping;
+        private final BiFunction<Type, ParameterMap, Variant> mapping;
 
-        Selection(final Predicate<Type> matching, final BiFunction<Type, Parameters, Variant> mapping) {
+        Selection(final Predicate<Type> matching, final BiFunction<Type, ParameterMap, Variant> mapping) {
             this.matching = matching;
             this.mapping = mapping;
         }
@@ -62,17 +62,17 @@ abstract class Variant {
         }
 
         @Override
-        Parameters getParameters() {
-            return Parameters.EMPTY;
+        ParameterMap getParameters() {
+            return ParameterMap.EMPTY;
         }
     }
 
     private static final class Parameterized extends Variant {
 
         private final ParameterizedType type;
-        private final Parameters parameters;
+        private final ParameterMap parameters;
 
-        private Parameterized(final ParameterizedType type, final Parameters parameters) {
+        private Parameterized(final ParameterizedType type, final ParameterMap parameters) {
             this.type = type;
             this.parameters = parameters;
         }
@@ -83,7 +83,7 @@ abstract class Variant {
         }
 
         @Override
-        Parameters getParameters() {
+        ParameterMap getParameters() {
             final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
                     .map(TypeVariable::getName)
                     .collect(Collectors.toList());
@@ -91,7 +91,7 @@ abstract class Variant {
                     .map(type1 -> of(type1, parameters))
                     .map(Parameterized::newGeneric)
                     .collect(Collectors.toList());
-            return new Parameters(formal, actual);
+            return new ParameterMap(formal, actual);
         }
 
         private static DefiniteType<?> newGeneric(final Variant variant) {
@@ -104,7 +104,7 @@ abstract class Variant {
 
         private final DefiniteType<?> definite;
 
-        private Variable(final TypeVariable<?> type, final Parameters parameters) {
+        private Variable(final TypeVariable<?> type, final ParameterMap parameters) {
             final String name = type.getName();
             this.definite = Optional.ofNullable(parameters.get(name))
                     .orElseThrow(() -> new IllegalArgumentException(
@@ -117,7 +117,7 @@ abstract class Variant {
         }
 
         @Override
-        Parameters getParameters() {
+        ParameterMap getParameters() {
             return definite.getParameters();
         }
     }

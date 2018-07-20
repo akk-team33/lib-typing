@@ -32,13 +32,13 @@ import static java.util.stream.Collectors.joining;
  * to enforce that a derivative is required for an instantiation.
  * </p>
  */
-@SuppressWarnings("AbstractClassWithoutAbstractMethods")
+@SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
 public abstract class DefiniteType<T> {
 
     @SuppressWarnings("rawtypes")
     private final Class<?> rawClass;
     @SuppressWarnings("rawtypes")
-    private final Parameters parameters;
+    private final ParameterMap parameters;
 
     private transient volatile String representation = null;
 
@@ -52,7 +52,7 @@ public abstract class DefiniteType<T> {
      */
     protected DefiniteType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], Parameters.EMPTY);
+        final Variant variant = Variant.of(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
         rawClass = variant.getRawClass();
         parameters = variant.getParameters();
     }
@@ -64,7 +64,7 @@ public abstract class DefiniteType<T> {
 
     private DefiniteType(final Class<T> simpleClass) {
         rawClass = simpleClass;
-        parameters = Parameters.EMPTY;
+        parameters = ParameterMap.EMPTY;
     }
 
     /**
@@ -75,14 +75,21 @@ public abstract class DefiniteType<T> {
         };
     }
 
-    @SuppressWarnings("rawtypes")
     public final Class<?> getRawClass() {
         return rawClass;
     }
 
-    @SuppressWarnings("rawtypes")
-    public final Parameters getParameters() {
+    public final ParameterMap getParameters() {
+        //noinspection AssignmentOrReturnOfFieldWithMutableType
         return parameters;
+    }
+
+    public final List<String> getFormalParameters() {
+        return parameters.getFormal();
+    }
+
+    public final List<DefiniteType<?>> getActualParameters() {
+        return parameters.getActual();
     }
 
     public final DefiniteType<?> getMemberType(final Type type) {

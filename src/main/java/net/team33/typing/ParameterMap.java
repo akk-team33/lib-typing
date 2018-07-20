@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
 class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
+
+    static final ParameterMap EMPTY = new ParameterMap();
 
     private final List<String> formal;
     private final List<DefiniteType<?>> actual;
@@ -25,12 +28,17 @@ class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
         }
     }
 
-    public final List<String> getFormal() {
+    private ParameterMap() {
+        this.formal = emptyList();
+        this.actual = emptyList();
+    }
+
+    final List<String> getFormal() {
         // noinspection AssignmentOrReturnOfFieldWithMutableType
         return formal;
     }
 
-    public final List<DefiniteType<?>> getActual() {
+    final List<DefiniteType<?>> getActual() {
         // noinspection AssignmentOrReturnOfFieldWithMutableType
         return actual;
     }

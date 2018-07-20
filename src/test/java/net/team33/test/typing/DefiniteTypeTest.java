@@ -1,7 +1,6 @@
 package net.team33.test.typing;
 
 import net.team33.typing.DefiniteType;
-import net.team33.typing.Parameters;
 import org.junit.Test;
 
 import java.util.List;
@@ -63,18 +62,17 @@ public class DefiniteTypeTest {
     private static void assertMapStringToListOfString(final DefiniteType<?> mapType) {
         assertSame(Map.class, mapType.getRawClass());
 
-        final Parameters parameters = mapType.getParameters();
-        assertEquals(2, parameters.getActual().size());
-        assertStringType(parameters.get("K"));
-        assertStringListType(parameters.get("V"));
+        final List<DefiniteType<?>> parameters = mapType.getActualParameters();
+        assertEquals(2, parameters.size());
+        assertStringType(parameters.get(0));
+        assertStringListType(parameters.get(1));
     }
 
     private static void assertRawList(final DefiniteType<?> rawListType) {
         assertSame(List.class, rawListType.getRawClass());
 
-        final Parameters parameters = rawListType.getParameters();
-        assertEquals(0, parameters.getActual().size());
-        assertException(() -> parameters.get("E"), IllegalArgumentException.class);
+        final List<DefiniteType<?>> parameters = rawListType.getActualParameters();
+        assertEquals(0, parameters.size());
     }
 
     private static void assertException(final Runnable runnable, final Class<? extends Throwable> exceptionClass) {
@@ -94,9 +92,9 @@ public class DefiniteTypeTest {
     public static void assertStringListType(final DefiniteType<?> stringListType) {
         assertSame(List.class, stringListType.getRawClass());
 
-        final Parameters parameters = stringListType.getParameters();
-        assertEquals(1, parameters.getActual().size());
-        assertStringType(parameters.get("E"));
+        final List<DefiniteType<?>> parameters = stringListType.getActualParameters();
+        assertEquals(1, parameters.size());
+        assertStringType(parameters.get(0));
 
         assertEquals(stringListType, new DefiniteType<List<String>>() {
         });
@@ -104,7 +102,7 @@ public class DefiniteTypeTest {
 
     private static void assertStringType(final DefiniteType<?> stringType) {
         assertSame(String.class, stringType.getRawClass());
-        assertEquals(0, stringType.getParameters().getActual().size());
+        assertEquals(0, stringType.getActualParameters().size());
         assertEquals(stringType, new DefiniteType<String>() {
         });
     }
