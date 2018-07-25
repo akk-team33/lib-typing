@@ -42,7 +42,7 @@ import static java.util.stream.Collectors.joining;
 public abstract class DefiniteType<T> {
 
     @SuppressWarnings("rawtypes")
-    private final Class<?> rawClass;
+    private final Class<?> underlyingClass;
     @SuppressWarnings("rawtypes")
     private final ParameterMap parameters;
 
@@ -54,17 +54,17 @@ public abstract class DefiniteType<T> {
     protected DefiniteType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         final Stage stage = stage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
-        rawClass = stage.getRawClass();
+        underlyingClass = stage.getUnderlyingClass();
         parameters = stage.getParameters();
     }
 
-    DefiniteType(final Stage stage) {
-        rawClass = stage.getRawClass();
+    private DefiniteType(final Stage stage) {
+        underlyingClass = stage.getUnderlyingClass();
         parameters = stage.getParameters();
     }
 
     private DefiniteType(final Class<T> simpleClass) {
-        rawClass = simpleClass;
+        underlyingClass = simpleClass;
         parameters = ParameterMap.EMPTY;
     }
 
@@ -76,23 +76,48 @@ public abstract class DefiniteType<T> {
         };
     }
 
-    public final Class<?> getRawClass() {
-        return rawClass;
+    /**
+     * Returns the {@link Class} on which this DefiniteType is based.
+     */
+    public final Class<?> getUnderlyingClass() {
+        return underlyingClass;
     }
 
+    /**
+     * Returns the type parameters defining this DefiniteType.
+     *
+     * @see #getFormalParameters()
+     * @see #getActualParameters()
+     */
     public final Map<String, DefiniteType<?>> getParameters() {
         // noinspection AssignmentOrReturnOfFieldWithMutableType
         return parameters;
     }
 
+    /**
+     * Returns the formal type parameter of the generic type underlying this DefiniteType.
+     *
+     * @see #getParameters()
+     * @see #getActualParameters()
+     */
     public final List<String> getFormalParameters() {
         return parameters.getFormal();
     }
 
+    /**
+     * Returns the actual type parameters defining this DefiniteType.
+     *
+     * @see #getParameters()
+     * @see #getFormalParameters()
+     */
     public final List<DefiniteType<?>> getActualParameters() {
         return parameters.getActual();
     }
 
+    /**
+     * Converts a (possibly) generic {@link Type} that exists in the context of this DefiniteType into a DefiniteType.
+     * For example, the type of a field or the type of a parameter or result of a method of this type.
+     */
     public final DefiniteType<?> getMemberType(final Type type) {
         return new DefiniteType(stage(type, parameters)) {
         };
@@ -100,23 +125,30 @@ public abstract class DefiniteType<T> {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(rawClass, parameters);
+        return Objects.hash(underlyingClass, parameters);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Two instances of DefiniteType are equal if they are {@linkplain #getUnderlyingClass() based} on the same class
+     * and defined by the same {@linkplain #getParameters() parameters}.
+     * </p>
+     */
     @Override
     public final boolean equals(final Object obj) {
         return (this == obj) || ((obj instanceof DefiniteType) && isEqual((DefiniteType<?>) obj));
     }
 
     private boolean isEqual(final DefiniteType<?> other) {
-        return rawClass.equals(other.rawClass) && parameters.equals(other.parameters);
+        return underlyingClass.equals(other.underlyingClass) && parameters.equals(other.parameters);
     }
 
     @Override
     public final String toString() {
         return Optional.ofNullable(representation).orElseGet(() -> {
             final List<DefiniteType<?>> actual = parameters.getActual();
-            representation = rawClass.getSimpleName() + (
+            representation = underlyingClass.getSimpleName() + (
                     actual.isEmpty() ? "" : actual.stream()
                             .map(DefiniteType::toString)
                             .collect(joining(", ", "<", ">")));
@@ -124,17 +156,16 @@ public abstract class DefiniteType<T> {
         });
     }
 
-    static Stage stage(final Type type, final ParameterMap parameters) {
-        return Stream.of(Selection.values())
-                .filter(selection -> selection.matching.test(type))
-                .findAny()
-                .map(selection -> selection.mapping.apply(type, parameters))
-                .orElseThrow(() -> new IllegalArgumentException("Unspecified Type: " + type.getClass()));
+    private static Stage stage(final Type type, final ParameterMap parameters) {
+        return Stream.of(TypeType.values())
+                .filter(typeType -> typeType.matching.test(type)).findAny()
+                .map(typeType -> typeType.mapping.apply(type, parameters))
+                .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type.getClass()));
     }
 
-    private enum Selection {
+    private enum TypeType {
 
-        SIMPLE_CLASS(
+        CLASS(
                 type -> type instanceof Class<?>,
                 (type, map) -> new ClassStage((Class<?>) type)),
 
@@ -149,7 +180,7 @@ public abstract class DefiniteType<T> {
         private final Predicate<Type> matching;
         private final BiFunction<Type, ParameterMap, Stage> mapping;
 
-        Selection(final Predicate<Type> matching, final BiFunction<Type, ParameterMap, Stage> mapping) {
+        TypeType(final Predicate<Type> matching, final BiFunction<Type, ParameterMap, Stage> mapping) {
             this.matching = matching;
             this.mapping = mapping;
         }
@@ -157,7 +188,7 @@ public abstract class DefiniteType<T> {
 
     private abstract static class Stage {
 
-        abstract Class<?> getRawClass();
+        abstract Class<?> getUnderlyingClass();
 
         abstract ParameterMap getParameters();
     }
@@ -171,7 +202,7 @@ public abstract class DefiniteType<T> {
         }
 
         @Override
-        Class<?> getRawClass() {
+        Class<?> getUnderlyingClass() {
             return rawClass;
         }
 
@@ -193,7 +224,7 @@ public abstract class DefiniteType<T> {
         }
 
         @Override
-        Class<?> getRawClass() {
+        Class<?> getUnderlyingClass() {
             return (Class<?>) type.getRawType();
         }
 
@@ -227,8 +258,8 @@ public abstract class DefiniteType<T> {
         }
 
         @Override
-        Class<?> getRawClass() {
-            return definite.getRawClass();
+        Class<?> getUnderlyingClass() {
+            return definite.getUnderlyingClass();
         }
 
         @Override
