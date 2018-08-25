@@ -1,4 +1,4 @@
-package net.team33.typing;
+package de.team33.typing;
 
 import java.util.*;
 

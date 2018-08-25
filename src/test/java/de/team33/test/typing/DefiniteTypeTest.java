@@ -1,6 +1,6 @@
-package net.team33.test.typing;
+package de.team33.test.typing;
 
-import net.team33.typing.DefiniteType;
+import de.team33.typing.DefiniteType;
 import org.junit.Test;
 
 import java.util.List;
