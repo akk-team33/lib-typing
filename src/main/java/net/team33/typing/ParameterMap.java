@@ -1,12 +1,6 @@
 package net.team33.typing;
 
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
