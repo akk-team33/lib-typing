@@ -181,28 +181,21 @@ public abstract class DefType<T> {
         }
     }
 
-    private abstract static class Stage {
-
-        abstract Class<?> getUnderlyingClass();
-
-        abstract ParameterMap getParameters();
-    }
-
     private static final class ClassStage extends Stage {
 
-        private final Class<?> rawClass;
+        private final Class<?> underlyingClass;
 
-        private ClassStage(final Class<?> rawClass) {
-            this.rawClass = rawClass;
+        private ClassStage(final Class<?> underlyingClass) {
+            this.underlyingClass = underlyingClass;
         }
 
         @Override
-        Class<?> getUnderlyingClass() {
-            return rawClass;
+        final Class<?> getUnderlyingClass() {
+            return underlyingClass;
         }
 
         @Override
-        ParameterMap getParameters() {
+        final ParameterMap getParameters() {
             // noinspection AssignmentOrReturnOfFieldWithMutableType
             return ParameterMap.EMPTY;
         }
@@ -219,12 +212,12 @@ public abstract class DefType<T> {
         }
 
         @Override
-        Class<?> getUnderlyingClass() {
+        final Class<?> getUnderlyingClass() {
             return (Class<?>) type.getRawType();
         }
 
         @Override
-        ParameterMap getParameters() {
+        final ParameterMap getParameters() {
             final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
                     .map(TypeVariable::getName)
                     .collect(Collectors.toList());
@@ -253,12 +246,12 @@ public abstract class DefType<T> {
         }
 
         @Override
-        Class<?> getUnderlyingClass() {
+        final Class<?> getUnderlyingClass() {
             return definite.getUnderlyingClass();
         }
 
         @Override
-        ParameterMap getParameters() {
+        final ParameterMap getParameters() {
             // noinspection AssignmentOrReturnOfFieldWithMutableType
             return definite.parameters;
         }
