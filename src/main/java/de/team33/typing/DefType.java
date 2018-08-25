@@ -22,10 +22,10 @@ import static java.util.stream.Collectors.joining;
  * represents the type {@code Map<String, List<String>>}.
  * </p><p>
  * To get an instance of (any) DefType, you first need to create a fully defined derivative of DefType.
- * Only this can be instantiated directly.
+ * Only this can be instantiated.
  * The easiest way to achieve this is to use an anonymous derivation with simultaneous instantiation. Example:
  * </p><pre>
- * final DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; stringToStringListMapType
+ * final DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
  *         = new DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt;() { };
  * </pre><p>
  * If a simple class object already fully defines the type in question,
@@ -49,7 +49,7 @@ public abstract class DefType<T> {
     private transient volatile String representation = null;
 
     /**
-     * @see DefType
+     * Initializes a {@link DefType} based on its own full definition
      */
     protected DefType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
@@ -63,16 +63,11 @@ public abstract class DefType<T> {
         parameters = stage.getParameters();
     }
 
-    private DefType(final Class<T> simpleClass) {
-        underlyingClass = simpleClass;
-        parameters = ParameterMap.EMPTY;
-    }
-
     /**
-     * @see DefType
+     * Returns a {@link DefType} based on a simple, fully defined {@link Class}.
      */
     public static <T> DefType<T> of(final Class<T> simpleClass) {
-        return new DefType<T>(simpleClass) {
+        return new DefType<T>(new ClassStage(simpleClass)) {
         };
     }
 
