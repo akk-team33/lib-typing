@@ -1,6 +1,6 @@
 package de.team33.test.typing;
 
-import de.team33.typing.DefiniteType;
+import de.team33.typing.DefType;
 import org.junit.Test;
 
 import java.util.List;
@@ -10,13 +10,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 @SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
-public class DefiniteTypeTest {
+public class DefTypeTest {
 
     @Test
     public final void simple() {
-        assertStringType(new DefiniteType<String>() {
+        assertStringType(new DefType<String>() {
         });
-        assertStringType(DefiniteType.of(String.class));
+        assertStringType(DefType.of(String.class));
     }
 
     @Test
@@ -26,73 +26,73 @@ public class DefiniteTypeTest {
 
     @Test
     public final void stringList() {
-        assertStringListType(new DefiniteType<List<String>>() {
+        assertStringListType(new DefType<List<String>>() {
         });
     }
 
     @Test
     public final void rawList() {
         //noinspection rawtypes
-        assertRawList(new DefiniteType<List>() {
+        assertRawList(new DefType<List>() {
         });
-        assertRawList(DefiniteType.of(List.class));
+        assertRawList(DefType.of(List.class));
     }
 
     @Test
     public final void mapStringToListOfString() {
-        assertMapStringToListOfString(new DefiniteType<Map<String, List<String>>>() {
+        assertMapStringToListOfString(new DefType<Map<String, List<String>>>() {
         });
     }
 
     @Test
     public final void memberType() throws NoSuchFieldException {
-        final DefiniteType<Container<String, String, List<String>>> containerType =
-                new DefiniteType<Container<String, String, List<String>>>() {
+        final DefType<Container<String, String, List<String>>> containerType =
+                new DefType<Container<String, String, List<String>>>() {
                 };
-        final DefiniteType<?> listType = containerType.getMemberType(
+        final DefType<?> listType = containerType.getMemberType(
                 Container.class.getField("listContent").getGenericType());
-        final DefiniteType<?> mapType = containerType.getMemberType(
+        final DefType<?> mapType = containerType.getMemberType(
                 Container.class.getField("mapContent").getGenericType());
         assertStringListType(listType);
         assertMapStringToListOfString(mapType);
     }
 
-    private static void assertMapStringToListOfString(final DefiniteType<?> mapType) {
+    private static void assertMapStringToListOfString(final DefType<?> mapType) {
         assertSame(Map.class, mapType.getUnderlyingClass());
 
-        final List<DefiniteType<?>> parameters = mapType.getActualParameters();
+        final List<DefType<?>> parameters = mapType.getActualParameters();
         assertEquals(2, parameters.size());
         assertStringType(parameters.get(0));
         assertStringListType(parameters.get(1));
     }
 
-    private static void assertRawList(final DefiniteType<?> rawListType) {
+    private static void assertRawList(final DefType<?> rawListType) {
         assertSame(List.class, rawListType.getUnderlyingClass());
 
-        final List<DefiniteType<?>> parameters = rawListType.getActualParameters();
+        final List<DefType<?>> parameters = rawListType.getActualParameters();
         assertEquals(0, parameters.size());
     }
 
-    public static void assertStringListType(final DefiniteType<?> stringListType) {
+    public static void assertStringListType(final DefType<?> stringListType) {
         assertSame(List.class, stringListType.getUnderlyingClass());
 
-        final List<DefiniteType<?>> parameters = stringListType.getActualParameters();
+        final List<DefType<?>> parameters = stringListType.getActualParameters();
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
-        assertEquals(stringListType, new DefiniteType<List<String>>() {
+        assertEquals(stringListType, new DefType<List<String>>() {
         });
     }
 
-    private static void assertStringType(final DefiniteType<?> stringType) {
+    private static void assertStringType(final DefType<?> stringType) {
         assertSame(String.class, stringType.getUnderlyingClass());
         assertEquals(0, stringType.getActualParameters().size());
-        assertEquals(stringType, new DefiniteType<String>() {
+        assertEquals(stringType, new DefType<String>() {
         });
     }
 
     @SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods", "EmptyClass"})
-    private static final class StringType extends DefiniteType<String> {
+    private static final class StringType extends DefType<String> {
     }
 
     public static class Container<E, K, V> {

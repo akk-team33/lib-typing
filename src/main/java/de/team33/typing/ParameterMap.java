@@ -5,14 +5,14 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
-class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
+class ParameterMap extends AbstractMap<String, DefType<?>> {
 
     static final ParameterMap EMPTY = new ParameterMap();
 
     private final List<String> formal;
-    private final List<DefiniteType<?>> actual;
+    private final List<DefType<?>> actual;
 
-    ParameterMap(final List<String> formal, final List<DefiniteType<?>> actual) {
+    ParameterMap(final List<String> formal, final List<DefType<?>> actual) {
         if (formal.size() == actual.size()) {
             this.formal = unmodifiableList(new ArrayList<>(formal));
             this.actual = unmodifiableList(new ArrayList<>(actual));
@@ -32,20 +32,20 @@ class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
         return formal;
     }
 
-    final List<DefiniteType<?>> getActual() {
+    final List<DefType<?>> getActual() {
         // noinspection AssignmentOrReturnOfFieldWithMutableType
         return actual;
     }
 
     @Override
-    public final Set<Entry<String, DefiniteType<?>>> entrySet() {
+    public final Set<Entry<String, DefType<?>>> entrySet() {
         return new EntrySet();
     }
 
-    private class EntrySet extends AbstractSet<Entry<String, DefiniteType<?>>> {
+    private class EntrySet extends AbstractSet<Entry<String, DefType<?>>> {
 
         @Override
-        public final Iterator<Entry<String, DefiniteType<?>>> iterator() {
+        public final Iterator<Entry<String, DefType<?>>> iterator() {
             return new EntryIterator();
         }
 
@@ -55,7 +55,7 @@ class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
         }
     }
 
-    private class EntryIterator implements Iterator<Entry<String, DefiniteType<?>>> {
+    private class EntryIterator implements Iterator<Entry<String, DefType<?>>> {
 
         private int index = 0;
 
@@ -65,9 +65,9 @@ class ParameterMap extends AbstractMap<String, DefiniteType<?>> {
         }
 
         @Override
-        public final Entry<String, DefiniteType<?>> next() {
+        public final Entry<String, DefType<?>> next() {
             try {
-                final Entry<String, DefiniteType<?>> result = new SimpleImmutableEntry<>(
+                final Entry<String, DefType<?>> result = new SimpleImmutableEntry<>(
                         formal.get(index),
                         actual.get(index)
                 );
