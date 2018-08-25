@@ -1,4 +1,4 @@
-package de.team33.typing;
+package de.team33.typing.v1;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
