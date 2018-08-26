@@ -1,5 +1,7 @@
 package de.team33.typing.v1;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -12,6 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -69,6 +72,20 @@ public abstract class DefType<T> {
     public static <T> DefType<T> of(final Class<T> simpleClass) {
         return new DefType<T>(new ClassStage(simpleClass)) {
         };
+    }
+
+    private static Stage stage(final Type type, final ParameterMap parameters) {
+        return Stream.of(TypeType.values())
+                .filter(typeType -> typeType.matching.test(type)).findAny()
+                .map(typeType -> typeType.mapping.apply(type, parameters))
+                .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type.getClass()));
+    }
+
+    private static ParameterMap newArrayParameterMap(final DefType<?> componentType) {
+        return new ParameterMap(
+                singletonList("E"),
+                singletonList(componentType)
+        );
     }
 
     /**
@@ -151,18 +168,16 @@ public abstract class DefType<T> {
         });
     }
 
-    private static Stage stage(final Type type, final ParameterMap parameters) {
-        return Stream.of(TypeType.values())
-                .filter(typeType -> typeType.matching.test(type)).findAny()
-                .map(typeType -> typeType.mapping.apply(type, parameters))
-                .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type.getClass()));
-    }
-
     private enum TypeType {
 
         CLASS(
                 type -> type instanceof Class<?>,
                 (type, map) -> new ClassStage((Class<?>) type)),
+
+        GENERIC_ARRAY(
+                type -> type instanceof GenericArrayType,
+                ((type, map) -> new ArrayStage((GenericArrayType) type, map))
+        ),
 
         PARAMETERIZED_TYPE(
                 type -> type instanceof ParameterizedType,
@@ -184,9 +199,13 @@ public abstract class DefType<T> {
     private static final class ClassStage extends Stage {
 
         private final Class<?> underlyingClass;
+        private final ParameterMap parameters;
 
         private ClassStage(final Class<?> underlyingClass) {
             this.underlyingClass = underlyingClass;
+            this.parameters = underlyingClass.isArray()
+                    ? newArrayParameterMap(of(underlyingClass.getComponentType()))
+                    : ParameterMap.EMPTY;
         }
 
         @Override
@@ -194,21 +213,51 @@ public abstract class DefType<T> {
             return underlyingClass;
         }
 
+        @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
         @Override
         final ParameterMap getParameters() {
-            // noinspection AssignmentOrReturnOfFieldWithMutableType
-            return ParameterMap.EMPTY;
+            return parameters;
+        }
+    }
+
+    private static final class ArrayStage extends Stage {
+
+        private final DefType<?> componentType;
+
+        @SuppressWarnings("AnonymousInnerClassMayBeStatic")
+        private ArrayStage(final GenericArrayType type, final ParameterMap context) {
+            this.componentType = new DefType(stage(type.getGenericComponentType(), context)) {
+            };
+        }
+
+        private static Class<?> arrayClass(final Class<?> componentClass) {
+            return Array.newInstance(componentClass, 0).getClass();
+        }
+
+        @Override
+        final Class<?> getUnderlyingClass() {
+            return arrayClass(componentType.getUnderlyingClass());
+        }
+
+        @Override
+        final ParameterMap getParameters() {
+            return newArrayParameterMap(componentType);
         }
     }
 
     private static final class ParameterizedStage extends Stage {
 
         private final ParameterizedType type;
-        private final ParameterMap parameters;
+        private final ParameterMap context;
 
-        private ParameterizedStage(final ParameterizedType type, final ParameterMap parameters) {
+        private ParameterizedStage(final ParameterizedType type, final ParameterMap context) {
             this.type = type;
-            this.parameters = parameters;
+            this.context = context;
+        }
+
+        private static DefType<?> newGeneric(final Stage stage) {
+            return new DefType(stage) {
+            };
         }
 
         @Override
@@ -222,15 +271,10 @@ public abstract class DefType<T> {
                     .map(TypeVariable::getName)
                     .collect(Collectors.toList());
             final List<DefType<?>> actual = Stream.of(type.getActualTypeArguments())
-                    .map(type1 -> stage(type1, parameters))
+                    .map(type1 -> stage(type1, context))
                     .map(ParameterizedStage::newGeneric)
                     .collect(Collectors.toList());
             return new ParameterMap(formal, actual);
-        }
-
-        private static DefType<?> newGeneric(final Stage stage) {
-            return new DefType(stage) {
-            };
         }
     }
 
@@ -238,11 +282,11 @@ public abstract class DefType<T> {
 
         private final DefType<?> definite;
 
-        private TypeVariableStage(final TypeVariable<?> type, final ParameterMap parameters) {
+        private TypeVariableStage(final TypeVariable<?> type, final ParameterMap context) {
             final String name = type.getName();
-            this.definite = Optional.ofNullable(parameters.get(name))
+            this.definite = Optional.ofNullable(context.get(name))
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Variable <%s> not found in parameters %s", name, parameters)));
+                            String.format("Variable <%s> not found in parameters %s", name, context)));
         }
 
         @Override
