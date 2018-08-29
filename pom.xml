@@ -3,8 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.team33</groupId>
     <artifactId>lib-typing</artifactId>
-    <version>8.1.1-SNAPSHOT</version>
-    <!--version>8.0.1</version-->
+    <version>8.1.1</version>
     <name>Team33 Typing Library</name>
     <description>Team33 typing library</description>
     <dependencies>
@@ -31,7 +30,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <!--version>3.5.1</version-->
                 <configuration>
                     <source>${t33.java.version}</source>
                     <target>${t33.java.version}</target>
@@ -40,7 +39,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.0</version>
+                <!--version>3.0.0</version-->
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -54,11 +53,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <!--version>2.10.4</version-->
                 <configuration>
                     <show>protected</show>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <!--additionalparam>-Xdoclint:none</additionalparam-->
                 </configuration>
                 <executions>
                     <execution>
@@ -66,19 +65,6 @@
                         <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <executions>
-                    <execution>
-                        <id>test-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>test-jar</goal>
                         </goals>
                     </execution>
                 </executions>
