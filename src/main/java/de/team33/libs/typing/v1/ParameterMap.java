@@ -1,4 +1,4 @@
-package de.team33.typing.v1;
+package de.team33.libs.typing.v1;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;

@@ -1,4 +1,4 @@
-package de.team33.typing.v1;
+package de.team33.libs.typing.v1;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
