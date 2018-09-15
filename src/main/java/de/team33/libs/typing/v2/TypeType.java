@@ -13,7 +13,7 @@ enum TypeType {
 
     CLASS(
             type -> type instanceof Class<?>,
-            (type, map) -> PlainDesc.of((Class<?>) type)),
+            (type, map) -> ClassType.toDesc((Class<?>) type)),
 
     GENERIC_ARRAY(
             type -> type instanceof GenericArrayType,

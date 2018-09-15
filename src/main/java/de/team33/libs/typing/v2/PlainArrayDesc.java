@@ -1,7 +1,8 @@
 package de.team33.libs.typing.v2;
 
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 class PlainArrayDesc extends ArrayDesc {
 
@@ -10,7 +11,7 @@ class PlainArrayDesc extends ArrayDesc {
 
     PlainArrayDesc(final Class<?> underlyingClass) {
         this.underlyingClass = underlyingClass;
-        this.actualParameters = Collections.singletonList(PlainDesc.of(underlyingClass.getComponentType()));
+        this.actualParameters = singletonList(ClassType.toDesc(underlyingClass.getComponentType()));
     }
 
     @Override

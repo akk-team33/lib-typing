@@ -42,7 +42,7 @@ public abstract class DefType<T> extends TypeDesc {
     }
 
     private DefType(final Class<T> simpleClass) {
-        this.backing = PlainDesc.of(simpleClass);
+        this.backing = ClassType.toDesc(simpleClass);
     }
 
     /**
