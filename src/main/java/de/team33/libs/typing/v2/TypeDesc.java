@@ -1,6 +1,7 @@
 package de.team33.libs.typing.v2;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -8,28 +9,7 @@ import java.util.Objects;
 import static java.util.stream.Collectors.joining;
 
 /**
- * <p>
  * Represents a type description, possibly based on a generic class.
- * </p><p>
- * For example, an instance of {@code TypeDesc<Map<String, List<String>>>}
- * represents the type {@code Map<String, List<String>>}.
- * </p><p>
- * To get an instance of (any) TypeDesc, you first need to create a fully defined derivative of TypeDesc.
- * Only this can be instantiated.
- * The easiest way to achieve this is to use an anonymous derivation with simultaneous instantiation. Example:
- * </p><pre>
- * final TypeDesc&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
- *         = new TypeDesc&lt;Map&lt;String, List&lt;String&gt;&gt;&gt;() { };
- * </pre><p>
- * If a simple class object already fully defines the type in question,
- * there is a convenience method to obtain an instance of TypeDesc. Example:
- * </p><pre>
- * final TypeDesc&lt;String&gt; stringType
- *         = TypeDesc.of(String.class);
- * </pre><p>
- * <b>Note</b>: This class is defined as an abstract class, but does not define an abstract method
- * to enforce that a derivative is required for an instantiation.
- * </p>
  */
 @SuppressWarnings("AbstractMethodWithMissingImplementations")
 public abstract class TypeDesc {
@@ -45,7 +25,18 @@ public abstract class TypeDesc {
      * @see #getFormalParameters()
      * @see #getActualParameters()
      */
-    public abstract Map<String, TypeDesc> getParameters();
+    public final Map<String, TypeDesc> getParameters() {
+        return newMap(getFormalParameters(), getActualParameters());
+    }
+
+    private static Map<String, TypeDesc> newMap(final List<String> formal, final List<TypeDesc> actual) {
+        final int size = formal.size();
+        final Map<String, TypeDesc> result = new HashMap<>(size);
+        for (int index = 0; index < size; ++index) {
+            result.put(formal.get(index), actual.get(index));
+        }
+        return result;
+    }
 
     /**
      * Returns the formal type parameter of the generic type underlying this type description.
@@ -67,18 +58,20 @@ public abstract class TypeDesc {
      * Converts a (possibly) generic {@link Type} that exists in the context of this type description into a TypeDesc.
      * For example, the type of a field or the type of a parameter or result of a method of this type.
      */
-    public abstract TypeDesc getMemberType(final Type type);
+    public final TypeDesc getMemberType(final Type type) {
+        return TypeType.toDesc(type, getParameters());
+    }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(getUnderlyingClass(), getParameters());
+        return Objects.hash(getUnderlyingClass(), getActualParameters());
     }
 
     /**
      * {@inheritDoc}
      * <p>
      * Two instances of TypeDesc are equal if they are {@linkplain #getUnderlyingClass() based} on the same class
-     * and defined by the same {@linkplain #getParameters() parameters}.
+     * and defined by the same {@linkplain #getActualParameters() parameters}.
      * </p>
      */
     @Override
@@ -87,7 +80,8 @@ public abstract class TypeDesc {
     }
 
     private boolean isEqual(final TypeDesc other) {
-        return getUnderlyingClass().equals(other.getUnderlyingClass()) && getParameters().equals(other.getParameters());
+        return getUnderlyingClass().equals(other.getUnderlyingClass())
+                && getActualParameters().equals(other.getActualParameters());
     }
 
     @Override
