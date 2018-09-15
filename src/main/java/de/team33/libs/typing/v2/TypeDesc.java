@@ -9,7 +9,11 @@ import java.util.Objects;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Represents a type description, possibly based on a generic class.
+ * Represents a type description, possibly based on a generic class, mainly consisting of ...
+ * <ul>
+ *     <li>... its underlying Class ({@link #getUnderlyingClass()})</li>
+ *     <li>... its actual type parameters ({@link #getActualParameters()})</li>
+ * </ul>
  */
 @SuppressWarnings("AbstractMethodWithMissingImplementations")
 public abstract class TypeDesc {
