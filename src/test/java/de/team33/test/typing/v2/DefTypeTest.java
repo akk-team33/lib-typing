@@ -63,6 +63,22 @@ public class DefTypeTest {
     }
 
     @Test
+    public final void testIntArrayToString() {
+        assertEquals("", DefType.of(int[].class).toString());
+    }
+
+    @Test
+    public final void testStringArrayToString() {
+        assertEquals("", DefType.of(String[].class).toString());
+    }
+
+    @Test
+    public final void testListArrayToString() {
+        assertEquals("", new DefType<List<String>[]>() {
+        }.toString());
+    }
+
+    @Test
     public final void testEquals() {
         assertEquals(genericType, new DefType<Generic<String, List<String>, Map<String, List<String>>>>() {
         });
