@@ -6,7 +6,8 @@ import java.util.List;
 
 /**
  * <p>
- * Represents a fully defined type, possibly based on a generic class.
+ * Represents a type definition: a fully defined {@linkplain TypeDesc type description},
+ * possibly based on a generic class.
  * </p><p>
  * For example, an instance of {@code DefType<Map<String, List<String>>>}
  * represents the type {@code Map<String, List<String>>}.
@@ -18,14 +19,14 @@ import java.util.List;
  * final DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
  *         = new DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt;() { };
  * </pre><p>
- * If a simple class object already fully defines the type in question,
- * there is a convenience method to obtain an instance of DefType. Example:
+ * If a simple class object already fully defines the type in question, there is a convenience method to obtain an
+ * instance of DefType. Example:
  * </p><pre>
  * final DefType&lt;String&gt; stringType
  *         = DefType.of(String.class);
  * </pre><p>
- * <b>Note</b>: This class is defined as an abstract class, but does not define an abstract method
- * to enforce that a derivative is required for an instantiation.
+ * <b>Note</b>: This class is defined as an abstract class (without abstract methods) to force a derivative for an
+ * instantiation.
  * </p>
  */
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
@@ -34,7 +35,7 @@ public abstract class DefType<T> extends TypeDesc {
     private final TypeDesc backing;
 
     /**
-     * Initializes a {@link DefType} based on its own full definition
+     * Initializes a derivative of a type definition based on its own full definition
      */
     protected DefType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
@@ -46,7 +47,9 @@ public abstract class DefType<T> extends TypeDesc {
     }
 
     /**
-     * Returns a {@link DefType} based on a simple, fully defined {@link Class}.
+     * A simple type definition based on a simple, fully defined {@link Class}.
+     *
+     * @param simpleClass the intended underlying {@link Class}.
      */
     @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static <T> DefType<T> of(final Class<T> simpleClass) {
