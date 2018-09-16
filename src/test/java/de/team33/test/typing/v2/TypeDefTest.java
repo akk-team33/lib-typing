@@ -1,6 +1,6 @@
 package de.team33.test.typing.v2;
 
-import de.team33.libs.typing.v2.DefType;
+import de.team33.libs.typing.v2.TypeDef;
 import de.team33.libs.typing.v2.TypeDesc;
 import de.team33.test.typing.shared.Generic;
 import org.junit.Test;
@@ -13,10 +13,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 @SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
-public class DefTypeTest {
+public class TypeDefTest {
 
-    private final DefType<Generic<String, List<String>, Map<String, List<String>>>> genericType =
-            new DefType<Generic<String, List<String>, Map<String, List<String>>>>() {
+    private final TypeDef<Generic<String, List<String>, Map<String, List<String>>>> genericType =
+            new TypeDef<Generic<String, List<String>, Map<String, List<String>>>>() {
             };
 
     @Test
@@ -64,24 +64,24 @@ public class DefTypeTest {
 
     @Test
     public final void testIntToString() {
-        assertEquals("int", DefType.of(Integer.TYPE).toString());
+        assertEquals("int", TypeDef.of(Integer.TYPE).toString());
     }
 
     @Test
     public final void testStringToString() {
-        assertEquals("String", DefType.of(String.class).toString());
+        assertEquals("String", TypeDef.of(String.class).toString());
     }
 
     @Test
     public final void testListToString() {
-        assertEquals("List<String>", new DefType<List<String>>() {
+        assertEquals("List<String>", new TypeDef<List<String>>() {
         }.toString());
     }
 
     @SuppressWarnings("rawtypes")
     @Test
     public final void testRawListToString() {
-        final DefType<Generic> listType = new DefType<Generic>() {
+        final TypeDef<Generic> listType = new TypeDef<Generic>() {
         };
         assertEquals("Generic", listType.toString());
         assertEquals(0, listType.getParameters().size());
@@ -96,23 +96,23 @@ public class DefTypeTest {
 
     @Test
     public final void testIntArrayToString() {
-        assertEquals("int[]", DefType.of(int[].class).toString());
+        assertEquals("int[]", TypeDef.of(int[].class).toString());
     }
 
     @Test
     public final void testStringArrayToString() {
-        assertEquals("String[]", DefType.of(String[].class).toString());
+        assertEquals("String[]", TypeDef.of(String[].class).toString());
     }
 
     @Test
     public final void testListArrayToString() {
-        assertEquals("List<String[]>[][]", new DefType<List<String[]>[][]>() {
+        assertEquals("List<String[]>[][]", new TypeDef<List<String[]>[][]>() {
         }.toString());
     }
 
     @Test
     public final void testEquals() {
-        assertEquals(genericType, new DefType<Generic<String, List<String>, Map<String, List<String>>>>() {
+        assertEquals(genericType, new TypeDef<Generic<String, List<String>, Map<String, List<String>>>>() {
         });
     }
 
@@ -120,7 +120,7 @@ public class DefTypeTest {
     public final void testHashcode() {
         assertEquals(
                 genericType.hashCode(),
-                new DefType<Generic<String, List<String>, Map<String, List<String>>>>() {
+                new TypeDef<Generic<String, List<String>, Map<String, List<String>>>>() {
                 }.hashCode()
         );
     }
@@ -128,22 +128,22 @@ public class DefTypeTest {
     private static void assertIntType(final TypeDesc intType) {
         assertSame(Integer.TYPE, intType.getUnderlyingClass());
         assertEquals(0, intType.getActualParameters().size());
-        assertEquals(intType, DefType.of(Integer.TYPE));
+        assertEquals(intType, TypeDef.of(Integer.TYPE));
     }
 
     private static void assertIntArrayType(final TypeDesc intArrayType) {
-        assertArrayType(intArrayType, int[].class, DefTypeTest::assertIntType);
+        assertArrayType(intArrayType, int[].class, TypeDefTest::assertIntType);
     }
 
     private static void assertStringType(final TypeDesc stringType) {
         assertSame(String.class, stringType.getUnderlyingClass());
         assertEquals(0, stringType.getActualParameters().size());
-        assertEquals(stringType, new DefType<String>() {
+        assertEquals(stringType, new TypeDef<String>() {
         });
     }
 
     private static void assertStringArrayType(final TypeDesc stringArrayType) {
-        assertArrayType(stringArrayType, String[].class, DefTypeTest::assertStringType);
+        assertArrayType(stringArrayType, String[].class, TypeDefTest::assertStringType);
     }
 
     public static void assertStringListType(final TypeDesc stringListType) {
@@ -153,12 +153,12 @@ public class DefTypeTest {
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
-        assertEquals(stringListType, new DefType<List<String>>() {
+        assertEquals(stringListType, new TypeDef<List<String>>() {
         });
     }
 
     public static void assertStringListArrayType(final TypeDesc stringListArrayType) {
-        assertArrayType(stringListArrayType, List[].class, DefTypeTest::assertStringListType);
+        assertArrayType(stringListArrayType, List[].class, TypeDefTest::assertStringListType);
     }
 
     private static void assertMapStringToListOfString(final TypeDesc mapType) {
@@ -171,7 +171,7 @@ public class DefTypeTest {
     }
 
     private static void assertMapStringToListArrayType(final TypeDesc mapArrayType) {
-        assertArrayType(mapArrayType, Map[].class, DefTypeTest::assertMapStringToListOfString);
+        assertArrayType(mapArrayType, Map[].class, TypeDefTest::assertMapStringToListOfString);
     }
 
     private static void assertArrayType(final TypeDesc arrayType,
