@@ -68,4 +68,9 @@ public abstract class DefType<T> extends TypeDesc {
     public final List<TypeDesc> getActualParameters() {
         return backing.getActualParameters();
     }
+
+    @Override
+    public final String toString() {
+        return backing.toString();
+    }
 }

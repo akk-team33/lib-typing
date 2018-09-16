@@ -4,7 +4,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-class ClassDesc extends TypeDesc {
+class ClassDesc extends SingleDesc {
 
     private final Class<?> underlyingClass;
 
@@ -15,11 +15,6 @@ class ClassDesc extends TypeDesc {
     @Override
     public final Class<?> getUnderlyingClass() {
         return underlyingClass;
-    }
-
-    @Override
-    public final List<String> getFormalParameters() {
-        return emptyList();
     }
 
     @Override

@@ -43,38 +43,70 @@ public class DefTypeTest {
 
     @Test
     public final void getMemberType() throws NoSuchFieldException {
-        assertIntType(genericType.getMemberType(Generic.class.getField("intField").getGenericType()));
-        assertIntArrayType(genericType.getMemberType(Generic.class.getField("intArray").getGenericType()));
+        assertIntType(genericType.toTypeDesc(Generic.class.getField("intField").getGenericType()));
+        assertIntArrayType(genericType.toTypeDesc(Generic.class.getField("intArray").getGenericType()));
 
-        assertStringType(genericType.getMemberType(Generic.class.getField("stringField").getGenericType()));
-        assertStringArrayType(genericType.getMemberType(Generic.class.getField("stringArray").getGenericType()));
+        assertStringType(genericType.toTypeDesc(Generic.class.getField("stringField").getGenericType()));
+        assertStringArrayType(genericType.toTypeDesc(Generic.class.getField("stringArray").getGenericType()));
 
-        assertStringType(genericType.getMemberType(Generic.class.getField("tField").getGenericType()));
-        assertStringArrayType(genericType.getMemberType(Generic.class.getField("tArray").getGenericType()));
+        assertStringType(genericType.toTypeDesc(Generic.class.getField("tField").getGenericType()));
+        assertStringArrayType(genericType.toTypeDesc(Generic.class.getField("tArray").getGenericType()));
 
-        assertStringListType(genericType.getMemberType(Generic.class.getField("uField").getGenericType()));
-        assertStringListArrayType(genericType.getMemberType(Generic.class.getField("uArray").getGenericType()));
+        assertStringListType(genericType.toTypeDesc(Generic.class.getField("uField").getGenericType()));
+        assertStringListArrayType(genericType.toTypeDesc(Generic.class.getField("uArray").getGenericType()));
 
-        assertMapStringToListOfString(genericType.getMemberType(Generic.class.getField("vField").getGenericType()));
-        assertMapStringToListArrayType(genericType.getMemberType(Generic.class.getField("vArray").getGenericType()));
+        assertMapStringToListOfString(genericType.toTypeDesc(Generic.class.getField("vField").getGenericType()));
+        assertMapStringToListArrayType(genericType.toTypeDesc(Generic.class.getField("vArray").getGenericType()));
 
-        assertStringListType(genericType.getMemberType(Generic.class.getField("tList").getGenericType()));
-        assertMapStringToListOfString(genericType.getMemberType(Generic.class.getField("t2uMap").getGenericType()));
+        assertStringListType(genericType.toTypeDesc(Generic.class.getField("tList").getGenericType()));
+        assertMapStringToListOfString(genericType.toTypeDesc(Generic.class.getField("t2uMap").getGenericType()));
+    }
+
+    @Test
+    public final void testIntToString() {
+        assertEquals("int", DefType.of(Integer.TYPE).toString());
+    }
+
+    @Test
+    public final void testStringToString() {
+        assertEquals("String", DefType.of(String.class).toString());
+    }
+
+    @Test
+    public final void testListToString() {
+        assertEquals("List<String>", new DefType<List<String>>() {
+        }.toString());
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Test
+    public final void testRawListToString() {
+        final DefType<Generic> listType = new DefType<Generic>() {
+        };
+        assertEquals("Generic", listType.toString());
+        assertEquals(0, listType.getParameters().size());
+        assertEquals(3, listType.getFormalParameters().size());
+        assertEquals(0, listType.getActualParameters().size());
+    }
+
+    @Test
+    public final void testGenericTypeToString() {
+        assertEquals("Generic<String, List<String>, Map<String, List<String>>>", genericType.toString());
     }
 
     @Test
     public final void testIntArrayToString() {
-        assertEquals("", DefType.of(int[].class).toString());
+        assertEquals("int[]", DefType.of(int[].class).toString());
     }
 
     @Test
     public final void testStringArrayToString() {
-        assertEquals("", DefType.of(String[].class).toString());
+        assertEquals("String[]", DefType.of(String[].class).toString());
     }
 
     @Test
     public final void testListArrayToString() {
-        assertEquals("", new DefType<List<String>[]>() {
+        assertEquals("List<String[]>[][]", new DefType<List<String[]>[][]>() {
         }.toString());
     }
 

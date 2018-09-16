@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-class TypeVariableDesc extends TypeDesc {
+class TypeVariableDesc extends SingleDesc {
 
     private final TypeDesc definite;
 
@@ -19,11 +19,6 @@ class TypeVariableDesc extends TypeDesc {
     @Override
     public final Class<?> getUnderlyingClass() {
         return definite.getUnderlyingClass();
-    }
-
-    @Override
-    public final List<String> getFormalParameters() {
-        return definite.getFormalParameters();
     }
 
     @Override
