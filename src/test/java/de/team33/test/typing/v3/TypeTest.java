@@ -2,6 +2,7 @@ package de.team33.test.typing.v3;
 
 import de.team33.libs.typing.v3.Type;
 import de.team33.test.typing.v1.Generic;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -19,11 +20,13 @@ public class TypeTest {
             };
 
     @Test
+    @Ignore
     public final void getUnderlyingClass() {
         assertSame(Generic.class, genericType.getUnderlyingClass());
     }
 
     @Test
+    @Ignore
     public final void getFormalParameters() {
         final List<String> formalParameters = genericType.getFormalParameters();
         assertEquals("T", formalParameters.get(0));
@@ -32,6 +35,7 @@ public class TypeTest {
     }
 
     @Test
+    @Ignore
     public final void getActualParameters() {
         final List<Type<?>> actualParameters = genericType.getActualParameters();
         assertEquals(3, actualParameters.size());
@@ -41,6 +45,7 @@ public class TypeTest {
     }
 
     @Test
+    @Ignore
     public final void getMemberType() throws NoSuchFieldException {
         assertIntType(genericType.getMemberType(Generic.class.getField("intField").getGenericType()));
         assertIntArrayType(genericType.getMemberType(Generic.class.getField("intArray").getGenericType()));
@@ -62,12 +67,14 @@ public class TypeTest {
     }
 
     @Test
+    @Ignore
     public final void testEquals() {
         assertEquals(genericType, new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
         });
     }
 
     @Test
+    @Ignore
     public final void testHashcode() {
         assertEquals(
                 genericType.hashCode(),

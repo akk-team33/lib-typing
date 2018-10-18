@@ -1,20 +1,12 @@
 package de.team33.libs.typing.v1;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -56,12 +48,12 @@ public abstract class DefType<T> {
      */
     protected DefType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        final Stage stage = stage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
+        final Stage stage = TypeVariant.stage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
         underlyingClass = stage.getUnderlyingClass();
         parameters = stage.getParameters();
     }
 
-    private DefType(final Stage stage) {
+    DefType(final Stage stage) {
         underlyingClass = stage.getUnderlyingClass();
         parameters = stage.getParameters();
     }
@@ -72,20 +64,6 @@ public abstract class DefType<T> {
     public static <T> DefType<T> of(final Class<T> simpleClass) {
         return new DefType<T>(new ClassStage(simpleClass)) {
         };
-    }
-
-    private static Stage stage(final Type type, final ParameterMap parameters) {
-        return Stream.of(TypeType.values())
-                .filter(typeType -> typeType.matching.test(type)).findAny()
-                .map(typeType -> typeType.mapping.apply(type, parameters))
-                .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type.getClass()));
-    }
-
-    private static ParameterMap newArrayParameterMap(final DefType<?> componentType) {
-        return new ParameterMap(
-                singletonList("E"),
-                singletonList(componentType)
-        );
     }
 
     /**
@@ -131,7 +109,7 @@ public abstract class DefType<T> {
      * For example, the type of a field or the type of a parameter or result of a method of this type.
      */
     public final DefType<?> getMemberType(final Type type) {
-        return new DefType(stage(type, parameters)) {
+        return new DefType(TypeVariant.stage(type, parameters)) {
         };
     }
 
@@ -168,136 +146,4 @@ public abstract class DefType<T> {
         });
     }
 
-    private enum TypeType {
-
-        CLASS(
-                type -> type instanceof Class<?>,
-                (type, map) -> new ClassStage((Class<?>) type)),
-
-        GENERIC_ARRAY(
-                type -> type instanceof GenericArrayType,
-                ((type, map) -> new ArrayStage((GenericArrayType) type, map))
-        ),
-
-        PARAMETERIZED_TYPE(
-                type -> type instanceof ParameterizedType,
-                (type, map) -> new ParameterizedStage((ParameterizedType) type, map)),
-
-        TYPE_VARIABLE(
-                type -> type instanceof TypeVariable,
-                (type, map) -> new TypeVariableStage((TypeVariable<?>) type, map));
-
-        private final Predicate<Type> matching;
-        private final BiFunction<Type, ParameterMap, Stage> mapping;
-
-        TypeType(final Predicate<Type> matching, final BiFunction<Type, ParameterMap, Stage> mapping) {
-            this.matching = matching;
-            this.mapping = mapping;
-        }
-    }
-
-    private static final class ClassStage extends Stage {
-
-        private final Class<?> underlyingClass;
-        private final ParameterMap parameters;
-
-        private ClassStage(final Class<?> underlyingClass) {
-            this.underlyingClass = underlyingClass;
-            this.parameters = underlyingClass.isArray()
-                    ? newArrayParameterMap(of(underlyingClass.getComponentType()))
-                    : ParameterMap.EMPTY;
-        }
-
-        @Override
-        final Class<?> getUnderlyingClass() {
-            return underlyingClass;
-        }
-
-        @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
-        @Override
-        final ParameterMap getParameters() {
-            return parameters;
-        }
-    }
-
-    private static final class ArrayStage extends Stage {
-
-        private final DefType<?> componentType;
-
-        @SuppressWarnings("AnonymousInnerClassMayBeStatic")
-        private ArrayStage(final GenericArrayType type, final ParameterMap context) {
-            this.componentType = new DefType(stage(type.getGenericComponentType(), context)) {
-            };
-        }
-
-        private static Class<?> arrayClass(final Class<?> componentClass) {
-            return Array.newInstance(componentClass, 0).getClass();
-        }
-
-        @Override
-        final Class<?> getUnderlyingClass() {
-            return arrayClass(componentType.getUnderlyingClass());
-        }
-
-        @Override
-        final ParameterMap getParameters() {
-            return newArrayParameterMap(componentType);
-        }
-    }
-
-    private static final class ParameterizedStage extends Stage {
-
-        private final ParameterizedType type;
-        private final ParameterMap context;
-
-        private ParameterizedStage(final ParameterizedType type, final ParameterMap context) {
-            this.type = type;
-            this.context = context;
-        }
-
-        private static DefType<?> newGeneric(final Stage stage) {
-            return new DefType(stage) {
-            };
-        }
-
-        @Override
-        final Class<?> getUnderlyingClass() {
-            return (Class<?>) type.getRawType();
-        }
-
-        @Override
-        final ParameterMap getParameters() {
-            final List<String> formal = Stream.of(((Class<?>) type.getRawType()).getTypeParameters())
-                    .map(TypeVariable::getName)
-                    .collect(Collectors.toList());
-            final List<DefType<?>> actual = Stream.of(type.getActualTypeArguments())
-                    .map(type1 -> stage(type1, context))
-                    .map(ParameterizedStage::newGeneric)
-                    .collect(Collectors.toList());
-            return new ParameterMap(formal, actual);
-        }
-    }
-
-    private static final class TypeVariableStage extends Stage {
-
-        private final DefType<?> definite;
-
-        private TypeVariableStage(final TypeVariable<?> type, final ParameterMap context) {
-            final String name = type.getName();
-            this.definite = Optional.ofNullable(context.get(name))
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Variable <%s> not found in parameters %s", name, context)));
-        }
-
-        @Override
-        final Class<?> getUnderlyingClass() {
-            return definite.getUnderlyingClass();
-        }
-
-        @Override
-        final ParameterMap getParameters() {
-            // noinspection AssignmentOrReturnOfFieldWithMutableType
-            return definite.parameters;
-        }
-    }
 }
