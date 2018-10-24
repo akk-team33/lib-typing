@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
-@SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic"})
+@SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic", "ClassWithTooManyMethods"})
 public class DefTypeTest {
 
     private final DefType<Generic<String, List<String>, Map<String, List<String>>>> genericType =
@@ -58,6 +58,53 @@ public class DefTypeTest {
 
         assertStringListType(genericType.getMemberType(Generic.class.getField("tList").getGenericType()));
         assertMapStringToListOfString(genericType.getMemberType(Generic.class.getField("t2uMap").getGenericType()));
+    }
+
+    @Test
+    public final void testIntToString() {
+        assertEquals("int", DefType.of(Integer.TYPE).toString());
+    }
+
+    @Test
+    public final void testStringToString() {
+        assertEquals("String", DefType.of(String.class).toString());
+    }
+
+    @Test
+    public final void testListToString() {
+        assertEquals("List<String>", new DefType<List<String>>() {
+        }.toString());
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Test
+    public final void testRawListToString() {
+        final DefType<Generic> listType = new DefType<Generic>() {
+        };
+        assertEquals("Generic", listType.toString());
+        assertEquals(3, listType.getFormalParameters().size());
+        assertEquals(0, listType.getActualParameters().size());
+    }
+
+    @Test
+    public final void testGenericTypeToString() {
+        assertEquals("Generic<String, List<String>, Map<String, List<String>>>", genericType.toString());
+    }
+
+    @Test
+    public final void testIntArrayToString() {
+        assertEquals("int[]", DefType.of(int[].class).toString());
+    }
+
+    @Test
+    public final void testStringArrayToString() {
+        assertEquals("String[]", DefType.of(String[].class).toString());
+    }
+
+    @Test
+    public final void testListArrayToString() {
+        assertEquals("List<String[]>[][]", new DefType<List<String[]>[][]>() {
+        }.toString());
     }
 
     @Test
