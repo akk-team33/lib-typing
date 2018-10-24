@@ -10,7 +10,5 @@ abstract class Stage {
 
     abstract List<String> getFormalParameters();
 
-    List<DefType<?>> getActualParameters() {
-        return getParameters().getActual();
-    }
+    abstract List<DefType<?>> getActualParameters();
 }

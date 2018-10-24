@@ -37,4 +37,12 @@ class ParameterizedStage extends SingleStage {
                 .collect(Collectors.toList());
         return new ParameterMap(formal, actual);
     }
+
+    @Override
+    final List<DefType<?>> getActualParameters() {
+        return Stream.of(type.getActualTypeArguments())
+                .map(type1 -> TypeVariant.toStage(type1, context))
+                .map(ParameterizedStage::newGeneric)
+                .collect(Collectors.toList());
+    }
 }

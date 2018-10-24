@@ -2,6 +2,7 @@ package de.team33.libs.typing.v1;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 
@@ -34,5 +35,10 @@ class GenericArrayStage extends ArrayStage {
     @Override
     final ParameterMap getParameters() {
         return newArrayParameterMap(componentType);
+    }
+
+    @Override
+    final List<DefType<?>> getActualParameters() {
+        return singletonList(componentType);
     }
 }

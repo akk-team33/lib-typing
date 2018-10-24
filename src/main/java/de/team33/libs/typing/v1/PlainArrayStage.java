@@ -1,5 +1,8 @@
 package de.team33.libs.typing.v1;
 
+import java.util.Collections;
+import java.util.List;
+
 class PlainArrayStage extends ArrayStage {
 
     private final Class<?> underlyingClass;
@@ -19,5 +22,10 @@ class PlainArrayStage extends ArrayStage {
     @Override
     final ParameterMap getParameters() {
         return parameters;
+    }
+
+    @Override
+    final List<DefType<?>> getActualParameters() {
+        return Collections.singletonList(DefType.of(underlyingClass.getComponentType()));
     }
 }

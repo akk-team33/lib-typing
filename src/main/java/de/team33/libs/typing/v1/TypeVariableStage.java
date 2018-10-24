@@ -1,6 +1,7 @@
 package de.team33.libs.typing.v1;
 
 import java.lang.reflect.TypeVariable;
+import java.util.List;
 import java.util.Optional;
 
 class TypeVariableStage extends SingleStage {
@@ -22,5 +23,10 @@ class TypeVariableStage extends SingleStage {
     @Override
     final ParameterMap getParameters() {
         return new ParameterMap(definite.getFormalParameters(), definite.getActualParameters());
+    }
+
+    @Override
+    final List<DefType<?>> getActualParameters() {
+        return definite.getActualParameters();
     }
 }
