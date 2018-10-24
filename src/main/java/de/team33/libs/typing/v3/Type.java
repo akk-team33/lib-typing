@@ -6,13 +6,12 @@ import java.util.Objects;
 
 /**
  * <p>
- * Represents a fully defined type, possibly based on a generic class.
+ * Represents a complete type description, possibly based on a generic class.
  * </p><p>
  * For example, an instance of {@code Type<Map<String, List<String>>>}
  * represents the type {@code Map<String, List<String>>}.
  * </p><p>
- * To get an instance of (any) Type, you first need to create a fully defined derivative of Type.
- * Only this can be instantiated.
+ * To get an instance of Type, you first need to create a fully defined derivative of Type.
  * The easiest way to achieve this is to use an anonymous derivation with simultaneous instantiation. Example:
  * </p><pre>
  * final Type&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
@@ -24,14 +23,17 @@ import java.util.Objects;
  * final Type&lt;String&gt; stringType
  *         = Type.of(String.class);
  * </pre><p>
- * <b>Note</b>: This class is defined as an abstract class, but does not define an abstract method
+ * <b>Note</b>: This class is defined as an abstract class (without defining an abstract method)
  * to enforce that a derivative is required for an instantiation.
  * </p>
  */
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
 public abstract class Type<T> {
 
+    private static final String TO_STRING = "toString";
+
     private final Stage stage;
+    private final LateBound late = new LateBound();
 
     /**
      * Initializes a {@link Type} based on its own full definition
@@ -92,7 +94,7 @@ public abstract class Type<T> {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(stage.getUnderlyingClass(), stage.getActualParameters());
+        return Objects.hash(getUnderlyingClass(), getActualParameters());
     }
 
     /**
@@ -114,6 +116,6 @@ public abstract class Type<T> {
 
     @Override
     public final String toString() {
-        return stage.toString();
+        return late.get(TO_STRING, stage::toString);
     }
 }
