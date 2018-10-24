@@ -36,11 +36,7 @@ import static java.util.stream.Collectors.joining;
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
 public abstract class DefType<T> {
 
-    @SuppressWarnings("rawtypes")
-    private final Class<?> underlyingClass;
-    @SuppressWarnings("rawtypes")
-    private final ParameterMap parameters;
-
+    private final Stage stage;
     private transient volatile String representation = null;
 
     /**
@@ -48,14 +44,11 @@ public abstract class DefType<T> {
      */
     protected DefType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        final Stage stage = TypeVariant.toStage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
-        underlyingClass = stage.getUnderlyingClass();
-        parameters = stage.getParameters();
+        this.stage = TypeVariant.toStage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
     }
 
     DefType(final Stage stage) {
-        underlyingClass = stage.getUnderlyingClass();
-        parameters = stage.getParameters();
+        this.stage = stage;
     }
 
     /**
@@ -70,7 +63,7 @@ public abstract class DefType<T> {
      * Returns the {@link Class} on which this DefType is based.
      */
     public final Class<?> getUnderlyingClass() {
-        return underlyingClass;
+        return stage.getUnderlyingClass();
     }
 
     /**
@@ -80,8 +73,7 @@ public abstract class DefType<T> {
      * @see #getActualParameters()
      */
     public final Map<String, DefType<?>> getParameters() {
-        // noinspection AssignmentOrReturnOfFieldWithMutableType
-        return parameters;
+        return stage.getParameters();
     }
 
     /**
@@ -91,7 +83,7 @@ public abstract class DefType<T> {
      * @see #getActualParameters()
      */
     public final List<String> getFormalParameters() {
-        return parameters.getFormal();
+        return stage.getFormalParameters();
     }
 
     /**
@@ -101,7 +93,7 @@ public abstract class DefType<T> {
      * @see #getFormalParameters()
      */
     public final List<DefType<?>> getActualParameters() {
-        return parameters.getActual();
+        return stage.getActualParameters();
     }
 
     /**
@@ -109,13 +101,13 @@ public abstract class DefType<T> {
      * For example, the type of a field or the type of a parameter or result of a method of this type.
      */
     public final DefType<?> getMemberType(final Type type) {
-        return new DefType(TypeVariant.toStage(type, parameters)) {
+        return new DefType(TypeVariant.toStage(type, stage.getParameters())) {
         };
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(underlyingClass, parameters);
+        return Objects.hash(stage.getUnderlyingClass(), stage.getActualParameters());
     }
 
     /**
@@ -131,14 +123,15 @@ public abstract class DefType<T> {
     }
 
     private boolean isEqual(final DefType<?> other) {
-        return underlyingClass.equals(other.underlyingClass) && parameters.equals(other.parameters);
+        return getUnderlyingClass().equals(other.getUnderlyingClass())
+                && getActualParameters().equals(other.getActualParameters());
     }
 
     @Override
     public final String toString() {
         return Optional.ofNullable(representation).orElseGet(() -> {
-            final List<DefType<?>> actual = parameters.getActual();
-            representation = underlyingClass.getSimpleName() + (
+            final List<DefType<?>> actual = getActualParameters();
+            representation = getUnderlyingClass().getSimpleName() + (
                     actual.isEmpty() ? "" : actual.stream()
                             .map(DefType::toString)
                             .collect(joining(", ", "<", ">")));
