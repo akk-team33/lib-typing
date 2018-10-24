@@ -44,7 +44,10 @@ public abstract class DefType<T> {
      */
     protected DefType() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        this.stage = TypeVariant.toStage(genericSuperclass.getActualTypeArguments()[0], ParameterMap.EMPTY);
+        this.stage = TypeVariant.toStage(
+                genericSuperclass.getActualTypeArguments()[0],
+                ClassVariant.toStage(getClass())
+        );
     }
 
     DefType(final Stage stage) {
@@ -101,7 +104,7 @@ public abstract class DefType<T> {
      * For example, the type of a field or the type of a parameter or result of a method of this type.
      */
     public final DefType<?> getMemberType(final Type type) {
-        return new DefType(TypeVariant.toStage(type, stage.getParameters())) {
+        return new DefType(TypeVariant.toStage(type, stage)) {
         };
     }
 

@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 class ParameterizedStage extends SingleStage {
 
     private final ParameterizedType type;
-    private final ParameterMap context;
+    private final Stage context;
 
-    ParameterizedStage(final ParameterizedType type, final ParameterMap context) {
+    ParameterizedStage(final ParameterizedType type, final Stage context) {
         this.type = type;
         this.context = context;
     }

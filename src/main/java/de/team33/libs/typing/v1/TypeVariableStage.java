@@ -8,9 +8,9 @@ class TypeVariableStage extends SingleStage {
 
     private final DefType<?> definite;
 
-    TypeVariableStage(final TypeVariable<?> type, final ParameterMap context) {
+    TypeVariableStage(final TypeVariable<?> type, final Stage context) {
         final String name = type.getName();
-        this.definite = Optional.ofNullable(context.get(name))
+        this.definite = Optional.ofNullable(context.getActualParameter(name))
                 .orElseThrow(() -> new IllegalArgumentException(
                         String.format("Variable <%s> not found in parameters %s", name, context)));
     }

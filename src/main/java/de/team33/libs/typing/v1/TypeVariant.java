@@ -12,32 +12,32 @@ enum TypeVariant {
 
     CLASS(
             type -> type instanceof Class<?>,
-            (type, map) -> ClassVariant.toStage((Class<?>) type)),
+            (type, context) -> ClassVariant.toStage((Class<?>) type)),
 
     GENERIC_ARRAY(
             type -> type instanceof GenericArrayType,
-            ((type, map) -> new GenericArrayStage((GenericArrayType) type, map))),
+            ((type, context) -> new GenericArrayStage((GenericArrayType) type, context))),
 
     PARAMETERIZED_TYPE(
             type -> type instanceof ParameterizedType,
-            (type, map) -> new ParameterizedStage((ParameterizedType) type, map)),
+            (type, context) -> new ParameterizedStage((ParameterizedType) type, context)),
 
     TYPE_VARIABLE(
             type -> type instanceof TypeVariable,
-            (type, map) -> new TypeVariableStage((TypeVariable<?>) type, map));
+            (type, context) -> new TypeVariableStage((TypeVariable<?>) type, context));
 
     private final Predicate<Type> matching;
-    private final BiFunction<Type, ParameterMap, Stage> mapping;
+    private final BiFunction<Type, Stage, Stage> mapping;
 
-    TypeVariant(final Predicate<Type> matching, final BiFunction<Type, ParameterMap, Stage> mapping) {
+    TypeVariant(final Predicate<Type> matching, final BiFunction<Type, Stage, Stage> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    static Stage toStage(final Type type, final ParameterMap parameters) {
+    static Stage toStage(final Type type, final Stage context) {
         return Stream.of(values())
                 .filter(typeType -> typeType.matching.test(type)).findAny()
-                .map(typeType -> typeType.mapping.apply(type, parameters))
+                .map(typeType -> typeType.mapping.apply(type, context))
                 .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type.getClass()));
     }
 }

@@ -11,7 +11,7 @@ class GenericArrayStage extends ArrayStage {
     private final DefType<?> componentType;
 
     @SuppressWarnings("AnonymousInnerClassMayBeStatic")
-    GenericArrayStage(final GenericArrayType type, final ParameterMap context) {
+    GenericArrayStage(final GenericArrayType type, final Stage context) {
         this.componentType = new DefType(TypeVariant.toStage(type.getGenericComponentType(), context)) {
         };
     }
