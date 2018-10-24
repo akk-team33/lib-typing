@@ -1,8 +1,9 @@
-package de.team33.test.typing.v1;
+package de.team33.test.typing.shared;
 
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("ClassWithTooManyFields")
 public class Generic<T, U, V> {
 
     public int intField;

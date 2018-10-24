@@ -1,7 +1,7 @@
 package de.team33.test.typing.v3;
 
 import de.team33.libs.typing.v3.Type;
-import de.team33.test.typing.v1.Generic;
+import de.team33.test.typing.shared.Generic;
 import org.junit.Ignore;
 import org.junit.Test;
 

@@ -1,6 +1,7 @@
 package de.team33.test.typing.v1;
 
 import de.team33.libs.typing.v1.DefType;
+import de.team33.test.typing.shared.Generic;
 import org.junit.Test;
 
 import java.util.List;
