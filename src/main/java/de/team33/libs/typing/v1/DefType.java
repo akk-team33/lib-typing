@@ -3,7 +3,6 @@ package de.team33.libs.typing.v1;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -70,19 +69,8 @@ public abstract class DefType<T> {
     }
 
     /**
-     * Returns the type parameters defining this DefType.
-     *
-     * @see #getFormalParameters()
-     * @see #getActualParameters()
-     */
-    public final Map<String, DefType<?>> getParameters() {
-        return stage.getParameters();
-    }
-
-    /**
      * Returns the formal type parameter of the generic type underlying this DefType.
      *
-     * @see #getParameters()
      * @see #getActualParameters()
      */
     public final List<String> getFormalParameters() {
@@ -92,7 +80,6 @@ public abstract class DefType<T> {
     /**
      * Returns the actual type parameters defining this DefType.
      *
-     * @see #getParameters()
      * @see #getFormalParameters()
      */
     public final List<DefType<?>> getActualParameters() {

@@ -7,8 +7,6 @@ abstract class Stage {
 
     abstract Class<?> getUnderlyingClass();
 
-    abstract ParameterMap getParameters();
-
     abstract List<String> getFormalParameters();
 
     abstract List<DefType<?>> getActualParameters();

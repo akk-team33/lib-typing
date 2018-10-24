@@ -17,12 +17,6 @@ class ClassStage extends SingleStage {
         return underlyingClass;
     }
 
-    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
-    @Override
-    final ParameterMap getParameters() {
-        return ParameterMap.EMPTY;
-    }
-
     @Override
     final List<DefType<?>> getActualParameters() {
         return emptyList();

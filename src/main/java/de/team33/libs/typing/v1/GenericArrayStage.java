@@ -20,21 +20,9 @@ class GenericArrayStage extends ArrayStage {
         return Array.newInstance(componentClass, 0).getClass();
     }
 
-    static ParameterMap newArrayParameterMap(final DefType<?> componentType) {
-        return new ParameterMap(
-                singletonList("E"),
-                singletonList(componentType)
-        );
-    }
-
     @Override
     final Class<?> getUnderlyingClass() {
         return arrayClass(componentType.getUnderlyingClass());
-    }
-
-    @Override
-    final ParameterMap getParameters() {
-        return newArrayParameterMap(componentType);
     }
 
     @Override

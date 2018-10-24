@@ -21,11 +21,6 @@ class TypeVariableStage extends SingleStage {
     }
 
     @Override
-    final ParameterMap getParameters() {
-        return new ParameterMap(definite.getFormalParameters(), definite.getActualParameters());
-    }
-
-    @Override
     final List<DefType<?>> getActualParameters() {
         return definite.getActualParameters();
     }
