@@ -19,4 +19,7 @@ abstract class Stage {
                 .orElseThrow(() -> new IllegalArgumentException(
                         String.format("formal parameter <%s> not found in %s", name, formalParameters)));
     }
+
+    @Override
+    public abstract String toString();
 }

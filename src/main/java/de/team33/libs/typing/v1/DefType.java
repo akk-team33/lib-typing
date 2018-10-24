@@ -4,9 +4,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
 
 /**
  * <p>
@@ -36,7 +33,6 @@ import static java.util.stream.Collectors.joining;
 public abstract class DefType<T> {
 
     private final Stage stage;
-    private transient volatile String representation = null;
 
     /**
      * Initializes a {@link DefType} based on its own full definition
@@ -104,7 +100,7 @@ public abstract class DefType<T> {
      * {@inheritDoc}
      * <p>
      * Two instances of DefType are equal if they are {@linkplain #getUnderlyingClass() based} on the same class
-     * and defined by the same {@linkplain #getParameters() parameters}.
+     * and defined by the same {@linkplain #getActualParameters() actual parameters}.
      * </p>
      */
     @Override
@@ -119,14 +115,6 @@ public abstract class DefType<T> {
 
     @Override
     public final String toString() {
-        return Optional.ofNullable(representation).orElseGet(() -> {
-            final List<DefType<?>> actual = getActualParameters();
-            representation = getUnderlyingClass().getSimpleName() + (
-                    actual.isEmpty() ? "" : actual.stream()
-                            .map(DefType::toString)
-                            .collect(joining(", ", "<", ">")));
-            return representation;
-        });
+        return stage.toString();
     }
-
 }

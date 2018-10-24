@@ -9,4 +9,9 @@ abstract class ArrayStage extends Stage {
     final List<String> getFormalParameters() {
         return Collections.singletonList("E");
     }
+
+    @Override
+    public final String toString() {
+        return getActualParameters().get(0) + "[]";
+    }
 }
