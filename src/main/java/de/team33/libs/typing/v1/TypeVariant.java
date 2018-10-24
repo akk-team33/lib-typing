@@ -35,7 +35,7 @@ enum TypeVariant {
         this.mapping = mapping;
     }
 
-    static Stage stage(final Type type, final ParameterMap parameters) {
+    static Stage toStage(final Type type, final ParameterMap parameters) {
         return Stream.of(values())
                 .filter(typeType -> typeType.matching.test(type)).findAny()
                 .map(typeType -> typeType.mapping.apply(type, parameters))

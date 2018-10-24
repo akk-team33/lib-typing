@@ -32,7 +32,7 @@ class ParameterizedStage extends Stage {
                 .map(TypeVariable::getName)
                 .collect(Collectors.toList());
         final List<DefType<?>> actual = Stream.of(type.getActualTypeArguments())
-                .map(type1 -> TypeVariant.stage(type1, context))
+                .map(type1 -> TypeVariant.toStage(type1, context))
                 .map(ParameterizedStage::newGeneric)
                 .collect(Collectors.toList());
         return new ParameterMap(formal, actual);
