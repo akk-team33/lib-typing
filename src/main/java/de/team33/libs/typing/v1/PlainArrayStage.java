@@ -1,11 +1,13 @@
 package de.team33.libs.typing.v1;
 
-class ClassStage extends Stage {
+class PlainArrayStage extends Stage {
 
     private final Class<?> underlyingClass;
+    private final ParameterMap parameters;
 
-    ClassStage(final Class<?> underlyingClass) {
+    PlainArrayStage(final Class<?> underlyingClass) {
         this.underlyingClass = underlyingClass;
+        this.parameters = GenericArrayStage.newArrayParameterMap(DefType.of(underlyingClass.getComponentType()));
     }
 
     @Override
@@ -16,6 +18,6 @@ class ClassStage extends Stage {
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     @Override
     final ParameterMap getParameters() {
-        return ParameterMap.EMPTY;
+        return parameters;
     }
 }

@@ -12,12 +12,11 @@ enum TypeVariant {
 
     CLASS(
             type -> type instanceof Class<?>,
-            (type, map) -> new ClassStage((Class<?>) type)),
+            (type, map) -> ClassVariant.toStage((Class<?>) type)),
 
     GENERIC_ARRAY(
             type -> type instanceof GenericArrayType,
-            ((type, map) -> new GenericArrayStage((GenericArrayType) type, map))
-    ),
+            ((type, map) -> new GenericArrayStage((GenericArrayType) type, map))),
 
     PARAMETERIZED_TYPE(
             type -> type instanceof ParameterizedType,
