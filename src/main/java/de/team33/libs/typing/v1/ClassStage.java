@@ -1,6 +1,6 @@
 package de.team33.libs.typing.v1;
 
-class ClassStage extends Stage {
+class ClassStage extends SingleStage {
 
     private final Class<?> underlyingClass;
 

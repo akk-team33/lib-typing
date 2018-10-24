@@ -3,7 +3,7 @@ package de.team33.libs.typing.v1;
 import java.lang.reflect.TypeVariable;
 import java.util.Optional;
 
-class TypeVariableStage extends Stage {
+class TypeVariableStage extends SingleStage {
 
     private final DefType<?> definite;
 

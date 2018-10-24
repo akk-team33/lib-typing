@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ParameterizedStage extends Stage {
+class ParameterizedStage extends SingleStage {
 
     private final ParameterizedType type;
     private final ParameterMap context;

@@ -8,9 +8,7 @@ abstract class Stage {
 
     abstract ParameterMap getParameters();
 
-    List<String> getFormalParameters() {
-        return getParameters().getFormal();
-    }
+    abstract List<String> getFormalParameters();
 
     List<DefType<?>> getActualParameters() {
         return getParameters().getActual();

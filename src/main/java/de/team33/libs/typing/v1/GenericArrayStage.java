@@ -5,7 +5,7 @@ import java.lang.reflect.GenericArrayType;
 
 import static java.util.Collections.singletonList;
 
-class GenericArrayStage extends Stage {
+class GenericArrayStage extends ArrayStage {
 
     private final DefType<?> componentType;
 

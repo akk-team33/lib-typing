@@ -1,6 +1,6 @@
 package de.team33.libs.typing.v1;
 
-class PlainArrayStage extends Stage {
+class PlainArrayStage extends ArrayStage {
 
     private final Class<?> underlyingClass;
     private final ParameterMap parameters;
