@@ -17,7 +17,7 @@ class PlainArrayStage extends ArrayStage {
     }
 
     @Override
-    final List<DefType<?>> getActualParameters() {
-        return Collections.singletonList(DefType.of(underlyingClass.getComponentType()));
+    final List<Type<?>> getActualParameters() {
+        return Collections.singletonList(Type.of(underlyingClass.getComponentType()));
     }
 }

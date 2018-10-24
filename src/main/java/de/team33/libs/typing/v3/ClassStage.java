@@ -18,7 +18,7 @@ class ClassStage extends SingleStage {
     }
 
     @Override
-    final List<DefType<?>> getActualParameters() {
+    final List<Type<?>> getActualParameters() {
         return emptyList();
     }
 }

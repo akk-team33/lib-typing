@@ -1,7 +1,6 @@
 package de.team33.libs.typing.v3;
 
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 
@@ -9,35 +8,35 @@ import java.util.Objects;
  * <p>
  * Represents a fully defined type, possibly based on a generic class.
  * </p><p>
- * For example, an instance of {@code DefType<Map<String, List<String>>>}
+ * For example, an instance of {@code Type<Map<String, List<String>>>}
  * represents the type {@code Map<String, List<String>>}.
  * </p><p>
- * To get an instance of (any) DefType, you first need to create a fully defined derivative of DefType.
+ * To get an instance of (any) Type, you first need to create a fully defined derivative of Type.
  * Only this can be instantiated.
  * The easiest way to achieve this is to use an anonymous derivation with simultaneous instantiation. Example:
  * </p><pre>
- * final DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
- *         = new DefType&lt;Map&lt;String, List&lt;String&gt;&gt;&gt;() { };
+ * final Type&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
+ *         = new Type&lt;Map&lt;String, List&lt;String&gt;&gt;&gt;() { };
  * </pre><p>
  * If a simple class object already fully defines the type in question,
- * there is a convenience method to obtain an instance of DefType. Example:
+ * there is a convenience method to obtain an instance of Type. Example:
  * </p><pre>
- * final DefType&lt;String&gt; stringType
- *         = DefType.of(String.class);
+ * final Type&lt;String&gt; stringType
+ *         = Type.of(String.class);
  * </pre><p>
  * <b>Note</b>: This class is defined as an abstract class, but does not define an abstract method
  * to enforce that a derivative is required for an instantiation.
  * </p>
  */
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
-public abstract class DefType<T> {
+public abstract class Type<T> {
 
     private final Stage stage;
 
     /**
-     * Initializes a {@link DefType} based on its own full definition
+     * Initializes a {@link Type} based on its own full definition
      */
-    protected DefType() {
+    protected Type() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         this.stage = TypeVariant.toStage(
                 genericSuperclass.getActualTypeArguments()[0],
@@ -45,27 +44,27 @@ public abstract class DefType<T> {
         );
     }
 
-    DefType(final Stage stage) {
+    Type(final Stage stage) {
         this.stage = stage;
     }
 
     /**
-     * Returns a {@link DefType} based on a simple, fully defined {@link Class}.
+     * Returns a {@link Type} based on a simple, fully defined {@link Class}.
      */
-    public static <T> DefType<T> of(final Class<T> simpleClass) {
-        return new DefType<T>(new ClassStage(simpleClass)) {
+    public static <T> Type<T> of(final Class<T> simpleClass) {
+        return new Type<T>(new ClassStage(simpleClass)) {
         };
     }
 
     /**
-     * Returns the {@link Class} on which this DefType is based.
+     * Returns the {@link Class} on which this Type is based.
      */
     public final Class<?> getUnderlyingClass() {
         return stage.getUnderlyingClass();
     }
 
     /**
-     * Returns the formal type parameter of the generic type underlying this DefType.
+     * Returns the formal type parameter of the generic type underlying this Type.
      *
      * @see #getActualParameters()
      */
@@ -74,20 +73,20 @@ public abstract class DefType<T> {
     }
 
     /**
-     * Returns the actual type parameters defining this DefType.
+     * Returns the actual type parameters defining this Type.
      *
      * @see #getFormalParameters()
      */
-    public final List<DefType<?>> getActualParameters() {
+    public final List<Type<?>> getActualParameters() {
         return stage.getActualParameters();
     }
 
     /**
-     * Converts a (possibly) generic {@link Type} that exists in the context of this DefType into a DefType.
+     * Converts a (possibly) generic {@link java.lang.reflect.Type} that exists in the context of this Type into a Type.
      * For example, the type of a field or the type of a parameter or result of a method of this type.
      */
-    public final DefType<?> getMemberType(final Type type) {
-        return new DefType(TypeVariant.toStage(type, stage)) {
+    public final Type<?> getMemberType(final java.lang.reflect.Type type) {
+        return new Type(TypeVariant.toStage(type, stage)) {
         };
     }
 
@@ -99,16 +98,16 @@ public abstract class DefType<T> {
     /**
      * {@inheritDoc}
      * <p>
-     * Two instances of DefType are equal if they are {@linkplain #getUnderlyingClass() based} on the same class
+     * Two instances of Type are equal if they are {@linkplain #getUnderlyingClass() based} on the same class
      * and defined by the same {@linkplain #getActualParameters() actual parameters}.
      * </p>
      */
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof DefType) && isEqual((DefType<?>) obj));
+        return (this == obj) || ((obj instanceof Type) && isEqual((Type<?>) obj));
     }
 
-    private boolean isEqual(final DefType<?> other) {
+    private boolean isEqual(final Type<?> other) {
         return getUnderlyingClass().equals(other.getUnderlyingClass())
                 && getActualParameters().equals(other.getActualParameters());
     }
