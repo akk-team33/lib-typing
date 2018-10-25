@@ -5,9 +5,11 @@ import java.util.List;
 
 abstract class ArrayStage extends Stage {
 
+    private static final List<String> FORMAL_PARAMETERS = Collections.singletonList("E");
+
     @Override
     final List<String> getFormalParameters() {
-        return Collections.singletonList("E");
+        return FORMAL_PARAMETERS;
     }
 
     @Override

@@ -31,6 +31,7 @@ import java.util.Objects;
 public abstract class Type<T> {
 
     private static final String TO_STRING = "toString";
+    private static final String HASH_CODE = "hashCode";
 
     private final Stage stage;
     private final LateBound late = new LateBound();
@@ -46,7 +47,7 @@ public abstract class Type<T> {
         );
     }
 
-    Type(final Stage stage) {
+    private Type(final Stage stage) {
         this.stage = stage;
     }
 
@@ -55,6 +56,11 @@ public abstract class Type<T> {
      */
     public static <T> Type<T> of(final Class<T> simpleClass) {
         return new Type<T>(new ClassStage(simpleClass)) {
+        };
+    }
+
+    static Type<?> of(final Stage stage) {
+        return new Type(stage) {
         };
     }
 
@@ -75,7 +81,9 @@ public abstract class Type<T> {
     }
 
     /**
-     * Returns the actual type parameters defining this Type.
+     * <p>Returns the actual type parameters defining this Type.</p>
+     * <p>The result may be empty though the formal parameter list is not empty. Otherwise (in most cases) the formal
+     * and actual parameter list are of the1 same size and order.</p>
      *
      * @see #getFormalParameters()
      */
@@ -94,7 +102,7 @@ public abstract class Type<T> {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(getUnderlyingClass(), getActualParameters());
+        return late.get(HASH_CODE, () -> Objects.hash(getUnderlyingClass(), getActualParameters()));
     }
 
     /**

@@ -16,8 +16,7 @@ class ParameterizedStage extends SingleStage {
     }
 
     private static Type<?> newGeneric(final Stage stage) {
-        return new Type(stage) {
-        };
+        return Type.of(stage);
     }
 
     @Override

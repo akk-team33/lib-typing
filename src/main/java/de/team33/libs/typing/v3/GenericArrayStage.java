@@ -12,8 +12,7 @@ class GenericArrayStage extends ArrayStage {
 
     @SuppressWarnings("AnonymousInnerClassMayBeStatic")
     GenericArrayStage(final GenericArrayType type, final Stage context) {
-        this.componentType = new Type(TypeVariant.toStage(type.getGenericComponentType(), context)) {
-        };
+        this.componentType = Type.of(TypeVariant.toStage(type.getGenericComponentType(), context));
     }
 
     private static Class<?> arrayClass(final Class<?> componentClass) {
