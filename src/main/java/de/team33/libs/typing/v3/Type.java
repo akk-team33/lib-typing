@@ -1,31 +1,41 @@
 package de.team33.libs.typing.v3;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * <p>
- * Represents a complete type description, possibly based on a generic class.
- * </p><p>
- * For example, an instance of {@code Type<Map<String, List<String>>>}
- * represents the type {@code Map<String, List<String>>}.
- * </p><p>
- * To get an instance of Type, you first need to create a fully defined derivative of Type.
- * The easiest way to achieve this is to use an anonymous derivation with simultaneous instantiation. Example:
+ * Represents a definite type description that can be based on a generic as well as a non-generic class. Examples:
+ * </p><ul>
+ * <li>an instance of <strong>{@code Type<Map<String, List<String>>>}</strong> represents the type
+ * <strong>{@code Map<String, List<String>>}</strong>.</li>
+ * <li>an instance of <strong>{@code Type<String>}</strong> represents the type <strong>{@code String}</strong>.</li>
+ * </ul><p>
+ * To get an instance of Type, you need to create a definite derivative of Type.
+ * The easiest way to achieve this is to use an anonymous derivation with simultaneous instantiation. Examples:
  * </p><pre>
- * final Type&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToStringListType
+ * final Type&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; mapStringToListOfStringType
  *         = new Type&lt;Map&lt;String, List&lt;String&gt;&gt;&gt;() { };
+ * </pre><pre>
+ * final Type&lt;String&gt; stringType
+ *         = new Type&lt;String&gt;() { };
  * </pre><p>
- * If a simple class object already fully defines the type in question,
- * there is a convenience method to obtain an instance of Type. Example:
+ * If, as in the last case, a simple class already fully defines the type concerned, there is a convenience method to
+ * get a corresponding Type instance. Example:
  * </p><pre>
  * final Type&lt;String&gt; stringType
  *         = Type.of(String.class);
  * </pre><p>
- * <b>Note</b>: This class is defined as an abstract class (without defining an abstract method)
- * to enforce that a derivative is required for an instantiation.
+ * <b>Note</b>: This class is defined as an abstract class without defining an abstract method to enforce that a
+ * derivative is required for an instantiation.
  * </p>
+ *
+ * @see #Type()
+ * @see #of(Class)
  */
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
 public abstract class Type<T> {
@@ -35,9 +45,24 @@ public abstract class Type<T> {
 
     private final Stage stage;
     private final LateBound late = new LateBound();
+    private final Supplier<List<Object>> listView = new Lazy<>(this::newListView);
+    private final Supplier<Integer> hash = new Lazy<>(this::newHash);
+    private final Supplier<String> stringView = new Lazy<>(this::newStringView);
+
+    private List<Object> newListView() {
+        return Arrays.asList(getUnderlyingClass(), getActualParameters());
+    }
+
+    private Integer newHash() {
+        return listView.get().hashCode();
+    }
+
+    private String newStringView() {
+        return stage.toString();
+    }
 
     /**
-     * Initializes a {@link Type} based on its own full definition
+     * Initializes a {@link Type} based on its well-defined derivative.
      */
     protected Type() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
@@ -52,10 +77,10 @@ public abstract class Type<T> {
     }
 
     /**
-     * Returns a {@link Type} based on a simple, fully defined {@link Class}.
+     * Returns a {@link Type} based on a simple {@link Class}.
      */
     public static <T> Type<T> of(final Class<T> simpleClass) {
-        return new Type<T>(new ClassStage(simpleClass)) {
+        return new Type<T>(ClassVariant.toStage(simpleClass)) {
         };
     }
 
@@ -92,17 +117,20 @@ public abstract class Type<T> {
     }
 
     /**
-     * Converts a (possibly) generic {@link java.lang.reflect.Type} that exists in the context of this Type into a Type.
-     * For example, the type of a field or the type of a parameter or result of a method of this type.
+     * Converts a (possibly generic) {@link java.lang.reflect.Type} that exists in the
+     * {@linkplain #getUnderlyingClass() underlying class} of this Type into a definite Type (like this).
+     *
+     * @see Class#getGenericSuperclass()
+     * @see Class#getGenericInterfaces()
+     * @see Class#getFields()
+     * @see Class#getMethods()
+     * @see Field#getGenericType()
+     * @see Method#getGenericReturnType()
+     * @see Method#getGenericParameterTypes()
      */
     public final Type<?> getMemberType(final java.lang.reflect.Type type) {
         return new Type(TypeVariant.toStage(type, stage)) {
         };
-    }
-
-    @Override
-    public final int hashCode() {
-        return late.get(HASH_CODE, () -> Objects.hash(getUnderlyingClass(), getActualParameters()));
     }
 
     /**
@@ -118,12 +146,16 @@ public abstract class Type<T> {
     }
 
     private boolean isEqual(final Type<?> other) {
-        return getUnderlyingClass().equals(other.getUnderlyingClass())
-                && getActualParameters().equals(other.getActualParameters());
+        return listView.get().equals(other.listView.get());
+    }
+
+    @Override
+    public final int hashCode() {
+        return hash.get();
     }
 
     @Override
     public final String toString() {
-        return late.get(TO_STRING, stage::toString);
+        return stringView.get();
     }
 }
