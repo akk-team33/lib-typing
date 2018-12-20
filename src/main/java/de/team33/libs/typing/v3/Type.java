@@ -30,18 +30,12 @@ import java.util.function.Supplier;
  * final Type&lt;String&gt; stringType
  *         = Type.of(String.class);
  * </pre><p>
- * <b>Note</b>: This class is defined as an abstract class without defining an abstract method to enforce that a
- * derivative is required for an instantiation.
- * </p>
  *
  * @see #Type()
  * @see #of(Class)
  */
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "unused"})
 public abstract class Type<T> {
-
-    private static final String TO_STRING = "toString";
-    private static final String HASH_CODE = "hashCode";
 
     private final Stage stage;
     private final Supplier<List<Object>> listView = new Lazy<>(this::newListView);
