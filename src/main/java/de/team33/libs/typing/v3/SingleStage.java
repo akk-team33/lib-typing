@@ -21,10 +21,10 @@ abstract class SingleStage extends Stage {
 
     @Override
     public final String toString() {
-        final List<Type<?>> actual = getActualParameters();
+        final List<Stage> actual = getActualParameters();
         return getUnderlyingClass().getSimpleName() + (
                 actual.isEmpty() ? "" : actual.stream()
-                        .map(Type::toString)
+                        .map(Stage::toString)
                         .collect(joining(", ", "<", ">")));
     }
 }

@@ -4,8 +4,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -39,19 +43,28 @@ public abstract class Type<T> {
 
     private final Stage stage;
     private final Supplier<List<Object>> listView = new Lazy<>(this::newListView);
-    private final Supplier<Integer> hash = new Lazy<>(this::newHash);
-    private final Supplier<String> stringView = new Lazy<>(this::newStringView);
+    private final Supplier<Integer> hashCode = new Lazy<>(this::newHashCode);
+    private final Supplier<String> string = new Lazy<>(this::newString);
+    private final Supplier<List<Type<?>>> actualParameters = new Lazy<>(this::newActualParameters);
 
     private List<Object> newListView() {
         return Arrays.asList(getUnderlyingClass(), getActualParameters());
     }
 
-    private Integer newHash() {
+    private Integer newHashCode() {
         return listView.get().hashCode();
     }
 
-    private String newStringView() {
+    private String newString() {
         return stage.toString();
+    }
+
+    private List<Type<?>> newActualParameters() {
+        return Collections.unmodifiableList(
+                stage.getActualParameters().stream()
+                        .map(Type::of)
+                        .collect(Collectors.toList())
+        );
     }
 
     /**
@@ -77,7 +90,7 @@ public abstract class Type<T> {
         };
     }
 
-    static Type<?> of(final Stage stage) {
+    private static Type<?> of(final Stage stage) {
         return new Type(stage) {
         };
     }
@@ -100,13 +113,13 @@ public abstract class Type<T> {
 
     /**
      * <p>Returns the actual type parameters defining this Type.</p>
-     * <p>The result may be empty though the formal parameter list is not empty. Otherwise (in most cases) the formal
-     * and actual parameter list are of the1 same size and order.</p>
+     * <p>The result may be empty even if the formal parameter list is not. Otherwise the formal
+     * and actual parameter list are of the same size and order.</p>
      *
      * @see #getFormalParameters()
      */
     public final List<Type<?>> getActualParameters() {
-        return stage.getActualParameters();
+        return actualParameters.get();
     }
 
     /**
@@ -124,6 +137,23 @@ public abstract class Type<T> {
     public final Type<?> getMemberType(final java.lang.reflect.Type type) {
         return new Type(TypeVariant.toStage(type, stage)) {
         };
+    }
+
+    public final Optional<Type<?>> getSuperType() {
+        return Optional.ofNullable(getUnderlyingClass().getGenericSuperclass())
+                .map(this::getMemberType);
+    }
+
+    public final Stream<Type<?>> getInterfaces() {
+        return Stream.of(getUnderlyingClass().getGenericInterfaces())
+                .map(this::getMemberType);
+    }
+
+    public final Type<?> typeOf(final Field field) {
+        if (field.getDeclaringClass().equals(getUnderlyingClass()))
+            return getMemberType(field.getGenericType());
+        else
+            return getSuperType().map(t -> t.typeOf(field)).orElseThrow(() -> new IllegalArgumentException());
     }
 
     /**
@@ -144,11 +174,11 @@ public abstract class Type<T> {
 
     @Override
     public final int hashCode() {
-        return hash.get();
+        return hashCode.get();
     }
 
     @Override
     public final String toString() {
-        return stringView.get();
+        return string.get();
     }
 }

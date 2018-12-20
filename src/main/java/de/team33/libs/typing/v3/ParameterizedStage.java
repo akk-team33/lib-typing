@@ -15,20 +15,15 @@ class ParameterizedStage extends SingleStage {
         this.context = context;
     }
 
-    private static Type<?> newGeneric(final Stage stage) {
-        return Type.of(stage);
-    }
-
     @Override
     final Class<?> getUnderlyingClass() {
         return (Class<?>) type.getRawType();
     }
 
     @Override
-    final List<Type<?>> getActualParameters() {
+    final List<Stage> getActualParameters() {
         return Stream.of(type.getActualTypeArguments())
                 .map(type1 -> TypeVariant.toStage(type1, context))
-                .map(ParameterizedStage::newGeneric)
                 .collect(Collectors.toList());
     }
 }

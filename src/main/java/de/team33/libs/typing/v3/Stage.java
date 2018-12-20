@@ -9,9 +9,9 @@ abstract class Stage {
 
     abstract List<String> getFormalParameters();
 
-    abstract List<Type<?>> getActualParameters();
+    abstract List<Stage> getActualParameters();
 
-    final Type<?> getActualParameter(final String name) {
+    final Stage getActualParameter(final String name) {
         final List<String> formalParameters = getFormalParameters();
         return Optional.of(formalParameters.indexOf(name))
                 .filter(index -> 0 <= index)

@@ -6,7 +6,7 @@ import java.util.Optional;
 
 class TypeVariableStage extends SingleStage {
 
-    private final Type<?> definite;
+    private final Stage definite;
 
     TypeVariableStage(final TypeVariable<?> type, final Stage context) {
         final String name = type.getName();
@@ -21,7 +21,7 @@ class TypeVariableStage extends SingleStage {
     }
 
     @Override
-    final List<Type<?>> getActualParameters() {
+    final List<Stage> getActualParameters() {
         return definite.getActualParameters();
     }
 }

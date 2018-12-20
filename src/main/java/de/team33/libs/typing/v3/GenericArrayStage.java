@@ -8,11 +8,11 @@ import static java.util.Collections.singletonList;
 
 class GenericArrayStage extends ArrayStage {
 
-    private final Type<?> componentType;
+    private final Stage componentType;
 
     @SuppressWarnings("AnonymousInnerClassMayBeStatic")
     GenericArrayStage(final GenericArrayType type, final Stage context) {
-        this.componentType = Type.of(TypeVariant.toStage(type.getGenericComponentType(), context));
+        this.componentType = (TypeVariant.toStage(type.getGenericComponentType(), context));
     }
 
     private static Class<?> arrayClass(final Class<?> componentClass) {
@@ -25,7 +25,7 @@ class GenericArrayStage extends ArrayStage {
     }
 
     @Override
-    final List<Type<?>> getActualParameters() {
+    final List<Stage> getActualParameters() {
         return singletonList(componentType);
     }
 }

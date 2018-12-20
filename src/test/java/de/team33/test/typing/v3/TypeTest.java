@@ -1,11 +1,13 @@
 package de.team33.test.typing.v3;
 
 import de.team33.libs.typing.v3.Type;
+import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
@@ -59,6 +61,21 @@ public class TypeTest {
 
         assertStringListType(genericType.getMemberType(Generic.class.getField("tList").getGenericType()));
         assertMapStringToListOfString(genericType.getMemberType(Generic.class.getField("t2uMap").getGenericType()));
+    }
+
+    @Test
+    public final void getSuperType() {
+        final Type<Generic<String, List<String>, Map<String, List<String>>>> expected =
+                new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
+                };
+        assertEquals(Optional.of(expected), Type.of(Fixed.class).getSuperType());
+    }
+
+    @Test
+    public final void getSuperTypeEmpty() {
+        assertEquals(Optional.empty(), Type.of(Object.class).getSuperType());
+        assertEquals(Optional.empty(), Type.of(int.class).getSuperType());
+        assertEquals(Optional.empty(), Type.of(void.class).getSuperType());
     }
 
     @Test
