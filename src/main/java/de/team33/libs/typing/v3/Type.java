@@ -44,7 +44,6 @@ public abstract class Type<T> {
     private static final String HASH_CODE = "hashCode";
 
     private final Stage stage;
-    private final LateBound late = new LateBound();
     private final Supplier<List<Object>> listView = new Lazy<>(this::newListView);
     private final Supplier<Integer> hash = new Lazy<>(this::newHash);
     private final Supplier<String> stringView = new Lazy<>(this::newStringView);
