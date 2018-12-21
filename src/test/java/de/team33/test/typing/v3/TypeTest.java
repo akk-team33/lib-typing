@@ -3,31 +3,44 @@ package de.team33.test.typing.v3;
 import de.team33.libs.typing.v3.Type;
 import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
+import de.team33.test.typing.shared.Interface;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-@SuppressWarnings({"AnonymousInnerClass", "AnonymousInnerClassMayBeStatic", "ClassWithTooManyMethods"})
+@SuppressWarnings("rawtypes")
 public class TypeTest {
 
-    private final Type<Generic<String, List<String>, Map<String, List<String>>>> genericType =
+    private static final Type<List<String>> LIST_OF_STRING_TYPE =
+            new Type<List<String>>() {
+            };
+    private static final Type<Generic<String, List<String>, Map<String, List<String>>>> GENERIC_TYPE =
             new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
+            };
+    public static final Type<Generic> RAW_GENERIC_TYPE =
+            new Type<Generic>() {
             };
 
     @Test
     public final void getUnderlyingClass() {
-        assertSame(Generic.class, genericType.getUnderlyingClass());
+        assertSame(Generic.class, GENERIC_TYPE.getUnderlyingClass());
     }
 
     @Test
     public final void getFormalParameters() {
-        final List<String> formalParameters = genericType.getFormalParameters();
+        final List<String> formalParameters = GENERIC_TYPE.getFormalParameters();
         assertEquals("T", formalParameters.get(0));
         assertEquals("U", formalParameters.get(1));
         assertEquals("V", formalParameters.get(2));
@@ -35,7 +48,7 @@ public class TypeTest {
 
     @Test
     public final void getActualParameters() {
-        final List<Type<?>> actualParameters = genericType.getActualParameters();
+        final List<Type<?>> actualParameters = GENERIC_TYPE.getActualParameters();
         assertEquals(3, actualParameters.size());
         assertStringType(actualParameters.get(0));
         assertStringListType(actualParameters.get(1));
@@ -44,31 +57,28 @@ public class TypeTest {
 
     @Test
     public final void getMemberType() throws NoSuchFieldException {
-        assertIntType(genericType.getMemberType(Generic.class.getField("intField").getGenericType()));
-        assertIntArrayType(genericType.getMemberType(Generic.class.getField("intArray").getGenericType()));
+        assertIntType(GENERIC_TYPE.getMemberType(Generic.class.getField("intField").getGenericType()));
+        assertIntArrayType(GENERIC_TYPE.getMemberType(Generic.class.getField("intArray").getGenericType()));
 
-        assertStringType(genericType.getMemberType(Generic.class.getField("stringField").getGenericType()));
-        assertStringArrayType(genericType.getMemberType(Generic.class.getField("stringArray").getGenericType()));
+        assertStringType(GENERIC_TYPE.getMemberType(Generic.class.getField("stringField").getGenericType()));
+        assertStringArrayType(GENERIC_TYPE.getMemberType(Generic.class.getField("stringArray").getGenericType()));
 
-        assertStringType(genericType.getMemberType(Generic.class.getField("tField").getGenericType()));
-        assertStringArrayType(genericType.getMemberType(Generic.class.getField("tArray").getGenericType()));
+        assertStringType(GENERIC_TYPE.getMemberType(Generic.class.getField("tField").getGenericType()));
+        assertStringArrayType(GENERIC_TYPE.getMemberType(Generic.class.getField("tArray").getGenericType()));
 
-        assertStringListType(genericType.getMemberType(Generic.class.getField("uField").getGenericType()));
-        assertStringListArrayType(genericType.getMemberType(Generic.class.getField("uArray").getGenericType()));
+        assertStringListType(GENERIC_TYPE.getMemberType(Generic.class.getField("uField").getGenericType()));
+        assertStringListArrayType(GENERIC_TYPE.getMemberType(Generic.class.getField("uArray").getGenericType()));
 
-        assertMapStringToListOfString(genericType.getMemberType(Generic.class.getField("vField").getGenericType()));
-        assertMapStringToListArrayType(genericType.getMemberType(Generic.class.getField("vArray").getGenericType()));
+        assertMapStringToListOfString(GENERIC_TYPE.getMemberType(Generic.class.getField("vField").getGenericType()));
+        assertMapStringToListArrayType(GENERIC_TYPE.getMemberType(Generic.class.getField("vArray").getGenericType()));
 
-        assertStringListType(genericType.getMemberType(Generic.class.getField("tList").getGenericType()));
-        assertMapStringToListOfString(genericType.getMemberType(Generic.class.getField("t2uMap").getGenericType()));
+        assertStringListType(GENERIC_TYPE.getMemberType(Generic.class.getField("tList").getGenericType()));
+        assertMapStringToListOfString(GENERIC_TYPE.getMemberType(Generic.class.getField("t2uMap").getGenericType()));
     }
 
     @Test
     public final void getSuperType() {
-        final Type<Generic<String, List<String>, Map<String, List<String>>>> expected =
-                new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
-                };
-        assertEquals(Optional.of(expected), Type.of(Fixed.class).getSuperType());
+        assertEquals(Optional.of(GENERIC_TYPE), Type.of(Fixed.class).getSuperType());
     }
 
     @Test
@@ -76,6 +86,49 @@ public class TypeTest {
         assertEquals(Optional.empty(), Type.of(Object.class).getSuperType());
         assertEquals(Optional.empty(), Type.of(int.class).getSuperType());
         assertEquals(Optional.empty(), Type.of(void.class).getSuperType());
+    }
+
+    @Test
+    public final void typeOf() throws NoSuchFieldException {
+        final Field field = Generic.class.getDeclaredField("tField");
+        assertEquals(
+                Type.of(String.class),
+                Type.of(Fixed.class).typeOf(field)
+        );
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public final void typeOfIllegal() throws NoSuchFieldException {
+        final Field field = ArrayList.class.getDeclaredField("elementData");
+        fail("Should fail but was " + Type.of(Fixed.class).typeOf(field));
+    }
+
+    @Test
+    public final void returnTypeOf() throws NoSuchMethodException {
+        final Method method1 = Fixed.class.getMethod("toString");
+        assertEquals(
+                Type.of(String.class),
+                Type.of(Fixed.class).returnTypeOf(method1)
+        );
+        final Method method2 = Interface.class.getMethod("setStringField", String.class);
+        assertEquals(
+                Type.of(Fixed.class),
+                Type.of(Fixed.class).returnTypeOf(method2)
+        );
+        final Method method3 = Interface.class.getMethod("getTArray");
+        assertEquals(
+                Type.of(String[].class),
+                Type.of(Fixed.class).returnTypeOf(method3)
+        );
+    }
+
+    @Test
+    public final void parameterTypesOf() throws NoSuchMethodException {
+        final Method method = Interface.class.getMethod("setTArray", Object[].class);
+        assertEquals(
+                singletonList(Type.of(String[].class)),
+                Type.of(Fixed.class).parameterTypesOf(method)
+        );
     }
 
     @Test
@@ -90,23 +143,20 @@ public class TypeTest {
 
     @Test
     public final void testListToString() {
-        assertEquals("List<String>", new Type<List<String>>() {
-        }.toString());
+        assertEquals("List<String>", LIST_OF_STRING_TYPE.toString());
     }
 
     @SuppressWarnings("rawtypes")
     @Test
-    public final void testRawListToString() {
-        final Type<Generic> listType = new Type<Generic>() {
-        };
-        assertEquals("Generic", listType.toString());
-        assertEquals(3, listType.getFormalParameters().size());
-        assertEquals(0, listType.getActualParameters().size());
+    public final void testRawGeneric() {
+        assertEquals("Generic", RAW_GENERIC_TYPE.toString());
+        assertEquals(3, RAW_GENERIC_TYPE.getFormalParameters().size());
+        assertEquals(0, RAW_GENERIC_TYPE.getActualParameters().size());
     }
 
     @Test
     public final void testGenericTypeToString() {
-        assertEquals("Generic<String, List<String>, Map<String, List<String>>>", genericType.toString());
+        assertEquals("Generic<String, List<String>, Map<String, List<String>>>", GENERIC_TYPE.toString());
     }
 
     @Test
@@ -127,16 +177,21 @@ public class TypeTest {
 
     @Test
     public final void testEquals() {
-        assertEquals(genericType, new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
+        assertEquals(GENERIC_TYPE, new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
         });
+        assertNotEquals(GENERIC_TYPE, RAW_GENERIC_TYPE);
     }
 
     @Test
     public final void testHashcode() {
         assertEquals(
-                genericType.hashCode(),
+                GENERIC_TYPE.hashCode(),
                 new Type<Generic<String, List<String>, Map<String, List<String>>>>() {
                 }.hashCode()
+        );
+        assertNotEquals(
+                GENERIC_TYPE.hashCode(),
+                RAW_GENERIC_TYPE.hashCode()
         );
     }
 
@@ -168,8 +223,7 @@ public class TypeTest {
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
-        assertEquals(stringListType, new Type<List<String>>() {
-        });
+        assertEquals(LIST_OF_STRING_TYPE, stringListType);
     }
 
     public static void assertStringListArrayType(final Type<?> stringListArrayType) {
