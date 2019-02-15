@@ -1,4 +1,8 @@
-# lib-typing
+# lib-typing (v3)
+
+## Requires
+
+    Java 8 or higher
 
 ## pom.xml
 
