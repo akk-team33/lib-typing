@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import de.team33.libs.provision.v1.LazyMap;
+
 
 /**
  * <p>
@@ -47,11 +49,13 @@ public abstract class Type<T> {
     private static final Stream<? extends Type<?>> EMPTY = Stream.empty();
     private static final String NOT_DECLARED_IN_THIS = "member (%s) is not declared in the context of type (%s)";
 
+    private static final Key<List<Object>> LIST_VIEW = Type::newListView;
+    private static final Key<String> STRING_VIEW = Type::newStringView;
+    private static final Key<Integer> HASH_CODE = Type::newHashCode;
+    private static final Key<List<Type<?>>> ACTUAL_PARAMS = Type::newActualParameters;
+
     private final Stage stage;
-    private final Supplier<List<Object>> listView = new Lazy<>(this::newListView);
-    private final Supplier<String> stringView = new Lazy<>(this::newStringView);
-    private final Supplier<Integer> hashCode = new Lazy<>(this::newHashCode);
-    private final Supplier<List<Type<?>>> actualParameters = new Lazy<>(this::newActualParameters);
+    private final LazyMap<Type<?>> lazy = new LazyMap<>(this);
 
     private List<Object> newListView() {
         return Arrays.asList(getUnderlyingClass(), getActualParameters());
@@ -62,7 +66,7 @@ public abstract class Type<T> {
     }
 
     private Integer newHashCode() {
-        return listView.get().hashCode();
+        return lazy.get(LIST_VIEW).hashCode();
     }
 
     private List<Type<?>> newActualParameters() {
@@ -125,7 +129,7 @@ public abstract class Type<T> {
      * @see #getFormalParameters()
      */
     public final List<Type<?>> getActualParameters() {
-        return actualParameters.get();
+        return lazy.get(ACTUAL_PARAMS);
     }
 
     /**
@@ -265,16 +269,18 @@ public abstract class Type<T> {
     }
 
     private boolean isEqual(final Type<?> other) {
-        return listView.get().equals(other.listView.get());
+        return lazy.get(LIST_VIEW).equals(other.lazy.get(LIST_VIEW));
     }
 
     @Override
     public final int hashCode() {
-        return hashCode.get();
+        return lazy.get(HASH_CODE);
     }
 
     @Override
     public final String toString() {
-        return stringView.get();
+        return lazy.get(STRING_VIEW);
     }
+
+    private interface Key<R> extends Function<Type<?>, R> {}
 }
