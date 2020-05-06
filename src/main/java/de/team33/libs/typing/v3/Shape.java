@@ -17,8 +17,7 @@ public abstract class Shape {
     /**
      * Returns the raw {@link Class} on which this {@link Shape} is based.
      */
-    @SuppressWarnings("rawtypes")
-    public abstract Class getRawClass();
+    public abstract Class<?> getRawClass();
 
     /**
      * Returns the formal type parameters of the (generic) type underlying this {@link Shape}.

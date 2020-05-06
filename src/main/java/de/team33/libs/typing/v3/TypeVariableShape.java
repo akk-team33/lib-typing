@@ -2,7 +2,6 @@ package de.team33.libs.typing.v3;
 
 import java.lang.reflect.TypeVariable;
 import java.util.List;
-import java.util.Optional;
 
 class TypeVariableShape extends DiscreteShape {
 
@@ -14,7 +13,7 @@ class TypeVariableShape extends DiscreteShape {
     }
 
     @Override
-    public final Class getRawClass() {
+    public final Class<?> getRawClass() {
         return definite.getRawClass();
     }
 

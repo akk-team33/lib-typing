@@ -23,7 +23,7 @@ class GenericArrayShape extends ArrayShape {
     }
 
     @Override
-    public final Class getRawClass() {
+    public final Class<?> getRawClass() {
         return rawClass.get();
     }
 

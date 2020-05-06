@@ -6,6 +6,8 @@ import static java.util.Collections.emptyList;
 
 class PlainClassShape extends DiscreteShape {
 
+    private static final List<Shape> ACTUAL_PARAMETERS = emptyList();
+
     private final Class<?> rawClass;
 
     PlainClassShape(final Class<?> rawClass) {
@@ -13,12 +15,12 @@ class PlainClassShape extends DiscreteShape {
     }
 
     @Override
-    public final Class getRawClass() {
+    public final Class<?> getRawClass() {
         return rawClass;
     }
 
     @Override
     public final List<Shape> getActualParameters() {
-        return emptyList();
+        return ACTUAL_PARAMETERS;
     }
 }
