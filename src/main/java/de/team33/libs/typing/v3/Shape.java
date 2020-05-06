@@ -42,22 +42,20 @@ public abstract class Shape {
     public final Shape getActualParameter(final String formalParameter) {
         final List<String> formalParameters = getFormalParameters();
         return Optional.of(formalParameters.indexOf(formalParameter))
-                .filter(index -> 0 <= index)
-                .map(index -> getActualParameters().get(index))
-                .orElseThrow(() -> new IllegalArgumentException(
-                        String.format("formal parameter <%s> not found in %s", formalParameter, formalParameters)));
+                       .filter(index -> 0 <= index)
+                       .map(index -> getActualParameters().get(index))
+                       .orElseThrow(() -> new IllegalArgumentException(
+                               String.format("formal parameter <%s> not found in %s", formalParameter, formalParameters)));
     }
 
     @Override
-    public final int hashCode()
-    {
+    public final int hashCode() {
         return hashView.get();
     }
 
     @Override
-    public final boolean equals(final Object obj)
-    {
-        return (this == obj) || ((obj instanceof Shape) && listView.get().equals(((Shape)obj).listView.get()));
+    public final boolean equals(final Object obj) {
+        return (this == obj) || ((obj instanceof Shape) && listView.get().equals(((Shape) obj).listView.get()));
     }
 
     @Override

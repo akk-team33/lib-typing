@@ -1,11 +1,15 @@
 package de.team33.libs.typing.v3;
 
+import de.team33.libs.provision.v2.Lazy;
+
 import java.util.Collections;
 import java.util.List;
 
 abstract class ArrayShape extends Shape {
 
     private static final List<String> FORMAL_PARAMETERS = Collections.singletonList("E");
+
+    private final transient Lazy<String> stringView = new Lazy<>(() -> getActualParameters().get(0) + "[]");
 
     @Override
     public final List<String> getFormalParameters() {
@@ -14,6 +18,6 @@ abstract class ArrayShape extends Shape {
 
     @Override
     public final String toString() {
-        return getActualParameters().get(0) + "[]";
+        return stringView.get();
     }
 }
