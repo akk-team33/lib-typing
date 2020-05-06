@@ -4,21 +4,21 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-class ClassStage extends SingleStage {
+class ClassShape extends SingleShape {
 
     private final Class<?> underlyingClass;
 
-    ClassStage(final Class<?> underlyingClass) {
+    ClassShape(final Class<?> underlyingClass) {
         this.underlyingClass = underlyingClass;
     }
 
     @Override
-    final Class<?> getUnderlyingClass() {
+    public final Class<?> getUnderlyingClass() {
         return underlyingClass;
     }
 
     @Override
-    final List<Stage> getActualParameters() {
+    final List<Shape> getActualParameters() {
         return emptyList();
     }
 }

@@ -5,23 +5,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ParameterizedStage extends SingleStage {
+class ParameterizedShape extends SingleShape {
 
     private final ParameterizedType type;
-    private final Stage context;
+    private final Shape context;
 
-    ParameterizedStage(final ParameterizedType type, final Stage context) {
+    ParameterizedShape(final ParameterizedType type, final Shape context) {
         this.type = type;
         this.context = context;
     }
 
     @Override
-    final Class<?> getUnderlyingClass() {
+    public final Class<?> getUnderlyingClass() {
         return (Class<?>) type.getRawType();
     }
 
     @Override
-    final List<Stage> getActualParameters() {
+    final List<Shape> getActualParameters() {
         return Stream.of(type.getActualTypeArguments())
                 .map(type1 -> TypeVariant.toStage(type1, context))
                 .collect(Collectors.toList());

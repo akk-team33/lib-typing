@@ -4,11 +4,11 @@ import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
 
-class TypeVariableStage extends SingleStage {
+class TypeVariableShape extends SingleShape {
 
-    private final Stage definite;
+    private final Shape definite;
 
-    TypeVariableStage(final TypeVariable<?> type, final Stage context) {
+    TypeVariableShape(final TypeVariable<?> type, final Shape context) {
         final String name = type.getName();
         this.definite = Optional.ofNullable(context.getActualParameter(name))
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -16,12 +16,12 @@ class TypeVariableStage extends SingleStage {
     }
 
     @Override
-    final Class<?> getUnderlyingClass() {
+    public final Class<?> getUnderlyingClass() {
         return definite.getUnderlyingClass();
     }
 
     @Override
-    final List<Stage> getActualParameters() {
+    final List<Shape> getActualParameters() {
         return definite.getActualParameters();
     }
 }

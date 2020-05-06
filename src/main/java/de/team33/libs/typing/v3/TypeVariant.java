@@ -16,25 +16,25 @@ enum TypeVariant {
 
     GENERIC_ARRAY(
             type -> type instanceof GenericArrayType,
-            ((type, context) -> new GenericArrayStage((GenericArrayType) type, context))),
+            ((type, context) -> new GenericArrayShape((GenericArrayType) type, context))),
 
     PARAMETERIZED_TYPE(
             type -> type instanceof ParameterizedType,
-            (type, context) -> new ParameterizedStage((ParameterizedType) type, context)),
+            (type, context) -> new ParameterizedShape((ParameterizedType) type, context)),
 
     TYPE_VARIABLE(
             type -> type instanceof TypeVariable,
-            (type, context) -> new TypeVariableStage((TypeVariable<?>) type, context));
+            (type, context) -> new TypeVariableShape((TypeVariable<?>) type, context));
 
     private final Predicate<Type> matching;
-    private final BiFunction<Type, Stage, Stage> mapping;
+    private final BiFunction<Type, Shape, Shape> mapping;
 
-    TypeVariant(final Predicate<Type> matching, final BiFunction<Type, Stage, Stage> mapping) {
+    TypeVariant(final Predicate<Type> matching, final BiFunction<Type, Shape, Shape> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    static Stage toStage(final Type type, final Stage context) {
+    static Shape toStage(final Type type, final Shape context) {
         return Stream.of(values())
                 .filter(typeType -> typeType.matching.test(type)).findAny()
                 .map(typeType -> typeType.mapping.apply(type, context))

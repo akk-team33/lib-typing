@@ -1,6 +1,6 @@
 package de.team33.libs.typing.v3;
 
-import de.team33.libs.provision.v1.LazyMap;
+import de.team33.libs.provision.v2.LazyMap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -63,7 +63,7 @@ public abstract class Type<T> {
     private static final Key<List<Type<?>>> ACTUAL_PARAMS = Type::newActualParameters;
     private static final Key<List<Object>> LIST_VIEW = Type::newListView;
 
-    private final Stage stage;
+    private final Shape shape;
     private final transient LazyMap<Type<?>> lazy = new LazyMap<>(this);
 
     /**
@@ -71,14 +71,14 @@ public abstract class Type<T> {
      */
     protected Type() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        this.stage = TypeVariant.toStage(
+        this.shape = TypeVariant.toStage(
                 genericSuperclass.getActualTypeArguments()[0],
                 ClassVariant.toStage(getClass())
-        );
+                                        );
     }
 
-    private Type(final Stage stage) {
-        this.stage = stage;
+    private Type(final Shape shape) {
+        this.shape = shape;
     }
 
     /**
@@ -91,8 +91,8 @@ public abstract class Type<T> {
         };
     }
 
-    private static Type<?> of(final Stage stage) {
-        return new Type(stage) {
+    private static Type<?> of(final Shape shape) {
+        return new Type(shape) {
         };
     }
 
@@ -101,7 +101,7 @@ public abstract class Type<T> {
     }
 
     private String newStringView() {
-        return stage.toString();
+        return shape.toString();
     }
 
     private Integer newHashCode() {
@@ -109,12 +109,12 @@ public abstract class Type<T> {
     }
 
     private List<String> newFormalParameters() {
-        return stage.getFormalParameters();
+        return shape.getFormalParameters();
     }
 
     private List<Type<?>> newActualParameters() {
         return Collections.unmodifiableList(
-                stage.getActualParameters().stream()
+                shape.getActualParameters().stream()
                      .map(Type::of)
                      .collect(Collectors.toList())
         );
@@ -124,7 +124,7 @@ public abstract class Type<T> {
      * Returns the {@link Class} on which this Type is based.
      */
     public final Class<?> getUnderlyingClass() {
-        return stage.getUnderlyingClass();
+        return shape.getUnderlyingClass();
     }
 
     /**
@@ -160,7 +160,7 @@ public abstract class Type<T> {
      * @see Method#getGenericParameterTypes()
      */
     public final Type<?> getMemberType(final java.lang.reflect.Type type) {
-        return new Type(TypeVariant.toStage(type, stage)) {
+        return new Type(TypeVariant.toStage(type, shape)) {
         };
     }
 

@@ -6,12 +6,12 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
-class GenericArrayStage extends ArrayStage {
+class GenericArrayShape extends ArrayShape {
 
-    private final Stage componentType;
+    private final Shape componentType;
 
     @SuppressWarnings("AnonymousInnerClassMayBeStatic")
-    GenericArrayStage(final GenericArrayType type, final Stage context) {
+    GenericArrayShape(final GenericArrayType type, final Shape context) {
         this.componentType = (TypeVariant.toStage(type.getGenericComponentType(), context));
     }
 
@@ -20,12 +20,12 @@ class GenericArrayStage extends ArrayStage {
     }
 
     @Override
-    final Class<?> getUnderlyingClass() {
+    public final Class<?> getUnderlyingClass() {
         return arrayClass(componentType.getUnderlyingClass());
     }
 
     @Override
-    final List<Stage> getActualParameters() {
+    final List<Shape> getActualParameters() {
         return singletonList(componentType);
     }
 }

@@ -4,16 +4,16 @@ import java.util.function.Function;
 
 enum ClassVariant {
 
-    CLASS(ClassStage::new),
-    ARRAY(PlainArrayStage::new);
+    CLASS(ClassShape::new),
+    ARRAY(PlainArrayShape::new);
 
-    private final Function<Class<?>, Stage> mapping;
+    private final Function<Class<?>, Shape> mapping;
 
-    ClassVariant(final Function<Class<?>, Stage> mapping) {
+    ClassVariant(final Function<Class<?>, Shape> mapping) {
         this.mapping = mapping;
     }
 
-    static Stage toStage(final Class<?> underlyingClass) {
+    static Shape toStage(final Class<?> underlyingClass) {
         return (underlyingClass.isArray() ? ARRAY : CLASS).mapping.apply(underlyingClass);
     }
 }

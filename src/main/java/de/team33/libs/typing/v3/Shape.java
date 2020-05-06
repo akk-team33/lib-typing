@@ -3,15 +3,15 @@ package de.team33.libs.typing.v3;
 import java.util.List;
 import java.util.Optional;
 
-abstract class Stage {
+public abstract class Shape {
 
-    abstract Class<?> getUnderlyingClass();
+    public abstract Class<?> getUnderlyingClass();
 
     abstract List<String> getFormalParameters();
 
-    abstract List<Stage> getActualParameters();
+    abstract List<Shape> getActualParameters();
 
-    final Stage getActualParameter(final String name) {
+    final Shape getActualParameter(final String name) {
         final List<String> formalParameters = getFormalParameters();
         return Optional.of(formalParameters.indexOf(name))
                 .filter(index -> 0 <= index)

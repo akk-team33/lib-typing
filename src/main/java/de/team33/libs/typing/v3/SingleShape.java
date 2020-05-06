@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
-abstract class SingleStage extends Stage {
+abstract class SingleShape extends Shape {
 
     @Override
     final List<String> getFormalParameters() {
@@ -21,10 +21,10 @@ abstract class SingleStage extends Stage {
 
     @Override
     public final String toString() {
-        final List<Stage> actual = getActualParameters();
+        final List<Shape> actual = getActualParameters();
         return getUnderlyingClass().getSimpleName() + (
                 actual.isEmpty() ? "" : actual.stream()
-                        .map(Stage::toString)
+                        .map(Shape::toString)
                         .collect(joining(", ", "<", ">")));
     }
 }
