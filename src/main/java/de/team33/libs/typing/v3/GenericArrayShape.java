@@ -1,31 +1,34 @@
 package de.team33.libs.typing.v3;
 
+import de.team33.libs.provision.v2.Lazy;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
 
+@SuppressWarnings("rawtypes")
 class GenericArrayShape extends ArrayShape {
 
-    private final Shape componentType;
+    private final Shape componentShape;
+    private final transient Lazy<Class<?>> rawClass = new Lazy<>(this::newRawClass);
 
-    @SuppressWarnings("AnonymousInnerClassMayBeStatic")
     GenericArrayShape(final GenericArrayType type, final Shape context) {
-        this.componentType = (TypeMapper.map(type.getGenericComponentType(), context));
+        this.componentShape = TypeMapper.map(type.getGenericComponentType(), context);
     }
 
-    private static Class<?> arrayClass(final Class<?> componentClass) {
-        return Array.newInstance(componentClass, 0).getClass();
+    private Class<?> newRawClass() {
+        return Array.newInstance(componentShape.getRawClass(), 0).getClass();
     }
 
     @Override
     public final Class getRawClass() {
-        return arrayClass(componentType.getRawClass());
+        return rawClass.get();
     }
 
     @Override
-    public final List<Shape> getActualParameters() {
-        return singletonList(componentType);
+    public List<Shape> getActualParameters() {
+        return singletonList(componentShape);
     }
 }

@@ -45,7 +45,9 @@ public abstract class Shape {
                        .filter(index -> 0 <= index)
                        .map(index -> getActualParameters().get(index))
                        .orElseThrow(() -> new IllegalArgumentException(
-                               String.format("formal parameter <%s> not found in %s", formalParameter, formalParameters)));
+                               String.format(
+                                       "formal parameter <%s> not found in %s",
+                                       formalParameter, formalParameters)));
     }
 
     @Override

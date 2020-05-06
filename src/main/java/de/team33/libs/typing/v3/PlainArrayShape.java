@@ -1,23 +1,29 @@
 package de.team33.libs.typing.v3;
 
-import java.util.Collections;
+import de.team33.libs.provision.v2.Lazy;
+
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 class PlainArrayShape extends ArrayShape {
 
-    private final Class<?> underlyingClass;
+    private final Class<?> rawClass;
 
-    PlainArrayShape(final Class<?> underlyingClass) {
-        this.underlyingClass = underlyingClass;
+    private final transient Lazy<List<Shape>> actualParameters =
+            new Lazy<>(() -> singletonList(ClassMapper.map(getRawClass().getComponentType())));
+
+    PlainArrayShape(final Class<?> rawClass) {
+        this.rawClass = rawClass;
     }
 
     @Override
     public final Class getRawClass() {
-        return underlyingClass;
+        return rawClass;
     }
 
     @Override
     public final List<Shape> getActualParameters() {
-        return Collections.singletonList(ClassMapper.map(underlyingClass.getComponentType()));
+        return actualParameters.get();
     }
 }

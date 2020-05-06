@@ -6,15 +6,15 @@ import static java.util.Collections.emptyList;
 
 class PlainClassShape extends DiscreteShape {
 
-    private final Class<?> underlyingClass;
+    private final Class<?> rawClass;
 
-    PlainClassShape(final Class<?> underlyingClass) {
-        this.underlyingClass = underlyingClass;
+    PlainClassShape(final Class<?> rawClass) {
+        this.rawClass = rawClass;
     }
 
     @Override
     public final Class getRawClass() {
-        return underlyingClass;
+        return rawClass;
     }
 
     @Override
