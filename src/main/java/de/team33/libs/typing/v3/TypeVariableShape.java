@@ -16,12 +16,12 @@ class TypeVariableShape extends SingleShape {
     }
 
     @Override
-    public final Class<?> getUnderlyingClass() {
-        return definite.getUnderlyingClass();
+    public final Class getRawClass() {
+        return definite.getRawClass();
     }
 
     @Override
-    final List<Shape> getActualParameters() {
+    public final List<Shape> getActualParameters() {
         return definite.getActualParameters();
     }
 }

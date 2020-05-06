@@ -16,12 +16,12 @@ class ParameterizedShape extends SingleShape {
     }
 
     @Override
-    public final Class<?> getUnderlyingClass() {
+    public final Class getRawClass() {
         return (Class<?>) type.getRawType();
     }
 
     @Override
-    final List<Shape> getActualParameters() {
+    public final List<Shape> getActualParameters() {
         return Stream.of(type.getActualTypeArguments())
                 .map(type1 -> TypeVariant.toStage(type1, context))
                 .collect(Collectors.toList());

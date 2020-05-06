@@ -11,9 +11,9 @@ import static java.util.stream.Collectors.joining;
 abstract class SingleShape extends Shape {
 
     @Override
-    final List<String> getFormalParameters() {
+    public final List<String> getFormalParameters() {
         return unmodifiableList(
-                Stream.of(getUnderlyingClass().getTypeParameters())
+                Stream.of(getRawClass().getTypeParameters())
                         .map(TypeVariable::getName)
                         .collect(Collectors.toList())
         );
@@ -22,7 +22,7 @@ abstract class SingleShape extends Shape {
     @Override
     public final String toString() {
         final List<Shape> actual = getActualParameters();
-        return getUnderlyingClass().getSimpleName() + (
+        return getRawClass().getSimpleName() + (
                 actual.isEmpty() ? "" : actual.stream()
                         .map(Shape::toString)
                         .collect(joining(", ", "<", ">")));

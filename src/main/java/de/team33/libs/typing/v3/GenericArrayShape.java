@@ -20,12 +20,12 @@ class GenericArrayShape extends ArrayShape {
     }
 
     @Override
-    public final Class<?> getUnderlyingClass() {
-        return arrayClass(componentType.getUnderlyingClass());
+    public final Class getRawClass() {
+        return arrayClass(componentType.getRawClass());
     }
 
     @Override
-    final List<Shape> getActualParameters() {
+    public final List<Shape> getActualParameters() {
         return singletonList(componentType);
     }
 }

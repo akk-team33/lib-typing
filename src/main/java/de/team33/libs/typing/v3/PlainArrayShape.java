@@ -12,12 +12,12 @@ class PlainArrayShape extends ArrayShape {
     }
 
     @Override
-    public final Class<?> getUnderlyingClass() {
+    public final Class getRawClass() {
         return underlyingClass;
     }
 
     @Override
-    final List<Shape> getActualParameters() {
+    public final List<Shape> getActualParameters() {
         return Collections.singletonList(ClassVariant.toStage(underlyingClass.getComponentType()));
     }
 }

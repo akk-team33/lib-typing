@@ -124,7 +124,7 @@ public abstract class Type<T> {
      * Returns the {@link Class} on which this Type is based.
      */
     public final Class<?> getUnderlyingClass() {
-        return shape.getUnderlyingClass();
+        return shape.getRawClass();
     }
 
     /**

@@ -13,12 +13,12 @@ class ClassShape extends SingleShape {
     }
 
     @Override
-    public final Class<?> getUnderlyingClass() {
+    public final Class getRawClass() {
         return underlyingClass;
     }
 
     @Override
-    final List<Shape> getActualParameters() {
+    public final List<Shape> getActualParameters() {
         return emptyList();
     }
 }
