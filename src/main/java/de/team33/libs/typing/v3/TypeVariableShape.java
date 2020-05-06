@@ -4,7 +4,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
 
-class TypeVariableShape extends SingleShape {
+class TypeVariableShape extends DiscreteShape {
 
     private final Shape definite;
 

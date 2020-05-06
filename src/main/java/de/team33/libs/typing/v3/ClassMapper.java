@@ -2,18 +2,18 @@ package de.team33.libs.typing.v3;
 
 import java.util.function.Function;
 
-enum ClassVariant {
+enum ClassMapper {
 
-    CLASS(ClassShape::new),
+    CLASS(PlainClassShape::new),
     ARRAY(PlainArrayShape::new);
 
     private final Function<Class<?>, Shape> mapping;
 
-    ClassVariant(final Function<Class<?>, Shape> mapping) {
+    ClassMapper(final Function<Class<?>, Shape> mapping) {
         this.mapping = mapping;
     }
 
-    static Shape toStage(final Class<?> underlyingClass) {
+    static Shape map(final Class<?> underlyingClass) {
         return (underlyingClass.isArray() ? ARRAY : CLASS).mapping.apply(underlyingClass);
     }
 }

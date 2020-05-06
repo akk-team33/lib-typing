@@ -18,6 +18,6 @@ class PlainArrayShape extends ArrayShape {
 
     @Override
     public final List<Shape> getActualParameters() {
-        return Collections.singletonList(ClassVariant.toStage(underlyingClass.getComponentType()));
+        return Collections.singletonList(ClassMapper.map(underlyingClass.getComponentType()));
     }
 }

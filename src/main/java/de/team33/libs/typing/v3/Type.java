@@ -71,10 +71,10 @@ public abstract class Type<T> {
      */
     protected Type() {
         final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        this.shape = TypeVariant.toStage(
+        this.shape = TypeMapper.map(
                 genericSuperclass.getActualTypeArguments()[0],
-                ClassVariant.toStage(getClass())
-                                        );
+                ClassMapper.map(getClass())
+                                   );
     }
 
     private Type(final Shape shape) {
@@ -87,7 +87,7 @@ public abstract class Type<T> {
      * {@linkplain #getFormalParameters() formal parameters}.</p>
      */
     public static <T> Type<T> of(final Class<T> simpleClass) {
-        return new Type<T>(ClassVariant.toStage(simpleClass)) {
+        return new Type<T>(ClassMapper.map(simpleClass)) {
         };
     }
 
@@ -160,7 +160,7 @@ public abstract class Type<T> {
      * @see Method#getGenericParameterTypes()
      */
     public final Type<?> getMemberType(final java.lang.reflect.Type type) {
-        return new Type(TypeVariant.toStage(type, shape)) {
+        return new Type(TypeMapper.map(type, shape)) {
         };
     }
 

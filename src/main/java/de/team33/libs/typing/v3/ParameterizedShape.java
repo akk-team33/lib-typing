@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ParameterizedShape extends SingleShape {
+class ParameterizedShape extends DiscreteShape {
 
     private final ParameterizedType type;
     private final Shape context;
@@ -23,7 +23,7 @@ class ParameterizedShape extends SingleShape {
     @Override
     public final List<Shape> getActualParameters() {
         return Stream.of(type.getActualTypeArguments())
-                .map(type1 -> TypeVariant.toStage(type1, context))
+                .map(type1 -> TypeMapper.map(type1, context))
                 .collect(Collectors.toList());
     }
 }

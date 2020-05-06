@@ -4,11 +4,11 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-class ClassShape extends SingleShape {
+class PlainClassShape extends DiscreteShape {
 
     private final Class<?> underlyingClass;
 
-    ClassShape(final Class<?> underlyingClass) {
+    PlainClassShape(final Class<?> underlyingClass) {
         this.underlyingClass = underlyingClass;
     }
 

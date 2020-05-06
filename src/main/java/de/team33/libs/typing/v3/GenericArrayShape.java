@@ -12,7 +12,7 @@ class GenericArrayShape extends ArrayShape {
 
     @SuppressWarnings("AnonymousInnerClassMayBeStatic")
     GenericArrayShape(final GenericArrayType type, final Shape context) {
-        this.componentType = (TypeVariant.toStage(type.getGenericComponentType(), context));
+        this.componentType = (TypeMapper.map(type.getGenericComponentType(), context));
     }
 
     private static Class<?> arrayClass(final Class<?> componentClass) {

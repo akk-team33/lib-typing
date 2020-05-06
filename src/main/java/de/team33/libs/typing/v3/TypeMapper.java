@@ -8,11 +8,11 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-enum TypeVariant {
+enum TypeMapper {
 
     CLASS(
             type -> type instanceof Class<?>,
-            (type, context) -> ClassVariant.toStage((Class<?>) type)),
+            (type, context) -> ClassMapper.map((Class<?>) type)),
 
     GENERIC_ARRAY(
             type -> type instanceof GenericArrayType,
@@ -29,12 +29,12 @@ enum TypeVariant {
     private final Predicate<Type> matching;
     private final BiFunction<Type, Shape, Shape> mapping;
 
-    TypeVariant(final Predicate<Type> matching, final BiFunction<Type, Shape, Shape> mapping) {
+    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, Shape, Shape> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    static Shape toStage(final Type type, final Shape context) {
+    static Shape map(final Type type, final Shape context) {
         return Stream.of(values())
                 .filter(typeType -> typeType.matching.test(type)).findAny()
                 .map(typeType -> typeType.mapping.apply(type, context))

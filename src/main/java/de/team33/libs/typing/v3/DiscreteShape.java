@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
-abstract class SingleShape extends Shape {
+abstract class DiscreteShape extends Shape {
 
     @Override
     public final List<String> getFormalParameters() {
