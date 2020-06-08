@@ -1,4 +1,4 @@
-package de.team33.libs.typing.v3;
+package de.team33.libs.typing.v4;
 
 import de.team33.libs.provision.v2.Lazy;
 

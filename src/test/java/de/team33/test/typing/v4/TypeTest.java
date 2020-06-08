@@ -1,7 +1,7 @@
-package de.team33.test.typing.v3;
+package de.team33.test.typing.v4;
 
-import de.team33.libs.typing.v3.Shape;
-import de.team33.libs.typing.v3.Type;
+import de.team33.libs.typing.v4.Shape;
+import de.team33.libs.typing.v4.Type;
 import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
 import de.team33.test.typing.shared.Interface;

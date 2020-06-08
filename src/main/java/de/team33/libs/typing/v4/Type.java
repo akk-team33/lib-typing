@@ -1,19 +1,7 @@
-package de.team33.libs.typing.v3;
+package de.team33.libs.typing.v4;
 
-import de.team33.libs.provision.v2.LazyMap;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**

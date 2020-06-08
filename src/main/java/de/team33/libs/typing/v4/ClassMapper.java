@@ -1,4 +1,4 @@
-package de.team33.libs.typing.v3;
+package de.team33.libs.typing.v4;
 
 import java.util.function.Function;
 
