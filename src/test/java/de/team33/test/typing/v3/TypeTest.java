@@ -7,9 +7,11 @@ import de.team33.test.typing.shared.Generic;
 import de.team33.test.typing.shared.Interface;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +35,9 @@ public class TypeTest {
     private static final Type<Generic> RAW_GENERIC_TYPE =
             new Type<Generic>() {
             };
+    private static final Type<Generic<String, List<String>, Map<String, List<String>>>[]> ARRAY_TYPE =
+            new Type<Generic<String, List<String>, Map<String, List<String>>>[]>() {
+            };
 
     @Test
     public final void getRawClass() {
@@ -48,12 +53,29 @@ public class TypeTest {
     }
 
     @Test
+    public final void getFormalParametersOfArray() {
+        final List<String> formalParameters = ARRAY_TYPE.getFormalParameters();
+        assertEquals(1, formalParameters.size());
+        assertEquals("E", formalParameters.get(0));
+    }
+
+    @Test
     public final void getActualParameters() {
         final List<Shape> actualParameters = GENERIC_TYPE.getActualParameters();
         assertEquals(3, actualParameters.size());
         assertStringType(actualParameters.get(0));
         assertStringListType(actualParameters.get(1));
         assertMapStringToListOfString(actualParameters.get(2));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public final void getActualParameter() {
+        assertStringType(GENERIC_TYPE.getActualParameter("T"));
+        assertStringListType(GENERIC_TYPE.getActualParameter("U"));
+        assertMapStringToListOfString(GENERIC_TYPE.getActualParameter("V"));
+
+        // -> IllegalArgumentException ...
+        assertMapStringToListOfString(GENERIC_TYPE.getActualParameter("W"));
     }
 
     @Test
@@ -125,8 +147,15 @@ public class TypeTest {
         final Method method = Interface.class.getMethod("setTArray", Object[].class);
         assertEquals(
                 singletonList(Type.of(String[].class)),
-                Type.of(Fixed.class).parameterShapesOf(method)
-        );
+                Type.of(Fixed.class).parameterShapesOf(method));
+    }
+
+    @Test
+    public final void exceptionShapesOf() throws NoSuchMethodException {
+        final Method method = Interface.class.getMethod("setTArray", Object[].class);
+        assertEquals(
+                Arrays.asList(Type.of(IOException.class), Type.of(NullPointerException.class)),
+                Type.of(Fixed.class).exceptionShapesOf(method));
     }
 
     @Test

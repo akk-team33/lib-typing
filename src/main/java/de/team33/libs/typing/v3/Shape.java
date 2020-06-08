@@ -50,8 +50,10 @@ public abstract class Shape {
 
     /**
      * Returns a specific actual parameter based on the corresponding formal parameter.
+     *
+     * @throws IllegalArgumentException when {@code <formalParameter>} is invalid.
      */
-    public final Shape getActualParameter(final String formalParameter) {
+    public final Shape getActualParameter(final String formalParameter) throws IllegalArgumentException {
         final List<String> formalParameters = getFormalParameters();
         return Optional.of(formalParameters.indexOf(formalParameter))
                        .filter(index -> 0 <= index)

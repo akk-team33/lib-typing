@@ -1,5 +1,6 @@
 package de.team33.test.typing.shared;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public interface Interface<T, U, V, R extends Interface<T, U, V, R>> {
 
     T[] getTArray();
 
-    R setTArray(final T[] tArray);
+    R setTArray(final T[] tArray) throws IOException, NullPointerException;
 
     U[] getUArray();
 
