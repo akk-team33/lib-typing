@@ -39,6 +39,15 @@ public class TypeTest {
             new Type<Generic<String, List<String>, Map<String, List<String>>>[]>() {
             };
 
+    class Incomplete<T> extends Type<Map<String, List<T>>> {
+    }
+
+    @Test(expected = RuntimeException.class)
+    public final void incompleteDefinition() {
+        final Type<Map<String, List<String>>> incompleteType = new Incomplete<>();
+        fail("expected to fail but was " + incompleteType);
+    }
+
     @Test
     public final void getRawClass() {
         assertSame(Generic.class, GENERIC_TYPE.getRawClass());
