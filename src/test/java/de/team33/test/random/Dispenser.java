@@ -38,57 +38,63 @@ public final class Dispenser {
     }
 
     public final <R> R any(final Type<R> rType) {
-        final Function<Dispenser, R> method = getMethod(rType);
+        //noinspection unchecked
+        return (R) any((Shape) rType);
+    }
+
+    public final Object any(final Shape shape) {
+        final Function<Dispenser, ?> method = getMethod(shape);
         return method.apply(this);
     }
 
-    private <R> Function<Dispenser, R> getMethod(final Type<R> rType) {
-        //noinspection unchecked
-        return Optional.ofNullable((Function<Dispenser, R>) template.methods.get(rType)).orElseGet(() -> {
-            final Function<Dispenser, R> method = newMethod(rType);
-            template.methods.put(rType, method);
-            return method;
-        });
-    }
-
-    private <R> Function<Dispenser, R> newMethod(final Type<R> rType) {
-        return GenericMethod.get(this, rType);
+    private Function<Dispenser, ?> getMethod(final Shape shape) {
+        return template.methods.computeIfAbsent(shape, key -> GenericMethod.get(this, key));
     }
 
     private enum GenericMethod {
 
-        ARRAY(shape -> shape.getRawClass().isArray(), (dsp, shape)
-                -> new ArrayMethod(shape, dsp.template.arrayBounds)),
-        STRING(shape -> shape.getRawClass().isAssignableFrom(String.class), (dsp, shape)
-                -> new StringMethod(dsp.template.stringBounds)),
-        FALLBACK(shape -> false, (dsp, shape) -> dspX -> {
-            throw new UnsupportedOperationException("not yet implemented");
-        });
+        ARRAY(Filter.ARRAY, Method.ARRAY),
+        STRING(Filter.STRING, Method.STRING),
+        FALLBACK(Filter.FALLBACK, Method.FALLBACK);
 
-        private final Predicate<Shape> predicate;
         @SuppressWarnings("rawtypes")
-        private final BiFunction<Dispenser, Shape, Function> newMethod;
+        private final BiFunction<Dispenser, Shape, Function<Dispenser, ?>> newMethod;
+        private final Predicate<Shape> predicate;
 
-        GenericMethod(final Predicate<Shape> predicate, BiFunction<Dispenser, Shape, Function> newMethod) {
+        GenericMethod(final Predicate<Shape> predicate,
+                      final BiFunction<Dispenser, Shape, Function<Dispenser, ?>> newMethod) {
             this.predicate = predicate;
             this.newMethod = newMethod;
         }
 
-        private static <T> Function<Dispenser, T> get(final Dispenser ctx, final Type<T> tType) {
-            //noinspection unchecked
+        private static Function<Dispenser, ?> get(final Dispenser ctx, final Shape shape) {
             return Stream.of(values())
-                         .filter(value -> value.predicate.test(tType))
+                         .filter(value -> value.predicate.test(shape))
                          .findAny()
                          .orElse(FALLBACK)
                     .newMethod
-                    .apply(ctx, tType);
+                    .apply(ctx, shape);
+        }
+
+        private interface Filter extends Predicate<Shape> {
+            Filter ARRAY = shape -> shape.getRawClass().isArray();
+            Filter STRING = shape -> shape.getRawClass().isAssignableFrom(String.class);
+            Filter FALLBACK = shape -> false;
+        }
+
+        private interface Method extends BiFunction<Dispenser, Shape, Function<Dispenser, ?>> {
+            Method ARRAY = (dsp, shape) -> new ArrayMethod(shape, dsp.template.arrayBounds);
+            Method STRING = (dsp, shape) -> new StringMethod(dsp.template.stringBounds);
+            Method FALLBACK = (dsp, shape) -> dspX -> {
+                throw new UnsupportedOperationException("Unsupported: no method specified for type " + shape);
+            };
         }
     }
 
     private static final class Template implements Supplier<Dispenser> {
 
         @SuppressWarnings("rawtypes")
-        private final Map<Shape, Function> methods;
+        private final Map<Shape, Function<Dispenser, ?>> methods;
         private final Function<String, Basics> newBasics;
         private final Function<Basics, Selector> newSelector;
         private final String defaultCharset;
@@ -130,7 +136,7 @@ public final class Dispenser {
                 "abcdefghijklmnopqrstuvwxyzäöüß-ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ_0123456789 ,.;:@$!?";
 
         @SuppressWarnings("rawtypes")
-        private final Map<Shape, Function> methods = new HashMap<>(0);
+        private final Map<Shape, Function<Dispenser, ?>> methods = new HashMap<>(0);
 
         private Function<String, Basics> newBasics = DefaultBasics::new;
         private Function<Basics, Selector> newSelector = DefaultSelector::new;

@@ -6,10 +6,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -31,8 +33,8 @@ public class DispenserTest<T> {
                                                                   .put(char.class, dsp -> dsp.basics.anyChar())
                                                                   .setDefaultCharset("abc")
                                                                   .prepare();
-    private static final int MAX_LOOP_PRIMITIVES = 1000;
-    private static final int MAX_LOOP_ARRAYS = 100;
+    private static final int MAX_LOOP_PRIMITIVES = 1;
+    private static final int MAX_LOOP_ARRAYS = 1;
 
     private final Type<T> type;
     private final Predicate<T> validity;
@@ -64,7 +66,13 @@ public class DispenserTest<T> {
                 getParameter(char.class, Character.class),
                 getParameter(Character.class),
 
+                getParameter(Object.class, MAX_LOOP_ARRAYS),
+                getParameter(CharSequence.class, MAX_LOOP_ARRAYS),
+                getParameter(Serializable.class, MAX_LOOP_ARRAYS),
+                getParameter(new Type<Comparable<String>>(){}, String.class::isInstance, MAX_LOOP_ARRAYS),
                 getParameter(String.class, MAX_LOOP_ARRAYS),
+
+                getParameter(TimeUnit.class),
 
                 getParameter(boolean[].class, MAX_LOOP_ARRAYS),
                 getParameter(byte[].class, MAX_LOOP_ARRAYS),

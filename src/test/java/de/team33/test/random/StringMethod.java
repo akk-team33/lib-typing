@@ -4,16 +4,16 @@ import de.team33.libs.typing.v4.Type;
 
 import java.util.function.Function;
 
-class StringMethod implements Function<Dispenser, Object> {
+class StringMethod implements Function<Dispenser, String> {
 
-    private final ArrayMethod backing;
+    private final Function<Dispenser, char[]> backing;
 
     StringMethod(final Bounds stringBounds) {
-        this.backing = new ArrayMethod(Type.of(char[].class), stringBounds);
+        this.backing = new ArrayMethod<>(Type.of(char[].class), stringBounds);
     }
 
     @Override
-    public final Object apply(final Dispenser dispenser) {
-        return new String((char[]) backing.apply(dispenser));
+    public final String apply(final Dispenser dispenser) {
+        return new String(backing.apply(dispenser));
     }
 }
