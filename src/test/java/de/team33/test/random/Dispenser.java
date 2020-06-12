@@ -3,14 +3,15 @@ package de.team33.test.random;
 import de.team33.libs.typing.v4.Shape;
 import de.team33.libs.typing.v4.Type;
 
-import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,21 +52,37 @@ public final class Dispenser {
     }
 
     private <R> Function<Dispenser, R> newMethod(final Type<R> rType) {
-        if (rType.getRawClass().isArray()) {
-            return newArrayMethod(rType);
-        }
-        throw new UnsupportedOperationException("not yet implemented");
+        return GenericMethod.get(this, rType);
     }
 
-    private <R> Function<Dispenser, R> newArrayMethod(final Type<R> rType) {
-        return dispenser -> {
+    private enum GenericMethod {
+
+        ARRAY(shape -> shape.getRawClass().isArray(), (dsp, shape)
+                -> new ArrayMethod(shape, dsp.template.arrayBounds)),
+        STRING(shape -> shape.getRawClass().isAssignableFrom(String.class), (dsp, shape)
+                -> new StringMethod(dsp.template.stringBounds)),
+        FALLBACK(shape -> false, (dsp, shape) -> dspX -> {
+            throw new UnsupportedOperationException("not yet implemented");
+        });
+
+        private final Predicate<Shape> predicate;
+        @SuppressWarnings("rawtypes")
+        private final BiFunction<Dispenser, Shape, Function> newMethod;
+
+        GenericMethod(final Predicate<Shape> predicate, BiFunction<Dispenser, Shape, Function> newMethod) {
+            this.predicate = predicate;
+            this.newMethod = newMethod;
+        }
+
+        private static <T> Function<Dispenser, T> get(final Dispenser ctx, final Type<T> tType) {
             //noinspection unchecked
-            final R result = (R) Array.newInstance(rType.getRawClass().getComponentType(), dispenser.template.lowerBound + dispenser.basics.anyInt(dispenser.template.upperBound - dispenser.template.lowerBound));
-            for (int index = 0; index < Array.getLength(result); ++index) {
-                Array.set(result, index, dispenser.any(rType.getRawClass().getComponentType()));
-            }
-            return result;
-        };
+            return Stream.of(values())
+                         .filter(value -> value.predicate.test(tType))
+                         .findAny()
+                         .orElse(FALLBACK)
+                    .newMethod
+                    .apply(ctx, tType);
+        }
     }
 
     private static final class Template implements Supplier<Dispenser> {
@@ -75,16 +92,16 @@ public final class Dispenser {
         private final Function<String, Basics> newBasics;
         private final Function<Basics, Selector> newSelector;
         private final String defaultCharset;
-        private final int lowerBound;
-        private final int upperBound;
+        private final Bounds arrayBounds;
+        private final Bounds stringBounds;
 
         private Template(final Builder builder) {
             methods = new ConcurrentHashMap<>(builder.methods);
             newBasics = builder.newBasics;
             newSelector = builder.newSelector;
             defaultCharset = builder.defaultCharset;
-            lowerBound = 0;
-            upperBound = 16;
+            arrayBounds = builder.arrayBounds;
+            stringBounds = builder.stringBounds;
         }
 
         @Override
@@ -118,6 +135,8 @@ public final class Dispenser {
         private Function<String, Basics> newBasics = DefaultBasics::new;
         private Function<Basics, Selector> newSelector = DefaultSelector::new;
         private String defaultCharset = DEFAULT_CHARSET;
+        private Bounds arrayBounds = new Bounds(1, 8);
+        private Bounds stringBounds = new Bounds(1, 24);
 
         private static List<Type<?>> matching(final Type<?> type) {
             return Optional.ofNullable(PRIME_MAP.get(type))
@@ -156,6 +175,16 @@ public final class Dispenser {
 
         public final Builder setDefaultCharset(final String defaultCharset) {
             this.defaultCharset = defaultCharset;
+            return this;
+        }
+
+        public final Builder setArrayBounds(final int lower, final int upper) {
+            this.arrayBounds = new Bounds(lower, upper);
+            return this;
+        }
+
+        public final Builder setStringBounds(final int lower, final int upper) {
+            this.stringBounds = new Bounds(lower, upper);
             return this;
         }
 

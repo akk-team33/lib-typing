@@ -29,8 +29,7 @@ public class DispenserTest<T> {
                                                                   .put(float.class, dsp -> dsp.basics.anyFloat())
                                                                   .put(Double.class, dsp -> dsp.basics.anyDouble())
                                                                   .put(char.class, dsp -> dsp.basics.anyChar())
-                                                                  .put(String.class, dsp -> new String(dsp.any(char[].class)))
-                                                                  .setDefaultCharset("abcdefghijklm-NOPQRSTUVWXYZ")
+                                                                  .setDefaultCharset("abc")
                                                                   .prepare();
     private static final int MAX_LOOP_PRIMITIVES = 1000;
     private static final int MAX_LOOP_ARRAYS = 100;
