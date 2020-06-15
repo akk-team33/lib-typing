@@ -43,7 +43,7 @@ public class Mapper {
 
     private enum DefaultMapping {
 
-        ENUM(Class::isEnum, (mapper, shape) -> mapper.newEnumMapper(shape.getRawClass())),
+        ENUM(Class::isEnum, (mapper, model) -> mapper.newEnumMapper(model.getRawClass())),
         FALLBACK(c -> false, null);
 
         private final Predicate<Class> filter;

@@ -88,83 +88,83 @@ public class TypeTest {
     }
 
     @Test
-    public final void shapeOf() throws NoSuchFieldException {
-        assertIntType(GENERIC_TYPE.shapeOf(Generic.class.getField("intField")));
-        assertIntArrayType(GENERIC_TYPE.shapeOf(Generic.class.getField("intArray")));
+    public final void modelOf() throws NoSuchFieldException {
+        assertIntType(GENERIC_TYPE.modelOf(Generic.class.getField("intField")));
+        assertIntArrayType(GENERIC_TYPE.modelOf(Generic.class.getField("intArray")));
 
-        assertStringType(GENERIC_TYPE.shapeOf(Generic.class.getField("stringField")));
-        assertStringArrayType(GENERIC_TYPE.shapeOf(Generic.class.getField("stringArray")));
+        assertStringType(GENERIC_TYPE.modelOf(Generic.class.getField("stringField")));
+        assertStringArrayType(GENERIC_TYPE.modelOf(Generic.class.getField("stringArray")));
 
-        assertStringType(GENERIC_TYPE.shapeOf(Generic.class.getField("tField")));
-        assertStringArrayType(GENERIC_TYPE.shapeOf(Generic.class.getField("tArray")));
+        assertStringType(GENERIC_TYPE.modelOf(Generic.class.getField("tField")));
+        assertStringArrayType(GENERIC_TYPE.modelOf(Generic.class.getField("tArray")));
 
-        assertStringListType(GENERIC_TYPE.shapeOf(Generic.class.getField("uField")));
-        assertStringListArrayType(GENERIC_TYPE.shapeOf(Generic.class.getField("uArray")));
+        assertStringListType(GENERIC_TYPE.modelOf(Generic.class.getField("uField")));
+        assertStringListArrayType(GENERIC_TYPE.modelOf(Generic.class.getField("uArray")));
 
-        assertMapStringToListOfString(GENERIC_TYPE.shapeOf(Generic.class.getField("vField")));
-        assertMapStringToListArrayType(GENERIC_TYPE.shapeOf(Generic.class.getField("vArray")));
+        assertMapStringToListOfString(GENERIC_TYPE.modelOf(Generic.class.getField("vField")));
+        assertMapStringToListArrayType(GENERIC_TYPE.modelOf(Generic.class.getField("vArray")));
 
-        assertStringListType(GENERIC_TYPE.shapeOf(Generic.class.getField("tList")));
-        assertMapStringToListOfString(GENERIC_TYPE.shapeOf(Generic.class.getField("t2uMap")));
+        assertStringListType(GENERIC_TYPE.modelOf(Generic.class.getField("tList")));
+        assertMapStringToListOfString(GENERIC_TYPE.modelOf(Generic.class.getField("t2uMap")));
         
         final Field field = Generic.class.getDeclaredField("tField");
         assertEquals(
                 Type.of(String.class),
                 Type.of(Fixed.class)
-                    .shapeOf(field));
+                    .modelOf(field));
     }
 
     @Test
-    public final void getSuperShape() {
-        assertEquals(Optional.of(GENERIC_TYPE), Type.of(Fixed.class).getSuperShape());
+    public final void getSuperModel() {
+        assertEquals(Optional.of(GENERIC_TYPE), Type.of(Fixed.class).getSuperModel());
     }
 
     @Test
     public final void getSuperTypeEmpty() {
-        assertEquals(Optional.empty(), Type.of(Object.class).getSuperShape());
-        assertEquals(Optional.empty(), Type.of(int.class).getSuperShape());
-        assertEquals(Optional.empty(), Type.of(void.class).getSuperShape());
+        assertEquals(Optional.empty(), Type.of(Object.class).getSuperModel());
+        assertEquals(Optional.empty(), Type.of(int.class).getSuperModel());
+        assertEquals(Optional.empty(), Type.of(void.class).getSuperModel());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public final void shapeOfIllegal() throws NoSuchFieldException {
+    public final void modelOfIllegal() throws NoSuchFieldException {
         final Field field = ArrayList.class.getDeclaredField("elementData");
-        fail("Should fail but was " + Type.of(Fixed.class).shapeOf(field));
+        fail("Should fail but was " + Type.of(Fixed.class).modelOf(field));
     }
 
     @Test
-    public final void returnShapeOf() throws NoSuchMethodException {
+    public final void returnModelOf() throws NoSuchMethodException {
         final Method method1 = Fixed.class.getMethod("toString");
         assertEquals(
                 Type.of(String.class),
-                Type.of(Fixed.class).returnShapeOf(method1)
+                Type.of(Fixed.class).returnModelOf(method1)
         );
         final Method method2 = Interface.class.getMethod("setStringField", String.class);
         assertEquals(
                 Type.of(Fixed.class),
-                Type.of(Fixed.class).returnShapeOf(method2)
+                Type.of(Fixed.class).returnModelOf(method2)
         );
         final Method method3 = Interface.class.getMethod("getTArray");
         assertEquals(
                 Type.of(String[].class),
-                Type.of(Fixed.class).returnShapeOf(method3)
+                Type.of(Fixed.class).returnModelOf(method3)
         );
     }
 
     @Test
-    public final void parameterShapesOf() throws NoSuchMethodException {
+    public final void parameterModelsOf() throws NoSuchMethodException {
         final Method method = Interface.class.getMethod("setTArray", Object[].class);
         assertEquals(
                 singletonList(Type.of(String[].class)),
-                Type.of(Fixed.class).parameterShapesOf(method));
+                Type.of(Fixed.class).parameterModelsOf(method));
     }
 
     @Test
-    public final void exceptionShapesOf() throws NoSuchMethodException {
+    public final void exceptionModelsOf() throws NoSuchMethodException {
         final Method method = Interface.class.getMethod("setTArray", Object[].class);
         assertEquals(
                 Arrays.asList(Type.of(IOException.class), Type.of(NullPointerException.class)),
-                Type.of(Fixed.class).exceptionShapesOf(method));
+                Type.of(Fixed.class).exceptionModelsOf(method));
     }
 
     @Test

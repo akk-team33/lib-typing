@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  */
 public abstract class Model {
 
-    private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Shape (%s)";
+    private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Model (%s)";
 
     private final transient Lazy<List<Object>> listView =
             new Lazy<>(() -> Arrays.asList(getRawClass(), getActualParameters()));
@@ -70,7 +70,7 @@ public abstract class Model {
      * @see Class#getSuperclass()
      * @see Class#getGenericSuperclass()
      */
-    public final Optional<Model> getSuperShape() {
+    public final Optional<Model> getSuperModel() {
         return Optional.ofNullable(getRawClass().getGenericSuperclass())
                        .map(this::map);
     }
@@ -81,7 +81,7 @@ public abstract class Model {
      * @see Class#getInterfaces()
      * @see Class#getGenericInterfaces()
      */
-    public final Stream<Model> getInterfaces() {
+    public final Stream<Model> getInterfaceModels() {
         return Stream.of(getRawClass().getGenericInterfaces())
                      .map(this::map);
     }
@@ -89,14 +89,14 @@ public abstract class Model {
     /**
      * Returns all the {@link Model}s (superclass, interfaces) from which this {@link Model} is derived (if so).
      *
-     * @see #getSuperShape()
-     * @see #getInterfaces()
+     * @see #getSuperModel()
+     * @see #getInterfaceModels()
      */
-    public final Stream<Model> getSuperShapes() {
+    public final Stream<Model> getSuperModels() {
         return Stream.concat(
-                getSuperShape().map(Stream::of)
+                getSuperModel().map(Stream::of)
                                .orElseGet(Stream::empty),
-                getInterfaces());
+                getInterfaceModels());
     }
 
     /**
@@ -108,9 +108,9 @@ public abstract class Model {
      * @see Field#getType()
      * @see Field#getGenericType()
      */
-    public final Model shapeOf(final Field field) {
+    public final Model modelOf(final Field field) {
         return Optional
-                .ofNullable(nullableShapeOf(field, Field::getGenericType))
+                .ofNullable(nullableModelOf(field, Field::getGenericType))
                 .orElseThrow(() -> illegalMemberException(field));
     }
 
@@ -124,9 +124,9 @@ public abstract class Model {
      * @see Method#getReturnType()
      * @see Method#getGenericReturnType()
      */
-    public final Model returnShapeOf(final Method method) {
+    public final Model returnModelOf(final Method method) {
         return Optional
-                .ofNullable(nullableShapeOf(method, Method::getGenericReturnType))
+                .ofNullable(nullableModelOf(method, Method::getGenericReturnType))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -140,9 +140,9 @@ public abstract class Model {
      * @see Method#getParameterTypes()
      * @see Method#getGenericParameterTypes()
      */
-    public final List<Model> parameterShapesOf(final Method method) {
+    public final List<Model> parameterModelsOf(final Method method) {
         return Optional
-                .ofNullable(nullableShapesOf(method, Method::getGenericParameterTypes))
+                .ofNullable(nullableModelsOf(method, Method::getGenericParameterTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -153,9 +153,9 @@ public abstract class Model {
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
      *                                  {@link Model}.
      */
-    public final List<Model> exceptionShapesOf(final Method method) {
+    public final List<Model> exceptionModelsOf(final Method method) {
         return Optional
-                .ofNullable(nullableShapesOf(method, Method::getGenericExceptionTypes))
+                .ofNullable(nullableModelsOf(method, Method::getGenericExceptionTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -163,28 +163,28 @@ public abstract class Model {
         return new IllegalArgumentException(String.format(NOT_DECLARED_IN_THIS, member, this));
     }
 
-    private List<Model> nullableShapesOf(final Method member,
+    private List<Model> nullableModelsOf(final Method member,
                                          final Function<Method, Type[]> toGenericTypes) {
         if (getRawClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
                          .map(this::map)
                          .collect(Collectors.toList());
         } else {
-            return getSuperShapes()
-                    .map(st -> st.nullableShapesOf(member, toGenericTypes))
+            return getSuperModels()
+                    .map(st -> st.nullableModelsOf(member, toGenericTypes))
                     .filter(Objects::nonNull)
                     .findAny()
                     .orElse(null);
         }
     }
 
-    private <M extends Member> Model nullableShapeOf(final M member,
+    private <M extends Member> Model nullableModelOf(final M member,
                                                      final Function<M, Type> toGenericType) {
         if (getRawClass().equals(member.getDeclaringClass())) {
             return map(toGenericType.apply(member));
         } else {
-            return getSuperShapes()
-                    .map(st -> st.nullableShapeOf(member, toGenericType))
+            return getSuperModels()
+                    .map(st -> st.nullableModelOf(member, toGenericType))
                     .filter(Objects::nonNull)
                     .findAny()
                     .orElse(null);

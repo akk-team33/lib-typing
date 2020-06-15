@@ -85,22 +85,22 @@ public final class Dispenser {
         }
 
         private interface Filter extends Predicate<Model> {
-            Filter ENUM = shape -> shape.getRawClass().isEnum();
-            Filter ARRAY = shape -> shape.getRawClass().isArray();
-            Filter STRING = shape -> shape.getRawClass().isAssignableFrom(String.class);
-            Filter STREAM = shape -> shape.getRawClass().equals(Stream.class);
-            Filter LIST = shape -> shape.getRawClass().isAssignableFrom(ArrayList.class);
-            Filter FALLBACK = shape -> false;
+            Filter ENUM = model -> model.getRawClass().isEnum();
+            Filter ARRAY = model -> model.getRawClass().isArray();
+            Filter STRING = model -> model.getRawClass().isAssignableFrom(String.class);
+            Filter STREAM = model -> model.getRawClass().equals(Stream.class);
+            Filter LIST = model -> model.getRawClass().isAssignableFrom(ArrayList.class);
+            Filter FALLBACK = model -> false;
         }
 
         private interface NewMethod extends BiFunction<Dispenser, Model, Function<Dispenser, ?>> {
-            NewMethod ENUM = (dsp, shape) -> new EnumMethod<>(shape);
-            NewMethod ARRAY = (dsp, shape) -> new ArrayMethod<>(shape, dsp.template.arrayBounds);
-            NewMethod STRING = (dsp, shape) -> new StringMethod(dsp.template.stringBounds);
-            NewMethod STREAM = (dsp, shape) -> new StreamMethod<>(shape, dsp.template.arrayBounds);
-            NewMethod LIST = (dsp, shape) -> new ListMethod<>(shape, dsp.template.arrayBounds);
-            NewMethod FALLBACK = (dsp, shape) -> dspX -> {
-                throw new UnsupportedOperationException("Unsupported: no method specified for type " + shape);
+            NewMethod ENUM = (dsp, model) -> new EnumMethod<>(model);
+            NewMethod ARRAY = (dsp, model) -> new ArrayMethod<>(model, dsp.template.arrayBounds);
+            NewMethod STRING = (dsp, model) -> new StringMethod(dsp.template.stringBounds);
+            NewMethod STREAM = (dsp, model) -> new StreamMethod<>(model, dsp.template.arrayBounds);
+            NewMethod LIST = (dsp, model) -> new ListMethod<>(model, dsp.template.arrayBounds);
+            NewMethod FALLBACK = (dsp, model) -> dspX -> {
+                throw new UnsupportedOperationException("Unsupported: no method specified for type " + model);
             };
         }
     }
@@ -197,10 +197,10 @@ public final class Dispenser {
         }
 
         private static void putPrimitives(final Map<Type<?>, List<Type<?>>> map, final Class<?>[] classes) {
-            final List<Type<?>> shapes = Stream.of(classes)
+            final List<Type<?>> models = Stream.of(classes)
                                                .map(Type::of)
                                                .collect(Collectors.toList());
-            shapes.forEach(shape -> map.put(shape, shapes));
+            models.forEach(model -> map.put(model, models));
         }
 
         public final <T> Builder put(final Class<T> type, final Function<Dispenser, T> method) {
