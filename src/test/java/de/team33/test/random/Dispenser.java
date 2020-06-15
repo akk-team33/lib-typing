@@ -3,11 +3,7 @@ package de.team33.test.random;
 import de.team33.libs.typing.v4.Shape;
 import de.team33.libs.typing.v4.Type;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -18,10 +14,19 @@ import java.util.stream.Stream;
 
 public final class Dispenser {
 
-    private final Template template;
-
+    private static final Class<?>[][] PRIMITIVES = {
+            {boolean.class, Boolean.class},
+            {byte.class, Byte.class},
+            {short.class, Short.class},
+            {int.class, Integer.class},
+            {long.class, Long.class},
+            {float.class, Float.class},
+            {double.class, Double.class},
+            {char.class, Character.class}
+    };
     public final Basics basics;
     public final Selector selector;
+    private final Template template;
 
     private Dispenser(final Template template) {
         this.template = template;
@@ -53,23 +58,26 @@ public final class Dispenser {
 
     private enum GenericMethod {
 
-        ARRAY(Filter.ARRAY, Method.ARRAY),
-        STRING(Filter.STRING, Method.STRING),
-        FALLBACK(Filter.FALLBACK, Method.FALLBACK);
+        ENUM(Filter.ENUM, NewMethod.ENUM),
+        ARRAY(Filter.ARRAY, NewMethod.ARRAY),
+        STRING(Filter.STRING, NewMethod.STRING),
+        STREAM(Filter.STREAM, NewMethod.STREAM),
+        LIST(Filter.LIST, NewMethod.LIST),
+        FALLBACK(Filter.FALLBACK, NewMethod.FALLBACK);
 
         @SuppressWarnings("rawtypes")
         private final BiFunction<Dispenser, Shape, Function<Dispenser, ?>> newMethod;
-        private final Predicate<Shape> predicate;
+        private final Predicate<Shape> filter;
 
-        GenericMethod(final Predicate<Shape> predicate,
+        GenericMethod(final Predicate<Shape> filter,
                       final BiFunction<Dispenser, Shape, Function<Dispenser, ?>> newMethod) {
-            this.predicate = predicate;
+            this.filter = filter;
             this.newMethod = newMethod;
         }
 
         private static Function<Dispenser, ?> get(final Dispenser ctx, final Shape shape) {
             return Stream.of(values())
-                         .filter(value -> value.predicate.test(shape))
+                         .filter(value -> value.filter.test(shape))
                          .findAny()
                          .orElse(FALLBACK)
                     .newMethod
@@ -77,18 +85,68 @@ public final class Dispenser {
         }
 
         private interface Filter extends Predicate<Shape> {
+            Filter ENUM = shape -> shape.getRawClass().isEnum();
             Filter ARRAY = shape -> shape.getRawClass().isArray();
             Filter STRING = shape -> shape.getRawClass().isAssignableFrom(String.class);
+            Filter STREAM = shape -> shape.getRawClass().equals(Stream.class);
+            Filter LIST = shape -> shape.getRawClass().isAssignableFrom(ArrayList.class);
             Filter FALLBACK = shape -> false;
         }
 
-        private interface Method extends BiFunction<Dispenser, Shape, Function<Dispenser, ?>> {
-            Method ARRAY = (dsp, shape) -> new ArrayMethod(shape, dsp.template.arrayBounds);
-            Method STRING = (dsp, shape) -> new StringMethod(dsp.template.stringBounds);
-            Method FALLBACK = (dsp, shape) -> dspX -> {
+        private interface NewMethod extends BiFunction<Dispenser, Shape, Function<Dispenser, ?>> {
+            NewMethod ENUM = (dsp, shape) -> new EnumMethod<>(shape);
+            NewMethod ARRAY = (dsp, shape) -> new ArrayMethod<>(shape, dsp.template.arrayBounds);
+            NewMethod STRING = (dsp, shape) -> new StringMethod(dsp.template.stringBounds);
+            NewMethod STREAM = (dsp, shape) -> new StreamMethod<>(shape, dsp.template.arrayBounds);
+            NewMethod LIST = (dsp, shape) -> new ListMethod<>(shape, dsp.template.arrayBounds);
+            NewMethod FALLBACK = (dsp, shape) -> dspX -> {
                 throw new UnsupportedOperationException("Unsupported: no method specified for type " + shape);
             };
         }
+    }
+
+    public interface Basics {
+
+        boolean anyBoolean();
+
+        byte anyByte();
+
+        short anyShort();
+
+        int anyInt();
+
+        int anyInt(int bound);
+
+        long anyLong();
+
+        float anyFloat();
+
+        double anyDouble();
+
+        char anyChar();
+
+        char anyCharOf(char[] charset);
+    }
+
+    public interface Selector {
+
+        boolean anyOf(boolean[] values);
+
+        byte anyOf(byte[] values);
+
+        short anyOf(short[] values);
+
+        int anyOf(int[] values);
+
+        long anyOf(long[] values);
+
+        float anyOf(float[] values);
+
+        double anyOf(double[] values);
+
+        char anyOf(char[] values);
+
+        <T> T anyOf(T[] values);
     }
 
     private static final class Template implements Supplier<Dispenser> {
@@ -115,17 +173,6 @@ public final class Dispenser {
             return new Dispenser(this);
         }
     }
-
-    private static final Class<?>[][] PRIMITIVES = {
-            {boolean.class, Boolean.class},
-            {byte.class, Byte.class},
-            {short.class, Short.class},
-            {int.class, Integer.class},
-            {long.class, Long.class},
-            {float.class, Float.class},
-            {double.class, Double.class},
-            {char.class, Character.class}
-    };
 
     public static final class Builder {
 
@@ -201,49 +248,5 @@ public final class Dispenser {
         public final Dispenser build() {
             return prepare().get();
         }
-    }
-
-    public interface Basics {
-
-        boolean anyBoolean();
-
-        byte anyByte();
-
-        short anyShort();
-
-        int anyInt();
-
-        int anyInt(int bound);
-
-        long anyLong();
-
-        float anyFloat();
-
-        double anyDouble();
-
-        char anyChar();
-
-        char anyCharOf(char[] charset);
-    }
-
-    public interface Selector {
-
-        boolean anyOf(boolean[] values);
-
-        byte anyOf(byte[] values);
-
-        short anyOf(short[] values);
-
-        int anyOf(int[] values);
-
-        long anyOf(long[] values);
-
-        float anyOf(float[] values);
-
-        double anyOf(double[] values);
-
-        char anyOf(char[] values);
-
-        <T> T anyOf(T[] values);
     }
 }

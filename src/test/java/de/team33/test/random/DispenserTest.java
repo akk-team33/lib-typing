@@ -6,8 +6,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.awt.Desktop;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.nio.file.AccessMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,10 +33,12 @@ public class DispenserTest<T> {
                                                                   .put(float.class, dsp -> dsp.basics.anyFloat())
                                                                   .put(Double.class, dsp -> dsp.basics.anyDouble())
                                                                   .put(char.class, dsp -> dsp.basics.anyChar())
-                                                                  .setDefaultCharset("abc")
+                                                                  .setDefaultCharset("_-!*$%·")
+                                                                  .setArrayBounds(0,10)
+                                                                  .setStringBounds(0, 100)
                                                                   .prepare();
-    private static final int MAX_LOOP_PRIMITIVES = 1;
-    private static final int MAX_LOOP_ARRAYS = 1;
+    private static final int MAX_LOOP_PRIMITIVES = 1000;
+    private static final int MAX_LOOP_ARRAYS = 100;
 
     private final Type<T> type;
     private final Predicate<T> validity;
@@ -73,6 +77,10 @@ public class DispenserTest<T> {
                 getParameter(String.class, MAX_LOOP_ARRAYS),
 
                 getParameter(TimeUnit.class),
+                getParameter(AccessMode.class),
+                getParameter(Desktop.Action.class),
+
+                getParameter(new Type<List<TimeUnit>>() {}, ArrayList.class::isInstance, MAX_LOOP_ARRAYS),
 
                 getParameter(boolean[].class, MAX_LOOP_ARRAYS),
                 getParameter(byte[].class, MAX_LOOP_ARRAYS),
@@ -92,7 +100,11 @@ public class DispenserTest<T> {
                 getParameter(Double[].class, MAX_LOOP_ARRAYS),
                 getParameter(Character[].class, MAX_LOOP_ARRAYS),
 
-                getParameter(String[].class, MAX_LOOP_ARRAYS)
+                getParameter(String[].class, MAX_LOOP_ARRAYS),
+
+                getParameter(TimeUnit[].class),
+                getParameter(AccessMode[].class),
+                getParameter(Desktop.Action[].class)
         );
     }
 
