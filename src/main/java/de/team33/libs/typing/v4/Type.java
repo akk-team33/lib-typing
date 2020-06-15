@@ -12,7 +12,7 @@ import java.util.List;
  * <p>In addition, an instance of <b>{@code Type<Map<String, List<String>>>}</b> represents the (parameterized) type
  * <b>{@code Map<String, List<String>>}</b>, while a corresponding instance of
  * <b>{@code Class<Map<String, List<String>>>}</b> is not possible.</p>
- * <p>To get an instance of Type, you need to create a definite derivative of Type. Example:</p>
+ * <p>To get an instance of Type, you need to create a definite derivative of Type. Examples:</p>
  * <pre>
  * // Generic Type ...
  *
@@ -50,6 +50,11 @@ import java.util.List;
  *
  * final Type&lt;String&gt; stringType =
  *         Type.of(String.class);
+ * </pre><pre>
+ *  // Raw generic Type ...
+ *
+ * final Type&lt;List&gt; rawListType =
+ *         Type.of(List.class);
  * </pre>
  *
  * @see #Type()
