@@ -1,6 +1,6 @@
 package de.team33.test.random;
 
-import de.team33.libs.typing.v4.Shape;
+import de.team33.libs.typing.v4.Model;
 import de.team33.libs.typing.v4.Type;
 
 import java.util.*;
@@ -44,16 +44,16 @@ public final class Dispenser {
 
     public final <R> R any(final Type<R> rType) {
         //noinspection unchecked
-        return (R) any((Shape) rType);
+        return (R) any((Model) rType);
     }
 
-    public final Object any(final Shape shape) {
-        final Function<Dispenser, ?> method = getMethod(shape);
+    public final Object any(final Model model) {
+        final Function<Dispenser, ?> method = getMethod(model);
         return method.apply(this);
     }
 
-    private Function<Dispenser, ?> getMethod(final Shape shape) {
-        return template.methods.computeIfAbsent(shape, key -> GenericMethod.get(this, key));
+    private Function<Dispenser, ?> getMethod(final Model model) {
+        return template.methods.computeIfAbsent(model, key -> GenericMethod.get(this, key));
     }
 
     private enum GenericMethod {
@@ -66,25 +66,25 @@ public final class Dispenser {
         FALLBACK(Filter.FALLBACK, NewMethod.FALLBACK);
 
         @SuppressWarnings("rawtypes")
-        private final BiFunction<Dispenser, Shape, Function<Dispenser, ?>> newMethod;
-        private final Predicate<Shape> filter;
+        private final BiFunction<Dispenser, Model, Function<Dispenser, ?>> newMethod;
+        private final Predicate<Model> filter;
 
-        GenericMethod(final Predicate<Shape> filter,
-                      final BiFunction<Dispenser, Shape, Function<Dispenser, ?>> newMethod) {
+        GenericMethod(final Predicate<Model> filter,
+                      final BiFunction<Dispenser, Model, Function<Dispenser, ?>> newMethod) {
             this.filter = filter;
             this.newMethod = newMethod;
         }
 
-        private static Function<Dispenser, ?> get(final Dispenser ctx, final Shape shape) {
+        private static Function<Dispenser, ?> get(final Dispenser ctx, final Model model) {
             return Stream.of(values())
-                         .filter(value -> value.filter.test(shape))
+                         .filter(value -> value.filter.test(model))
                          .findAny()
                          .orElse(FALLBACK)
                     .newMethod
-                    .apply(ctx, shape);
+                    .apply(ctx, model);
         }
 
-        private interface Filter extends Predicate<Shape> {
+        private interface Filter extends Predicate<Model> {
             Filter ENUM = shape -> shape.getRawClass().isEnum();
             Filter ARRAY = shape -> shape.getRawClass().isArray();
             Filter STRING = shape -> shape.getRawClass().isAssignableFrom(String.class);
@@ -93,7 +93,7 @@ public final class Dispenser {
             Filter FALLBACK = shape -> false;
         }
 
-        private interface NewMethod extends BiFunction<Dispenser, Shape, Function<Dispenser, ?>> {
+        private interface NewMethod extends BiFunction<Dispenser, Model, Function<Dispenser, ?>> {
             NewMethod ENUM = (dsp, shape) -> new EnumMethod<>(shape);
             NewMethod ARRAY = (dsp, shape) -> new ArrayMethod<>(shape, dsp.template.arrayBounds);
             NewMethod STRING = (dsp, shape) -> new StringMethod(dsp.template.stringBounds);
@@ -152,7 +152,7 @@ public final class Dispenser {
     private static final class Template implements Supplier<Dispenser> {
 
         @SuppressWarnings("rawtypes")
-        private final Map<Shape, Function<Dispenser, ?>> methods;
+        private final Map<Model, Function<Dispenser, ?>> methods;
         private final Function<String, Basics> newBasics;
         private final Function<Basics, Selector> newSelector;
         private final String defaultCharset;
@@ -183,7 +183,7 @@ public final class Dispenser {
                 "abcdefghijklmnopqrstuvwxyzäöüß-ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ_0123456789 ,.;:@$!?";
 
         @SuppressWarnings("rawtypes")
-        private final Map<Shape, Function<Dispenser, ?>> methods = new HashMap<>(0);
+        private final Map<Model, Function<Dispenser, ?>> methods = new HashMap<>(0);
 
         private Function<String, Basics> newBasics = DefaultBasics::new;
         private Function<Basics, Selector> newSelector = DefaultSelector::new;

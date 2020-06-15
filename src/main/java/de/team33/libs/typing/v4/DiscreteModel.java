@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
-abstract class DiscreteShape extends Shape {
+abstract class DiscreteModel extends Model {
 
     private final transient Lazy<String> stringView =
             new Lazy<>(() -> getRawClass().getSimpleName() + newActualParametersView());
@@ -26,7 +26,7 @@ abstract class DiscreteShape extends Shape {
         return Optional.of(getActualParameters())
                        .filter(list -> 0 < list.size())
                        .map(list -> list.stream()
-                                        .map(Shape::toString)
+                                        .map(Model::toString)
                                         .collect(joining(", ", "<", ">")))
                        .orElse("");
     }

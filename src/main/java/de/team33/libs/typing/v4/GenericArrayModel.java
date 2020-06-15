@@ -8,17 +8,17 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
-class GenericArrayShape extends ArrayShape {
+class GenericArrayModel extends ArrayModel {
 
-    private final Shape componentShape;
+    private final Model componentModel;
     private final transient Lazy<Class<?>> rawClass = new Lazy<>(this::newRawClass);
 
-    GenericArrayShape(final GenericArrayType type, final Shape context) {
-        this.componentShape = TypeMapper.map(type.getGenericComponentType(), context);
+    GenericArrayModel(final GenericArrayType type, final Model context) {
+        this.componentModel = TypeMapper.map(type.getGenericComponentType(), context);
     }
 
     private Class<?> newRawClass() {
-        return Array.newInstance(componentShape.getRawClass(), 0).getClass();
+        return Array.newInstance(componentModel.getRawClass(), 0).getClass();
     }
 
     @Override
@@ -27,7 +27,7 @@ class GenericArrayShape extends ArrayShape {
     }
 
     @Override
-    public List<Shape> getActualParameters() {
-        return singletonList(componentShape);
+    public List<Model> getActualParameters() {
+        return singletonList(componentModel);
     }
 }

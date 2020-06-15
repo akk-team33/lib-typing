@@ -55,9 +55,9 @@ import java.util.List;
  * @see #Type()
  * @see #of(Class)
  */
-public abstract class Type<T> extends Shape {
+public abstract class Type<T> extends Model {
 
-    public final Shape backing;
+    public final Model backing;
 
     /**
      * Initializes a {@link Type} based on its well-defined derivative.
@@ -69,7 +69,7 @@ public abstract class Type<T> extends Shape {
                 ClassMapper.map(getClass()));
     }
 
-    private Type(final Shape backing) {
+    private Type(final Model backing) {
         this.backing = backing;
     }
 
@@ -94,7 +94,7 @@ public abstract class Type<T> extends Shape {
     }
 
     @Override
-    public final List<Shape> getActualParameters() {
+    public final List<Model> getActualParameters() {
         return backing.getActualParameters();
     }
 

@@ -1,6 +1,6 @@
 package de.team33.test.random;
 
-import de.team33.libs.typing.v4.Shape;
+import de.team33.libs.typing.v4.Model;
 
 import java.lang.reflect.Array;
 import java.util.function.Function;
@@ -10,8 +10,8 @@ class ArrayMethod<A> implements Function<Dispenser, A> {
     private final Class<?> componentType;
     private final Bounds bounds;
 
-    ArrayMethod(final Shape shape, final Bounds bounds) {
-        this.componentType = shape.getRawClass().getComponentType();
+    ArrayMethod(final Model model, final Bounds bounds) {
+        this.componentType = model.getRawClass().getComponentType();
         this.bounds = bounds;
     }
 

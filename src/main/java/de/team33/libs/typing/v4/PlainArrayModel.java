@@ -6,14 +6,14 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
-class PlainArrayShape extends ArrayShape {
+class PlainArrayModel extends ArrayModel {
 
     private final Class<?> rawClass;
 
-    private final transient Lazy<List<Shape>> actualParameters =
+    private final transient Lazy<List<Model>> actualParameters =
             new Lazy<>(() -> singletonList(ClassMapper.map(getRawClass().getComponentType())));
 
-    PlainArrayShape(final Class<?> rawClass) {
+    PlainArrayModel(final Class<?> rawClass) {
         this.rawClass = rawClass;
     }
 
@@ -23,7 +23,7 @@ class PlainArrayShape extends ArrayShape {
     }
 
     @Override
-    public final List<Shape> getActualParameters() {
+    public final List<Model> getActualParameters() {
         return actualParameters.get();
     }
 }

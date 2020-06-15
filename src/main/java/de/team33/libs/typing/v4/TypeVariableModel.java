@@ -3,11 +3,11 @@ package de.team33.libs.typing.v4;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 
-class TypeVariableShape extends DiscreteShape {
+class TypeVariableModel extends DiscreteModel {
 
-    private final Shape definite;
+    private final Model definite;
 
-    TypeVariableShape(final TypeVariable<?> type, final Shape context) {
+    TypeVariableModel(final TypeVariable<?> type, final Model context) {
         final String name = type.getName();
         this.definite = context.getActualParameter(name);
     }
@@ -18,7 +18,7 @@ class TypeVariableShape extends DiscreteShape {
     }
 
     @Override
-    public final List<Shape> getActualParameters() {
+    public final List<Model> getActualParameters() {
         return definite.getActualParameters();
     }
 }

@@ -1,6 +1,6 @@
 package de.team33.test.typing.v4;
 
-import de.team33.libs.typing.v4.Shape;
+import de.team33.libs.typing.v4.Model;
 import de.team33.libs.typing.v4.Type;
 import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
@@ -70,7 +70,7 @@ public class TypeTest {
 
     @Test
     public final void getActualParameters() {
-        final List<Shape> actualParameters = GENERIC_TYPE.getActualParameters();
+        final List<Model> actualParameters = GENERIC_TYPE.getActualParameters();
         assertEquals(3, actualParameters.size());
         assertStringType(actualParameters.get(0));
         assertStringListType(actualParameters.get(1));
@@ -230,57 +230,57 @@ public class TypeTest {
         );
     }
 
-    private static void assertIntType(final Shape intType) {
+    private static void assertIntType(final Model intType) {
         assertSame(Integer.TYPE, intType.getRawClass());
         assertEquals(0, intType.getActualParameters().size());
         assertEquals(intType, Type.of(Integer.TYPE));
     }
 
-    private static void assertIntArrayType(final Shape intArrayType) {
+    private static void assertIntArrayType(final Model intArrayType) {
         assertArrayType(intArrayType, int[].class, TypeTest::assertIntType);
     }
 
-    private static void assertStringType(final Shape stringType) {
+    private static void assertStringType(final Model stringType) {
         assertSame(String.class, stringType.getRawClass());
         assertEquals(0, stringType.getActualParameters().size());
         assertEquals(stringType, new Type<String>() {
         });
     }
 
-    private static void assertStringArrayType(final Shape stringArrayType) {
+    private static void assertStringArrayType(final Model stringArrayType) {
         assertArrayType(stringArrayType, String[].class, TypeTest::assertStringType);
     }
 
-    public static void assertStringListType(final Shape stringListType) {
+    public static void assertStringListType(final Model stringListType) {
         assertSame(List.class, stringListType.getRawClass());
 
-        final List<Shape> parameters = stringListType.getActualParameters();
+        final List<Model> parameters = stringListType.getActualParameters();
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
         assertEquals(LIST_OF_STRING_TYPE, stringListType);
     }
 
-    public static void assertStringListArrayType(final Shape stringListArrayType) {
+    public static void assertStringListArrayType(final Model stringListArrayType) {
         assertArrayType(stringListArrayType, List[].class, TypeTest::assertStringListType);
     }
 
-    private static void assertMapStringToListOfString(final Shape mapType) {
+    private static void assertMapStringToListOfString(final Model mapType) {
         assertSame(Map.class, mapType.getRawClass());
 
-        final List<Shape> parameters = mapType.getActualParameters();
+        final List<Model> parameters = mapType.getActualParameters();
         assertEquals(2, parameters.size());
         assertStringType(parameters.get(0));
         assertStringListType(parameters.get(1));
     }
 
-    private static void assertMapStringToListArrayType(final Shape mapArrayType) {
+    private static void assertMapStringToListArrayType(final Model mapArrayType) {
         assertArrayType(mapArrayType, Map[].class, TypeTest::assertMapStringToListOfString);
     }
 
-    private static void assertArrayType(final Shape arrayType,
+    private static void assertArrayType(final Model arrayType,
                                         final Class<?> underlying,
-                                        final Consumer<Shape> assertComponentType) {
+                                        final Consumer<Model> assertComponentType) {
         assertSame(underlying, arrayType.getRawClass());
         assertEquals(1, arrayType.getActualParameters().size());
         assertComponentType.accept(arrayType.getActualParameters().get(0));

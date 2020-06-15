@@ -1,6 +1,6 @@
 package de.team33.test.random;
 
-import de.team33.libs.typing.v4.Shape;
+import de.team33.libs.typing.v4.Model;
 import de.team33.libs.typing.v4.Type;
 
 import java.util.ArrayList;
@@ -10,11 +10,11 @@ import java.util.stream.Stream;
 
 class ListMethod<E> implements Function<Dispenser, ArrayList<E>> {
 
-    private final Shape elementShape;
+    private final Model elementModel;
     private final Bounds bounds;
 
-    ListMethod(final Shape shape, final Bounds bounds) {
-        this.elementShape = shape.getActualParameters().stream()
+    ListMethod(final Model model, final Bounds bounds) {
+        this.elementModel = model.getActualParameters().stream()
                                  .findAny()
                                  .orElseGet(() -> Type.of(Object.class));
         this.bounds = bounds;
@@ -29,7 +29,7 @@ class ListMethod<E> implements Function<Dispenser, ArrayList<E>> {
 
     @SuppressWarnings("rawtypes")
     private ArrayList newList(final Dispenser dispenser, final int size) {
-        return Stream.generate(() -> dispenser.any(elementShape))
+        return Stream.generate(() -> dispenser.any(elementModel))
                      .limit(size)
                      .collect(Collectors.toCollection(ArrayList::new));
     }

@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ParameterizedShape extends DiscreteShape {
+class ParameterizedModel extends DiscreteModel {
 
     private final Class<?> rawClass;
-    private final List<Shape> actualParameters;
+    private final List<Model> actualParameters;
 
-    ParameterizedShape(final ParameterizedType type, final Shape context) {
+    ParameterizedModel(final ParameterizedType type, final Model context) {
         this.rawClass = (Class<?>) type.getRawType();
         this.actualParameters = Collections.unmodifiableList(
                 Stream.of(type.getActualTypeArguments())
@@ -25,7 +25,7 @@ class ParameterizedShape extends DiscreteShape {
     }
 
     @Override
-    public final List<Shape> getActualParameters() {
+    public final List<Model> getActualParameters() {
         return actualParameters;
     }
 }

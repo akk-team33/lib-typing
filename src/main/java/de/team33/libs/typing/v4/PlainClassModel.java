@@ -4,13 +4,13 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-class PlainClassShape extends DiscreteShape {
+class PlainClassModel extends DiscreteModel {
 
-    private static final List<Shape> ACTUAL_PARAMETERS = emptyList();
+    private static final List<Model> ACTUAL_PARAMETERS = emptyList();
 
     private final Class<?> rawClass;
 
-    PlainClassShape(final Class<?> rawClass) {
+    PlainClassModel(final Class<?> rawClass) {
         this.rawClass = rawClass;
     }
 
@@ -20,7 +20,7 @@ class PlainClassShape extends DiscreteShape {
     }
 
     @Override
-    public final List<Shape> getActualParameters() {
+    public final List<Model> getActualParameters() {
         return ACTUAL_PARAMETERS;
     }
 }

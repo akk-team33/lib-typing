@@ -1,6 +1,6 @@
 package de.team33.test.mapping;
 
-import de.team33.libs.typing.v4.Shape;
+import de.team33.libs.typing.v4.Model;
 import de.team33.libs.typing.v4.Type;
 
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class Mapper {
 
-    private final Map<Shape, Function> mappers = new ConcurrentHashMap<>();
+    private final Map<Model, Function> mappers = new ConcurrentHashMap<>();
 
     public final <T> T map(final Object normal, final Class<T> type) {
         return map(normal, Type.of(type));
@@ -47,9 +47,9 @@ public class Mapper {
         FALLBACK(c -> false, null);
 
         private final Predicate<Class> filter;
-        private final BiFunction<Mapper, Shape, Function> biFunction;
+        private final BiFunction<Mapper, Model, Function> biFunction;
 
-        DefaultMapping(final Predicate<Class> filter, final BiFunction<Mapper, Shape, Function> biFunction) {
+        DefaultMapping(final Predicate<Class> filter, final BiFunction<Mapper, Model, Function> biFunction) {
             this.filter = filter;
             this.biFunction = biFunction;
         }
