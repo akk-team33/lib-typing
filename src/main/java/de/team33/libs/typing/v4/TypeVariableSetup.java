@@ -3,22 +3,22 @@ package de.team33.libs.typing.v4;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 
-class TypeVariableModel extends DiscreteModel {
+class TypeVariableSetup extends DiscreteSetup {
 
-    private final Model definite;
+    private final Setup definite;
 
-    TypeVariableModel(final TypeVariable<?> type, final Model context) {
+    TypeVariableSetup(final TypeVariable<?> type, final Setup context) {
         final String name = type.getName();
         this.definite = context.getActualParameter(name);
     }
 
     @Override
-    public final Class<?> getRawClass() {
-        return definite.getRawClass();
+    public final Class<?> getPrimeClass() {
+        return definite.getPrimeClass();
     }
 
     @Override
-    public final List<Model> getActualParameters() {
+    public final List<Setup> getActualParameters() {
         return definite.getActualParameters();
     }
 }

@@ -1,6 +1,6 @@
 package de.team33.test.random;
 
-import de.team33.libs.typing.v4.Model;
+import de.team33.libs.typing.v4.Setup;
 
 import java.lang.reflect.Array;
 import java.util.function.Function;
@@ -10,8 +10,8 @@ class ArrayMethod<A> implements Function<Dispenser, A> {
     private final Class<?> componentType;
     private final Function<Dispenser, Bounds> getBounds;
 
-    ArrayMethod(final Model model, final Function<Dispenser, Bounds> getBounds) {
-        this.componentType = model.getRawClass().getComponentType();
+    ArrayMethod(final Setup setup, final Function<Dispenser, Bounds> getBounds) {
+        this.componentType = setup.getPrimeClass().getComponentType();
         this.getBounds = getBounds;
     }
 

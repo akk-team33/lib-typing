@@ -1,6 +1,6 @@
 package de.team33.test.typing.v4;
 
-import de.team33.libs.typing.v4.Model;
+import de.team33.libs.typing.v4.Setup;
 import de.team33.libs.typing.v4.Type;
 import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
@@ -50,7 +50,7 @@ public class TypeTest {
 
     @Test
     public final void getRawClass() {
-        assertSame(Generic.class, GENERIC_TYPE.getRawClass());
+        assertSame(Generic.class, GENERIC_TYPE.getPrimeClass());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class TypeTest {
 
     @Test
     public final void getActualParameters() {
-        final List<Model> actualParameters = GENERIC_TYPE.getActualParameters();
+        final List<Setup> actualParameters = GENERIC_TYPE.getActualParameters();
         assertEquals(3, actualParameters.size());
         assertStringType(actualParameters.get(0));
         assertStringListType(actualParameters.get(1));
@@ -230,58 +230,58 @@ public class TypeTest {
         );
     }
 
-    private static void assertIntType(final Model intType) {
-        assertSame(Integer.TYPE, intType.getRawClass());
+    private static void assertIntType(final Setup intType) {
+        assertSame(Integer.TYPE, intType.getPrimeClass());
         assertEquals(0, intType.getActualParameters().size());
         assertEquals(intType, Type.of(Integer.TYPE));
     }
 
-    private static void assertIntArrayType(final Model intArrayType) {
+    private static void assertIntArrayType(final Setup intArrayType) {
         assertArrayType(intArrayType, int[].class, TypeTest::assertIntType);
     }
 
-    private static void assertStringType(final Model stringType) {
-        assertSame(String.class, stringType.getRawClass());
+    private static void assertStringType(final Setup stringType) {
+        assertSame(String.class, stringType.getPrimeClass());
         assertEquals(0, stringType.getActualParameters().size());
         assertEquals(stringType, new Type<String>() {
         });
     }
 
-    private static void assertStringArrayType(final Model stringArrayType) {
+    private static void assertStringArrayType(final Setup stringArrayType) {
         assertArrayType(stringArrayType, String[].class, TypeTest::assertStringType);
     }
 
-    public static void assertStringListType(final Model stringListType) {
-        assertSame(List.class, stringListType.getRawClass());
+    public static void assertStringListType(final Setup stringListType) {
+        assertSame(List.class, stringListType.getPrimeClass());
 
-        final List<Model> parameters = stringListType.getActualParameters();
+        final List<Setup> parameters = stringListType.getActualParameters();
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
         assertEquals(LIST_OF_STRING_TYPE, stringListType);
     }
 
-    public static void assertStringListArrayType(final Model stringListArrayType) {
+    public static void assertStringListArrayType(final Setup stringListArrayType) {
         assertArrayType(stringListArrayType, List[].class, TypeTest::assertStringListType);
     }
 
-    private static void assertMapStringToListOfString(final Model mapType) {
-        assertSame(Map.class, mapType.getRawClass());
+    private static void assertMapStringToListOfString(final Setup mapType) {
+        assertSame(Map.class, mapType.getPrimeClass());
 
-        final List<Model> parameters = mapType.getActualParameters();
+        final List<Setup> parameters = mapType.getActualParameters();
         assertEquals(2, parameters.size());
         assertStringType(parameters.get(0));
         assertStringListType(parameters.get(1));
     }
 
-    private static void assertMapStringToListArrayType(final Model mapArrayType) {
+    private static void assertMapStringToListArrayType(final Setup mapArrayType) {
         assertArrayType(mapArrayType, Map[].class, TypeTest::assertMapStringToListOfString);
     }
 
-    private static void assertArrayType(final Model arrayType,
+    private static void assertArrayType(final Setup arrayType,
                                         final Class<?> underlying,
-                                        final Consumer<Model> assertComponentType) {
-        assertSame(underlying, arrayType.getRawClass());
+                                        final Consumer<Setup> assertComponentType) {
+        assertSame(underlying, arrayType.getPrimeClass());
         assertEquals(1, arrayType.getActualParameters().size());
         assertComponentType.accept(arrayType.getActualParameters().get(0));
     }

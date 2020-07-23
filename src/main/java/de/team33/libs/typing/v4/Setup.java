@@ -15,45 +15,45 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Represents the Model of a definite type that can be based on a generic as well as a non-generic class.
+ * Represents the setup of a definite type that can be based on a generic as well as a non-generic class.
  */
-public abstract class Model {
+public abstract class Setup {
 
-    private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Model (%s)";
+    private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Setup (%s)";
 
     private final transient Lazy<List<Object>> listView =
-            new Lazy<>(() -> Arrays.asList(getRawClass(), getActualParameters()));
+            new Lazy<>(() -> Arrays.asList(getPrimeClass(), getActualParameters()));
 
     private final transient Lazy<Integer> hashView =
             new Lazy<>(() -> listView.get().hashCode());
 
     /**
-     * Returns the raw {@link Class} on which this {@link Model} is based.
+     * Returns the primary {@link Class} on which this {@link Setup} is based.
      */
-    public abstract Class<?> getRawClass();
+    public abstract Class<?> getPrimeClass();
 
     /**
-     * Returns the formal type parameters of the (generic) type underlying this {@link Model}.
+     * Returns the formal type parameters of the (generic) type underlying this {@link Setup}.
      *
      * @see #getActualParameters()
      */
     public abstract List<String> getFormalParameters();
 
     /**
-     * <p>Returns the actual parameters defining this {@link Model}.</p>
+     * <p>Returns the actual parameters defining this {@link Setup}.</p>
      * <p>The result may be empty even if the {@linkplain #getFormalParameters() formal parameter list} is not.
-     * Otherwise the formal and actual parameter list are of the same size and order.</p>
+     * Otherwise the formal and actual parameter list are of the same size and corresponding order.</p>
      *
      * @see #getFormalParameters()
      */
-    public abstract List<Model> getActualParameters();
+    public abstract List<Setup> getActualParameters();
 
     /**
      * Returns a specific actual parameter based on the corresponding formal parameter.
      *
      * @throws IllegalArgumentException when {@code <formalParameter>} is invalid.
      */
-    public final Model getActualParameter(final String formalParameter) throws IllegalArgumentException {
+    public final Setup getActualParameter(final String formalParameter) throws IllegalArgumentException {
         final List<String> formalParameters = getFormalParameters();
         return Optional.of(formalParameters.indexOf(formalParameter))
                        .filter(index -> 0 <= index)
@@ -65,34 +65,34 @@ public abstract class Model {
     }
 
     /**
-     * Returns the {@link Model} from which this {@link Model} is derived (if so).
+     * Returns the {@link Setup} from which this {@link Setup} is derived (if so).
      *
      * @see Class#getSuperclass()
      * @see Class#getGenericSuperclass()
      */
-    public final Optional<Model> getSuperModel() {
-        return Optional.ofNullable(getRawClass().getGenericSuperclass())
+    public final Optional<Setup> getSuperModel() {
+        return Optional.ofNullable(getPrimeClass().getGenericSuperclass())
                        .map(this::map);
     }
 
     /**
-     * Returns the interfaces as {@link Model} from which this {@link Model} is derived (if so).
+     * Returns the interfaces as {@link Setup} from which this {@link Setup} is derived (if so).
      *
      * @see Class#getInterfaces()
      * @see Class#getGenericInterfaces()
      */
-    public final Stream<Model> getInterfaceModels() {
-        return Stream.of(getRawClass().getGenericInterfaces())
+    public final Stream<Setup> getInterfaceModels() {
+        return Stream.of(getPrimeClass().getGenericInterfaces())
                      .map(this::map);
     }
 
     /**
-     * Returns all the {@link Model}s (superclass, interfaces) from which this {@link Model} is derived (if so).
+     * Returns all the {@link Setup}s (superclass, interfaces) from which this {@link Setup} is derived (if so).
      *
      * @see #getSuperModel()
      * @see #getInterfaceModels()
      */
-    public final Stream<Model> getSuperModels() {
+    public final Stream<Setup> getSuperModels() {
         return Stream.concat(
                 getSuperModel().map(Stream::of)
                                .orElseGet(Stream::empty),
@@ -100,60 +100,60 @@ public abstract class Model {
     }
 
     /**
-     * Returns the {@link Model} of a given {@link Field} if it is defined in the hierarchy of this {@link Model}.
+     * Returns the {@link Setup} of a given {@link Field} if it is defined in the hierarchy of this {@link Setup}.
      *
      * @throws IllegalArgumentException if the given {@link Field} is not defined in the hierarchy of this
-     *                                  {@link Model}.
+     *                                  {@link Setup}.
      *
      * @see Field#getType()
      * @see Field#getGenericType()
      */
-    public final Model modelOf(final Field field) {
+    public final Setup modelOf(final Field field) {
         return Optional
                 .ofNullable(nullableModelOf(field, Field::getGenericType))
                 .orElseThrow(() -> illegalMemberException(field));
     }
 
     /**
-     * Returns the return {@link Model} of a given {@link Method} if it is defined in the hierarchy of this
-     * {@link Model}.
+     * Returns the return {@link Setup} of a given {@link Method} if it is defined in the hierarchy of this
+     * {@link Setup}.
      *
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
-     *                                  {@link Model}.
+     *                                  {@link Setup}.
      *
      * @see Method#getReturnType()
      * @see Method#getGenericReturnType()
      */
-    public final Model returnModelOf(final Method method) {
+    public final Setup returnModelOf(final Method method) {
         return Optional
                 .ofNullable(nullableModelOf(method, Method::getGenericReturnType))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
     /**
-     * Returns the parameter {@link Model}s of a given {@link Method} if it is defined in the hierarchy of this
-     * {@link Model}.
+     * Returns the parameter {@link Setup}s of a given {@link Method} if it is defined in the hierarchy of this
+     * {@link Setup}.
      *
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
-     *                                  {@link Model}.
+     *                                  {@link Setup}.
      *
      * @see Method#getParameterTypes()
      * @see Method#getGenericParameterTypes()
      */
-    public final List<Model> parameterModelsOf(final Method method) {
+    public final List<Setup> parameterModelsOf(final Method method) {
         return Optional
                 .ofNullable(nullableModelsOf(method, Method::getGenericParameterTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
     /**
-     * Returns the exception {@link Model}s of a given {@link Method} if it is defined in the hierarchy of this
-     * {@link Model}.
+     * Returns the exception {@link Setup}s of a given {@link Method} if it is defined in the hierarchy of this
+     * {@link Setup}.
      *
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
-     *                                  {@link Model}.
+     *                                  {@link Setup}.
      */
-    public final List<Model> exceptionModelsOf(final Method method) {
+    public final List<Setup> exceptionModelsOf(final Method method) {
         return Optional
                 .ofNullable(nullableModelsOf(method, Method::getGenericExceptionTypes))
                 .orElseThrow(() -> illegalMemberException(method));
@@ -163,9 +163,9 @@ public abstract class Model {
         return new IllegalArgumentException(String.format(NOT_DECLARED_IN_THIS, member, this));
     }
 
-    private List<Model> nullableModelsOf(final Method member,
+    private List<Setup> nullableModelsOf(final Method member,
                                          final Function<Method, Type[]> toGenericTypes) {
-        if (getRawClass().equals(member.getDeclaringClass())) {
+        if (getPrimeClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
                          .map(this::map)
                          .collect(Collectors.toList());
@@ -178,9 +178,9 @@ public abstract class Model {
         }
     }
 
-    private <M extends Member> Model nullableModelOf(final M member,
+    private <M extends Member> Setup nullableModelOf(final M member,
                                                      final Function<M, Type> toGenericType) {
-        if (getRawClass().equals(member.getDeclaringClass())) {
+        if (getPrimeClass().equals(member.getDeclaringClass())) {
             return map(toGenericType.apply(member));
         } else {
             return getSuperModels()
@@ -191,7 +191,7 @@ public abstract class Model {
         }
     }
 
-    private Model map(final Type type) {
+    private Setup map(final Type type) {
         return TypeMapper.map(type, this);
     }
 
@@ -202,7 +202,7 @@ public abstract class Model {
 
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof Model) && listView.get().equals(((Model) obj).listView.get()));
+        return (this == obj) || ((obj instanceof Setup) && listView.get().equals(((Setup) obj).listView.get()));
     }
 
     @Override

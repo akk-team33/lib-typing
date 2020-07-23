@@ -11,14 +11,14 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
-abstract class DiscreteModel extends Model {
+abstract class DiscreteSetup extends Setup {
 
     private final transient Lazy<String> stringView =
-            new Lazy<>(() -> getRawClass().getSimpleName() + newActualParametersView());
+            new Lazy<>(() -> getPrimeClass().getSimpleName() + newActualParametersView());
 
     private final transient Lazy<List<String>> formalParameters =
             new Lazy<>(() -> unmodifiableList(
-                    Stream.of(getRawClass().getTypeParameters())
+                    Stream.of(getPrimeClass().getTypeParameters())
                           .map(TypeVariable::getName)
                           .collect(Collectors.toList())));
 
@@ -26,7 +26,7 @@ abstract class DiscreteModel extends Model {
         return Optional.of(getActualParameters())
                        .filter(list -> 0 < list.size())
                        .map(list -> list.stream()
-                                        .map(Model::toString)
+                                        .map(Setup::toString)
                                         .collect(joining(", ", "<", ">")))
                        .orElse("");
     }

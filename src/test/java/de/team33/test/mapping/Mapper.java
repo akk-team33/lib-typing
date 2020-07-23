@@ -1,6 +1,6 @@
 package de.team33.test.mapping;
 
-import de.team33.libs.typing.v4.Model;
+import de.team33.libs.typing.v4.Setup;
 import de.team33.libs.typing.v4.Type;
 
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class Mapper {
 
-    private final Map<Model, Function> mappers = new ConcurrentHashMap<>();
+    private final Map<Setup, Function> mappers = new ConcurrentHashMap<>();
 
     public final <T> T map(final Object normal, final Class<T> type) {
         return map(normal, Type.of(type));
@@ -31,7 +31,7 @@ public class Mapper {
 
     private <T> Function<Object, T> newMapper(final Type<T> type) {
         return Stream.of(DefaultMapping.values())
-                     .filter(value -> value.filter.test(type.getRawClass()))
+                     .filter(value -> value.filter.test(type.getPrimeClass()))
                      .findAny()
                      .orElse(DefaultMapping.FALLBACK)
                      .mapper(this, type);
@@ -43,13 +43,13 @@ public class Mapper {
 
     private enum DefaultMapping {
 
-        ENUM(Class::isEnum, (mapper, model) -> mapper.newEnumMapper(model.getRawClass())),
+        ENUM(Class::isEnum, (mapper, model) -> mapper.newEnumMapper(model.getPrimeClass())),
         FALLBACK(c -> false, null);
 
         private final Predicate<Class> filter;
-        private final BiFunction<Mapper, Model, Function> biFunction;
+        private final BiFunction<Mapper, Setup, Function> biFunction;
 
-        DefaultMapping(final Predicate<Class> filter, final BiFunction<Mapper, Model, Function> biFunction) {
+        DefaultMapping(final Predicate<Class> filter, final BiFunction<Mapper, Setup, Function> biFunction) {
             this.filter = filter;
             this.biFunction = biFunction;
         }

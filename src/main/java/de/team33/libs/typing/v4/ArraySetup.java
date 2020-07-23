@@ -5,7 +5,7 @@ import de.team33.libs.provision.v2.Lazy;
 import java.util.Collections;
 import java.util.List;
 
-abstract class ArrayModel extends Model {
+abstract class ArraySetup extends Setup {
 
     private static final List<String> FORMAL_PARAMETERS = Collections.singletonList("E");
 

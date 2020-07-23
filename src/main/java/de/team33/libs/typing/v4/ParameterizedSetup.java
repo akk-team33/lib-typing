@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ParameterizedModel extends DiscreteModel {
+class ParameterizedSetup extends DiscreteSetup {
 
-    private final Class<?> rawClass;
-    private final List<Model> actualParameters;
+    private final Class<?> primeClass;
+    private final List<Setup> actualParameters;
 
-    ParameterizedModel(final ParameterizedType type, final Model context) {
-        this.rawClass = (Class<?>) type.getRawType();
+    ParameterizedSetup(final ParameterizedType type, final Setup context) {
+        this.primeClass = (Class<?>) type.getRawType();
         this.actualParameters = Collections.unmodifiableList(
                 Stream.of(type.getActualTypeArguments())
                                  .map(argument -> TypeMapper.map(argument, context))
@@ -20,12 +20,12 @@ class ParameterizedModel extends DiscreteModel {
     }
 
     @Override
-    public final Class<?> getRawClass() {
-        return rawClass;
+    public final Class<?> getPrimeClass() {
+        return primeClass;
     }
 
     @Override
-    public final List<Model> getActualParameters() {
+    public final List<Setup> getActualParameters() {
         return actualParameters;
     }
 }

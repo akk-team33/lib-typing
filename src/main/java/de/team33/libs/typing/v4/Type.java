@@ -60,9 +60,9 @@ import java.util.List;
  * @see #Type()
  * @see #of(Class)
  */
-public abstract class Type<T> extends Model {
+public abstract class Type<T> extends Setup {
 
-    public final Model backing;
+    public final Setup backing;
 
     /**
      * Initializes a {@link Type} based on its well-defined derivative.
@@ -74,7 +74,7 @@ public abstract class Type<T> extends Model {
                 ClassMapper.map(getClass()));
     }
 
-    private Type(final Model backing) {
+    private Type(final Setup backing) {
         this.backing = backing;
     }
 
@@ -89,8 +89,8 @@ public abstract class Type<T> extends Model {
     }
 
     @Override
-    public final Class<?> getRawClass() {
-        return backing.getRawClass();
+    public final Class<?> getPrimeClass() {
+        return backing.getPrimeClass();
     }
 
     @Override
@@ -99,7 +99,7 @@ public abstract class Type<T> extends Model {
     }
 
     @Override
-    public final List<Model> getActualParameters() {
+    public final List<Setup> getActualParameters() {
         return backing.getActualParameters();
     }
 

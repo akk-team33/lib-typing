@@ -4,23 +4,23 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-class PlainClassModel extends DiscreteModel {
+class PlainClassSetup extends DiscreteSetup {
 
-    private static final List<Model> ACTUAL_PARAMETERS = emptyList();
+    private static final List<Setup> ACTUAL_PARAMETERS = emptyList();
 
     private final Class<?> rawClass;
 
-    PlainClassModel(final Class<?> rawClass) {
+    PlainClassSetup(final Class<?> rawClass) {
         this.rawClass = rawClass;
     }
 
     @Override
-    public final Class<?> getRawClass() {
+    public final Class<?> getPrimeClass() {
         return rawClass;
     }
 
     @Override
-    public final List<Model> getActualParameters() {
+    public final List<Setup> getActualParameters() {
         return ACTUAL_PARAMETERS;
     }
 }

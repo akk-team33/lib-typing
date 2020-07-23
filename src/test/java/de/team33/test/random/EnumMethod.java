@@ -1,6 +1,6 @@
 package de.team33.test.random;
 
-import de.team33.libs.typing.v4.Model;
+import de.team33.libs.typing.v4.Setup;
 
 import java.util.function.Function;
 
@@ -8,9 +8,9 @@ class EnumMethod<E extends Enum<E>> implements Function<Dispenser, E> {
 
     private final E[] values;
 
-    EnumMethod(final Model model) {
+    EnumMethod(final Setup setup) {
         //noinspection unchecked
-        values = ((Class<E>) model.getRawClass()).getEnumConstants();
+        values = ((Class<E>) setup.getPrimeClass()).getEnumConstants();
     }
 
     @Override

@@ -4,16 +4,16 @@ import java.util.function.Function;
 
 enum ClassMapper {
 
-    CLASS(PlainClassModel::new),
-    ARRAY(PlainArrayModel::new);
+    CLASS(PlainClassSetup::new),
+    ARRAY(PlainArraySetup::new);
 
-    private final Function<Class<?>, Model> mapping;
+    private final Function<Class<?>, Setup> mapping;
 
-    ClassMapper(final Function<Class<?>, Model> mapping) {
+    ClassMapper(final Function<Class<?>, Setup> mapping) {
         this.mapping = mapping;
     }
 
-    static Model map(final Class<?> underlyingClass) {
+    static Setup map(final Class<?> underlyingClass) {
         return (underlyingClass.isArray() ? ARRAY : CLASS).mapping.apply(underlyingClass);
     }
 }

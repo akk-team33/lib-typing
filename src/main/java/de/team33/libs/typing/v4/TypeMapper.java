@@ -16,25 +16,25 @@ enum TypeMapper {
 
     GENERIC_ARRAY(
             type -> type instanceof GenericArrayType,
-            ((type, context) -> new GenericArrayModel((GenericArrayType) type, context))),
+            ((type, context) -> new GenericArraySetup((GenericArrayType) type, context))),
 
     PARAMETERIZED_TYPE(
             type -> type instanceof ParameterizedType,
-            (type, context) -> new ParameterizedModel((ParameterizedType) type, context)),
+            (type, context) -> new ParameterizedSetup((ParameterizedType) type, context)),
 
     TYPE_VARIABLE(
             type -> type instanceof TypeVariable,
-            (type, context) -> new TypeVariableModel((TypeVariable<?>) type, context));
+            (type, context) -> new TypeVariableSetup((TypeVariable<?>) type, context));
 
     private final Predicate<Type> matching;
-    private final BiFunction<Type, Model, Model> mapping;
+    private final BiFunction<Type, Setup, Setup> mapping;
 
-    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, Model, Model> mapping) {
+    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, Setup, Setup> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    static Model map(final Type type, final Model context) {
+    static Setup map(final Type type, final Setup context) {
         return Stream.of(values())
                 .filter(typeType -> typeType.matching.test(type)).findAny()
                 .map(typeType -> typeType.mapping.apply(type, context))
