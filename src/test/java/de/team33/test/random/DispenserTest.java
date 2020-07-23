@@ -14,9 +14,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertTrue;
 
@@ -24,19 +27,17 @@ import static org.junit.Assert.assertTrue;
 public class DispenserTest<T> {
 
     private static final Logger LOGGER = Logger.getLogger(DispenserTest.class.getCanonicalName());
-    private static final Supplier<Dispenser> DISPENSER = Dispenser.builder()
-                                                                  .put(Boolean.class, dsp -> dsp.basics.anyBoolean())
-                                                                  .put(byte.class, dsp -> dsp.basics.anyByte())
-                                                                  .put(Short.class, dsp -> dsp.basics.anyShort())
-                                                                  .put(int.class, dsp -> dsp.basics.anyInt())
-                                                                  .put(Long.class, dsp -> dsp.basics.anyLong())
-                                                                  .put(float.class, dsp -> dsp.basics.anyFloat())
-                                                                  .put(Double.class, dsp -> dsp.basics.anyDouble())
-                                                                  .put(char.class, dsp -> dsp.basics.anyChar())
-                                                                  .setDefaultCharset("_-!*$%·")
-                                                                  .setArrayBounds(0,10)
-                                                                  .setStringBounds(0, 100)
-                                                                  .prepare();
+    private static final Type<Stream<TimeUnit>> TIME_UNIT_STREAM_TYPE = new Type<Stream<TimeUnit>>() {
+    };
+    private static final Type<List<TimeUnit>> TIME_UNIT_LIST_TYPE = new Type<List<TimeUnit>>() {
+    };
+    private static final Supplier<Dispenser> DISPENSER =
+            Dispenser.builder()
+                     .put(TIME_UNIT_LIST_TYPE, dsp -> dsp.any(TIME_UNIT_STREAM_TYPE).collect(Collectors.toList()))
+                     .setDefaultCharset("_-!*$%·")
+                     .setArrayBounds(0,10)
+                     .setStringBounds(0, 100)
+                     .prepare();
     private static final int MAX_LOOP_PRIMITIVES = 1000;
     private static final int MAX_LOOP_ARRAYS = 100;
 
@@ -80,7 +81,7 @@ public class DispenserTest<T> {
                 getParameter(AccessMode.class),
                 getParameter(Desktop.Action.class),
 
-                getParameter(new Type<List<TimeUnit>>() {}, ArrayList.class::isInstance, MAX_LOOP_ARRAYS),
+                getParameter(TIME_UNIT_LIST_TYPE, List.class::isInstance, MAX_LOOP_ARRAYS),
 
                 getParameter(boolean[].class, MAX_LOOP_ARRAYS),
                 getParameter(byte[].class, MAX_LOOP_ARRAYS),
@@ -130,8 +131,9 @@ public class DispenserTest<T> {
 
     @Test
     public final void any() {
+        final Dispenser dispenser = DISPENSER.get();
         for (int i = 0; i < maxLoop; ++i) {
-            final T result = DISPENSER.get().any(type);
+            final T result = dispenser.any(type);
             log(i, result);
             assertTrue("" + type, validity.test(result));
         }

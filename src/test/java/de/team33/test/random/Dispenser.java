@@ -3,9 +3,12 @@ package de.team33.test.random;
 import de.team33.libs.typing.v4.Model;
 import de.team33.libs.typing.v4.Type;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -24,18 +27,28 @@ public final class Dispenser {
             {double.class, Double.class},
             {char.class, Character.class}
     };
+
     public final Basics basics;
     public final Selector selector;
-    private final Template template;
 
-    private Dispenser(final Template template) {
-        this.template = template;
-        this.basics = template.newBasics.apply(template.defaultCharset);
-        this.selector = template.newSelector.apply(basics);
+    private final Stage stage;
+
+    private Dispenser(final Stage stage) {
+        this.stage = stage;
+        this.basics = stage.newBasics.apply(stage.defaultCharset);
+        this.selector = stage.newSelector.apply(basics);
     }
 
     public static Builder builder() {
-        return new Builder();
+        return new Builder()
+                .put(Boolean.class, dsp -> dsp.basics.anyBoolean())
+                .put(byte.class, dsp -> dsp.basics.anyByte())
+                .put(Short.class, dsp -> dsp.basics.anyShort())
+                .put(int.class, dsp -> dsp.basics.anyInt())
+                .put(Long.class, dsp -> dsp.basics.anyLong())
+                .put(float.class, dsp -> dsp.basics.anyFloat())
+                .put(Double.class, dsp -> dsp.basics.anyDouble())
+                .put(char.class, dsp -> dsp.basics.anyChar());
     }
 
     public final <R> R any(final Class<R> rClass) {
@@ -53,7 +66,7 @@ public final class Dispenser {
     }
 
     private Function<Dispenser, ?> getMethod(final Model model) {
-        return template.methods.computeIfAbsent(model, key -> GenericMethod.get(this, key));
+        return stage.methods.computeIfAbsent(model, GenericMethod::get);
     }
 
     private enum GenericMethod {
@@ -62,26 +75,24 @@ public final class Dispenser {
         ARRAY(Filter.ARRAY, NewMethod.ARRAY),
         STRING(Filter.STRING, NewMethod.STRING),
         STREAM(Filter.STREAM, NewMethod.STREAM),
-        LIST(Filter.LIST, NewMethod.LIST),
         FALLBACK(Filter.FALLBACK, NewMethod.FALLBACK);
 
-        @SuppressWarnings("rawtypes")
-        private final BiFunction<Dispenser, Model, Function<Dispenser, ?>> newMethod;
+        private final Function<Model, Function<Dispenser, ?>> newMethod;
         private final Predicate<Model> filter;
 
         GenericMethod(final Predicate<Model> filter,
-                      final BiFunction<Dispenser, Model, Function<Dispenser, ?>> newMethod) {
+                      final Function<Model, Function<Dispenser, ?>> newMethod) {
             this.filter = filter;
             this.newMethod = newMethod;
         }
 
-        private static Function<Dispenser, ?> get(final Dispenser ctx, final Model model) {
+        private static Function<Dispenser, ?> get(final Model model) {
             return Stream.of(values())
                          .filter(value -> value.filter.test(model))
                          .findAny()
                          .orElse(FALLBACK)
                     .newMethod
-                    .apply(ctx, model);
+                    .apply(model);
         }
 
         private interface Filter extends Predicate<Model> {
@@ -89,17 +100,15 @@ public final class Dispenser {
             Filter ARRAY = model -> model.getRawClass().isArray();
             Filter STRING = model -> model.getRawClass().isAssignableFrom(String.class);
             Filter STREAM = model -> model.getRawClass().equals(Stream.class);
-            Filter LIST = model -> model.getRawClass().isAssignableFrom(ArrayList.class);
             Filter FALLBACK = model -> false;
         }
 
-        private interface NewMethod extends BiFunction<Dispenser, Model, Function<Dispenser, ?>> {
-            NewMethod ENUM = (dsp, model) -> new EnumMethod<>(model);
-            NewMethod ARRAY = (dsp, model) -> new ArrayMethod<>(model, dsp.template.arrayBounds);
-            NewMethod STRING = (dsp, model) -> new StringMethod(dsp.template.stringBounds);
-            NewMethod STREAM = (dsp, model) -> new StreamMethod<>(model, dsp.template.arrayBounds);
-            NewMethod LIST = (dsp, model) -> new ListMethod<>(model, dsp.template.arrayBounds);
-            NewMethod FALLBACK = (dsp, model) -> dspX -> {
+        private interface NewMethod extends Function<Model, Function<Dispenser, ?>> {
+            NewMethod ENUM = EnumMethod::new;
+            NewMethod ARRAY = model -> new ArrayMethod<>(model, dsp -> dsp.stage.arrayBounds);
+            NewMethod STRING = ignored -> new StringMethod(dsp -> dsp.stage.stringBounds);
+            NewMethod STREAM = model -> new StreamMethod(model, dsp -> dsp.stage.arrayBounds);
+            NewMethod FALLBACK = model -> dspX -> {
                 throw new UnsupportedOperationException("Unsupported: no method specified for type " + model);
             };
         }
@@ -149,9 +158,8 @@ public final class Dispenser {
         <T> T anyOf(T[] values);
     }
 
-    private static final class Template implements Supplier<Dispenser> {
+    private static final class Stage implements Supplier<Dispenser> {
 
-        @SuppressWarnings("rawtypes")
         private final Map<Model, Function<Dispenser, ?>> methods;
         private final Function<String, Basics> newBasics;
         private final Function<Basics, Selector> newSelector;
@@ -159,7 +167,7 @@ public final class Dispenser {
         private final Bounds arrayBounds;
         private final Bounds stringBounds;
 
-        private Template(final Builder builder) {
+        private Stage(final Builder builder) {
             methods = new ConcurrentHashMap<>(builder.methods);
             newBasics = builder.newBasics;
             newSelector = builder.newSelector;
@@ -182,7 +190,6 @@ public final class Dispenser {
         private static final String DEFAULT_CHARSET =
                 "abcdefghijklmnopqrstuvwxyzäöüß-ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ_0123456789 ,.;:@$!?";
 
-        @SuppressWarnings("rawtypes")
         private final Map<Model, Function<Dispenser, ?>> methods = new HashMap<>(0);
 
         private Function<String, Basics> newBasics = DefaultBasics::new;
@@ -190,6 +197,9 @@ public final class Dispenser {
         private String defaultCharset = DEFAULT_CHARSET;
         private Bounds arrayBounds = new Bounds(1, 8);
         private Bounds stringBounds = new Bounds(1, 24);
+
+        private Builder() {
+        }
 
         private static List<Type<?>> matching(final Type<?> type) {
             return Optional.ofNullable(PRIME_MAP.get(type))
@@ -242,7 +252,7 @@ public final class Dispenser {
         }
 
         public final Supplier<Dispenser> prepare() {
-            return new Template(this);
+            return new Stage(this);
         }
 
         public final Dispenser build() {

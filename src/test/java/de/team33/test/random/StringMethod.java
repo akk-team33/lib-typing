@@ -8,8 +8,8 @@ class StringMethod implements Function<Dispenser, String> {
 
     private final Function<Dispenser, char[]> backing;
 
-    StringMethod(final Bounds stringBounds) {
-        this.backing = new ArrayMethod<>(Type.of(char[].class), stringBounds);
+    StringMethod(final Function<Dispenser, Bounds> getBounds) {
+        this.backing = new ArrayMethod<>(Type.of(char[].class), getBounds);
     }
 
     @Override

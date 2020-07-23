@@ -6,21 +6,22 @@ import de.team33.libs.typing.v4.Type;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-class StreamMethod<E> implements Function<Dispenser, Stream<E>> {
+class StreamMethod implements Function<Dispenser, Stream> {
 
     private final Model elementModel;
-    private final Bounds bounds;
+    private final Function<Dispenser, Bounds> getBounds;
 
-    StreamMethod(final Model model, final Bounds bounds) {
+    StreamMethod(final Model model, final Function<Dispenser, Bounds> getBounds) {
         this.elementModel = model.getActualParameters().stream()
                                  .findAny()
                                  .orElseGet(() -> Type.of(Object.class));
-        this.bounds = bounds;
+        this.getBounds = getBounds;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
-    public final Stream<E> apply(final Dispenser dispenser) {
+    public final Stream apply(final Dispenser dispenser) {
+        final Bounds bounds = getBounds.apply(dispenser);
         final int size = bounds.lower + dispenser.basics.anyInt(bounds.distance);
         return newStream(dispenser, size);
     }

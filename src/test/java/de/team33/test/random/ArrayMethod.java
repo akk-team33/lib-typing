@@ -8,15 +8,16 @@ import java.util.function.Function;
 class ArrayMethod<A> implements Function<Dispenser, A> {
 
     private final Class<?> componentType;
-    private final Bounds bounds;
+    private final Function<Dispenser, Bounds> getBounds;
 
-    ArrayMethod(final Model model, final Bounds bounds) {
+    ArrayMethod(final Model model, final Function<Dispenser, Bounds> getBounds) {
         this.componentType = model.getRawClass().getComponentType();
-        this.bounds = bounds;
+        this.getBounds = getBounds;
     }
 
     @Override
     public final A apply(final Dispenser dispenser) {
+        final Bounds bounds = getBounds.apply(dispenser);
         final int length = bounds.lower + dispenser.basics.anyInt(bounds.distance);
         final Object result = Array.newInstance(componentType, length);
         for (int index = 0; index < Array.getLength(result); ++index) {
