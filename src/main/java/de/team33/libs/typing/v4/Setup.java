@@ -70,7 +70,7 @@ public abstract class Setup {
      * @see Class#getSuperclass()
      * @see Class#getGenericSuperclass()
      */
-    public final Optional<Setup> getSuperModel() {
+    public final Optional<Setup> getSuperSetup() {
         return Optional.ofNullable(getPrimeClass().getGenericSuperclass())
                        .map(this::map);
     }
@@ -81,7 +81,7 @@ public abstract class Setup {
      * @see Class#getInterfaces()
      * @see Class#getGenericInterfaces()
      */
-    public final Stream<Setup> getInterfaceModels() {
+    public final Stream<Setup> getInterfaceSetups() {
         return Stream.of(getPrimeClass().getGenericInterfaces())
                      .map(this::map);
     }
@@ -89,14 +89,14 @@ public abstract class Setup {
     /**
      * Returns all the {@link Setup}s (superclass, interfaces) from which this {@link Setup} is derived (if so).
      *
-     * @see #getSuperModel()
-     * @see #getInterfaceModels()
+     * @see #getSuperSetup()
+     * @see #getInterfaceSetups()
      */
-    public final Stream<Setup> getSuperModels() {
+    public final Stream<Setup> getSuperSetups() {
         return Stream.concat(
-                getSuperModel().map(Stream::of)
+                getSuperSetup().map(Stream::of)
                                .orElseGet(Stream::empty),
-                getInterfaceModels());
+                getInterfaceSetups());
     }
 
     /**
@@ -108,9 +108,9 @@ public abstract class Setup {
      * @see Field#getType()
      * @see Field#getGenericType()
      */
-    public final Setup modelOf(final Field field) {
+    public final Setup setupOf(final Field field) {
         return Optional
-                .ofNullable(nullableModelOf(field, Field::getGenericType))
+                .ofNullable(nullableSetupOf(field, Field::getGenericType))
                 .orElseThrow(() -> illegalMemberException(field));
     }
 
@@ -124,9 +124,9 @@ public abstract class Setup {
      * @see Method#getReturnType()
      * @see Method#getGenericReturnType()
      */
-    public final Setup returnModelOf(final Method method) {
+    public final Setup returnSetupOf(final Method method) {
         return Optional
-                .ofNullable(nullableModelOf(method, Method::getGenericReturnType))
+                .ofNullable(nullableSetupOf(method, Method::getGenericReturnType))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -140,9 +140,9 @@ public abstract class Setup {
      * @see Method#getParameterTypes()
      * @see Method#getGenericParameterTypes()
      */
-    public final List<Setup> parameterModelsOf(final Method method) {
+    public final List<Setup> parameterSetupsOf(final Method method) {
         return Optional
-                .ofNullable(nullableModelsOf(method, Method::getGenericParameterTypes))
+                .ofNullable(nullableSetupsOf(method, Method::getGenericParameterTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -153,9 +153,9 @@ public abstract class Setup {
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
      *                                  {@link Setup}.
      */
-    public final List<Setup> exceptionModelsOf(final Method method) {
+    public final List<Setup> exceptionSetupsOf(final Method method) {
         return Optional
-                .ofNullable(nullableModelsOf(method, Method::getGenericExceptionTypes))
+                .ofNullable(nullableSetupsOf(method, Method::getGenericExceptionTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -163,28 +163,28 @@ public abstract class Setup {
         return new IllegalArgumentException(String.format(NOT_DECLARED_IN_THIS, member, this));
     }
 
-    private List<Setup> nullableModelsOf(final Method member,
+    private List<Setup> nullableSetupsOf(final Method member,
                                          final Function<Method, Type[]> toGenericTypes) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
                          .map(this::map)
                          .collect(Collectors.toList());
         } else {
-            return getSuperModels()
-                    .map(st -> st.nullableModelsOf(member, toGenericTypes))
+            return getSuperSetups()
+                    .map(st -> st.nullableSetupsOf(member, toGenericTypes))
                     .filter(Objects::nonNull)
                     .findAny()
                     .orElse(null);
         }
     }
 
-    private <M extends Member> Setup nullableModelOf(final M member,
+    private <M extends Member> Setup nullableSetupOf(final M member,
                                                      final Function<M, Type> toGenericType) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return map(toGenericType.apply(member));
         } else {
-            return getSuperModels()
-                    .map(st -> st.nullableModelOf(member, toGenericType))
+            return getSuperSetups()
+                    .map(st -> st.nullableSetupOf(member, toGenericType))
                     .filter(Objects::nonNull)
                     .findAny()
                     .orElse(null);
