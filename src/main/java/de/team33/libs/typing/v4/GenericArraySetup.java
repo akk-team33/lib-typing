@@ -10,24 +10,22 @@ import static java.util.Collections.singletonList;
 
 class GenericArraySetup extends ArraySetup {
 
-    private final Setup componentSetup;
-    private final transient Lazy<Class<?>> rawClass = new Lazy<>(this::newRawClass);
+    private final Class<?> primeClass;
+    private final List<Setup> actualParameters;
 
     GenericArraySetup(final GenericArrayType type, final Setup context) {
-        this.componentSetup = TypeMapper.map(type.getGenericComponentType(), context);
-    }
-
-    private Class<?> newRawClass() {
-        return Array.newInstance(componentSetup.getPrimeClass(), 0).getClass();
+        final Setup componentSetup = TypeMapper.map(type.getGenericComponentType(), context);
+        this.actualParameters = singletonList(componentSetup);
+        this.primeClass = Array.newInstance(componentSetup.getPrimeClass(), 0).getClass();
     }
 
     @Override
     public final Class<?> getPrimeClass() {
-        return rawClass.get();
+        return primeClass;
     }
 
     @Override
     public final List<Setup> getActualParameters() {
-        return singletonList(componentSetup);
+        return actualParameters;
     }
 }
