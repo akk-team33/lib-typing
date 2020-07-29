@@ -1,12 +1,9 @@
 package de.team33.libs.typing.v4;
 
-import de.team33.libs.provision.v2.Lazy;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,11 +18,7 @@ public abstract class Setup {
 
     private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Setup (%s)";
 
-    private final transient Lazy<List<Object>> listView =
-            new Lazy<>(() -> Arrays.asList(getPrimeClass(), getActualParameters()));
-
-    private final transient Lazy<Integer> hashView =
-            new Lazy<>(() -> listView.get().hashCode());
+    private final transient Lazy<Integer> hashView = new Lazy<>(() -> toList().hashCode());
 
     /**
      * Returns the primary {@link Class} on which this {@link Setup} is based.
@@ -55,13 +48,19 @@ public abstract class Setup {
      */
     public final Setup getActualParameter(final String formalParameter) throws IllegalArgumentException {
         final List<String> formalParameters = getFormalParameters();
-        return Optional.of(formalParameters.indexOf(formalParameter))
-                       .filter(index -> 0 <= index)
-                       .map(index -> getActualParameters().get(index))
-                       .orElseThrow(() -> new IllegalArgumentException(
-                               String.format(
-                                       "formal parameter <%s> not found in %s",
-                                       formalParameter, formalParameters)));
+        final List<Setup> actualParameters = getActualParameters();
+        final int index = formalParameters.indexOf(formalParameter);
+        if (0 > index) {
+            throw new IllegalArgumentException(String.format(
+                    "formal parameter <%s> not found in %s",
+                    formalParameter, formalParameters));
+        } else if (index >= actualParameters.size()) {
+            throw new IllegalArgumentException(String.format(
+                    "formal parameter [%d] (<%s> in %s) not found in actual parameters %s",
+                    index, formalParameter, formalParameters, actualParameters));
+        } else {
+            return actualParameters.get(index);
+        }
     }
 
     /**
@@ -202,9 +201,18 @@ public abstract class Setup {
 
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof Setup) && listView.get().equals(((Setup) obj).listView.get()));
+        return (this == obj) || ((obj instanceof Setup) && toList().equals(((Setup) obj).toList()));
     }
 
     @Override
     public abstract String toString();
+
+    /**
+     * Returns a list view of this {@link Setup} consisting of two elements:
+     * <ol>
+     *     <li>the {@linkplain #getPrimeClass() prime class}</li>
+     *     <li>the {@linkplain #getActualParameters() actual parameters}</li>
+     * </ol>
+     */
+    abstract List<?> toList();
 }

@@ -107,4 +107,9 @@ public abstract class Type<T> extends Setup {
     public final String toString() {
         return backing.toString();
     }
+
+    @Override
+    final List<?> toList() {
+        return backing.toList();
+    }
 }
