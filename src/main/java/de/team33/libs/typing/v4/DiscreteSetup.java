@@ -19,7 +19,7 @@ abstract class DiscreteSetup extends BasicSetup {
                                                     .map(TypeVariable::getName)
                                                     .collect(Collectors.toList())));
 
-    DiscreteSetup(final Class<?> primeClass, final List<Setup> actualParameters) {
+    DiscreteSetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
         super(primeClass, actualParameters);
     }
 
@@ -27,7 +27,7 @@ abstract class DiscreteSetup extends BasicSetup {
         return Optional.of(getActualParameters())
                        .filter(list -> 0 < list.size())
                        .map(list -> list.stream()
-                                        .map(Setup::toString)
+                                        .map(TypeSetup::toString)
                                         .collect(joining(", ", "<", ">")))
                        .orElse("");
     }

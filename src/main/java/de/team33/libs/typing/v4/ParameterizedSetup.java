@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 class ParameterizedSetup extends DiscreteSetup {
 
-    ParameterizedSetup(final ParameterizedType type, final Setup context) {
+    ParameterizedSetup(final ParameterizedType type, final TypeSetup context) {
         super((Class<?>) type.getRawType(), Collections.unmodifiableList(
                 Stream.of(type.getActualTypeArguments())
                       .map(argument -> TypeMapper.map(argument, context))

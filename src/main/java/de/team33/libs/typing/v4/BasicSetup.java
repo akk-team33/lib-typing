@@ -5,39 +5,39 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-abstract class BasicSetup extends Setup {
+abstract class BasicSetup extends TypeSetup {
 
-    private final Fields fields;
+    private final Consistence consistence;
 
-    BasicSetup(final Class<?> primeClass, final List<Setup> actualParameters) {
-        this.fields = new Fields(primeClass, actualParameters);
+    BasicSetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
+        this.consistence = new Consistence(primeClass, actualParameters);
     }
 
     @Override
     public final Class<?> getPrimeClass() {
-        return fields.primeClass;
+        return consistence.primeClass;
     }
 
     @Override
-    public final List<Setup> getActualParameters() {
-        return fields.actualParameters;
+    public final List<TypeSetup> getActualParameters() {
+        return consistence.actualParameters;
     }
 
     @Override
     final List<?> toList() {
-        return fields;
+        return consistence;
     }
 
-    private static final class Fields extends AbstractList<Object> {
+    private static final class Consistence extends AbstractList<Object> {
 
-        private static final List<Function<Fields, Object>> ELEMENTS = Arrays.asList(
-                fields -> fields.primeClass,
-                fields -> fields.actualParameters);
+        private static final List<Function<Consistence, Object>> ELEMENTS = Arrays.asList(
+                consistence -> consistence.primeClass,
+                consistence -> consistence.actualParameters);
 
         private final Class<?> primeClass;
-        private final List<Setup> actualParameters;
+        private final List<TypeSetup> actualParameters;
 
-        private Fields(final Class<?> primeClass, final List<Setup> actualParameters) {
+        private Consistence(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
             this.primeClass = primeClass;
             this.actualParameters = actualParameters;
         }

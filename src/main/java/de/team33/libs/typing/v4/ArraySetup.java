@@ -9,7 +9,7 @@ abstract class ArraySetup extends BasicSetup {
 
     private final transient Lazy<String> stringView = new Lazy<>(() -> getActualParameters().get(0) + "[]");
 
-    ArraySetup(final Class<?> primeClass, final List<Setup> actualParameters) {
+    ArraySetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
         super(primeClass, actualParameters);
     }
 

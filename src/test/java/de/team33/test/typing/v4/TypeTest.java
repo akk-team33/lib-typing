@@ -1,6 +1,6 @@
 package de.team33.test.typing.v4;
 
-import de.team33.libs.typing.v4.Setup;
+import de.team33.libs.typing.v4.TypeSetup;
 import de.team33.libs.typing.v4.Type;
 import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
@@ -70,7 +70,7 @@ public class TypeTest {
 
     @Test
     public final void getActualParameters() {
-        final List<Setup> actualParameters = GENERIC_TYPE.getActualParameters();
+        final List<TypeSetup> actualParameters = GENERIC_TYPE.getActualParameters();
         assertEquals(3, actualParameters.size());
         assertStringType(actualParameters.get(0));
         assertStringListType(actualParameters.get(1));
@@ -230,57 +230,57 @@ public class TypeTest {
         );
     }
 
-    private static void assertIntType(final Setup intType) {
+    private static void assertIntType(final TypeSetup intType) {
         assertSame(Integer.TYPE, intType.getPrimeClass());
         assertEquals(0, intType.getActualParameters().size());
         assertEquals(intType, Type.of(Integer.TYPE));
     }
 
-    private static void assertIntArrayType(final Setup intArrayType) {
+    private static void assertIntArrayType(final TypeSetup intArrayType) {
         assertArrayType(intArrayType, int[].class, TypeTest::assertIntType);
     }
 
-    private static void assertStringType(final Setup stringType) {
+    private static void assertStringType(final TypeSetup stringType) {
         assertSame(String.class, stringType.getPrimeClass());
         assertEquals(0, stringType.getActualParameters().size());
         assertEquals(stringType, new Type<String>() {
         });
     }
 
-    private static void assertStringArrayType(final Setup stringArrayType) {
+    private static void assertStringArrayType(final TypeSetup stringArrayType) {
         assertArrayType(stringArrayType, String[].class, TypeTest::assertStringType);
     }
 
-    public static void assertStringListType(final Setup stringListType) {
+    public static void assertStringListType(final TypeSetup stringListType) {
         assertSame(List.class, stringListType.getPrimeClass());
 
-        final List<Setup> parameters = stringListType.getActualParameters();
+        final List<TypeSetup> parameters = stringListType.getActualParameters();
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
         assertEquals(LIST_OF_STRING_TYPE, stringListType);
     }
 
-    public static void assertStringListArrayType(final Setup stringListArrayType) {
+    public static void assertStringListArrayType(final TypeSetup stringListArrayType) {
         assertArrayType(stringListArrayType, List[].class, TypeTest::assertStringListType);
     }
 
-    private static void assertMapStringToListOfString(final Setup mapType) {
+    private static void assertMapStringToListOfString(final TypeSetup mapType) {
         assertSame(Map.class, mapType.getPrimeClass());
 
-        final List<Setup> parameters = mapType.getActualParameters();
+        final List<TypeSetup> parameters = mapType.getActualParameters();
         assertEquals(2, parameters.size());
         assertStringType(parameters.get(0));
         assertStringListType(parameters.get(1));
     }
 
-    private static void assertMapStringToListArrayType(final Setup mapArrayType) {
+    private static void assertMapStringToListArrayType(final TypeSetup mapArrayType) {
         assertArrayType(mapArrayType, Map[].class, TypeTest::assertMapStringToListOfString);
     }
 
-    private static void assertArrayType(final Setup arrayType,
+    private static void assertArrayType(final TypeSetup arrayType,
                                         final Class<?> underlying,
-                                        final Consumer<Setup> assertComponentType) {
+                                        final Consumer<TypeSetup> assertComponentType) {
         assertSame(underlying, arrayType.getPrimeClass());
         assertEquals(1, arrayType.getActualParameters().size());
         assertComponentType.accept(arrayType.getActualParameters().get(0));

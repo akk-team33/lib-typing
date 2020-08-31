@@ -60,21 +60,22 @@ import java.util.List;
  * @see #Type()
  * @see #of(Class)
  */
-public abstract class Type<T> extends Setup {
+public abstract class Type<T> extends TypeSetup {
 
-    public final Setup backing;
+    public final TypeSetup backing;
 
     /**
      * Initializes a {@link Type} based on its well-defined derivative.
      */
     protected Type() {
-        final ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
+        final Class<?> thisClass = getClass();
+        final ParameterizedType genericSuperclass = (ParameterizedType) thisClass.getGenericSuperclass();
         this.backing = TypeMapper.map(
                 genericSuperclass.getActualTypeArguments()[0],
-                ClassMapper.map(getClass()));
+                TypeMapper.map(thisClass));
     }
 
-    private Type(final Setup backing) {
+    private Type(final TypeSetup backing) {
         this.backing = backing;
     }
 
@@ -84,7 +85,7 @@ public abstract class Type<T> extends Setup {
      * {@linkplain #getFormalParameters() formal parameters}.</p>
      */
     public static <T> Type<T> of(final Class<T> simpleClass) {
-        return new Type<T>(ClassMapper.map(simpleClass)) {
+        return new Type<T>(TypeMapper.map(simpleClass)) {
         };
     }
 
@@ -99,7 +100,7 @@ public abstract class Type<T> extends Setup {
     }
 
     @Override
-    public final List<Setup> getActualParameters() {
+    public final List<TypeSetup> getActualParameters() {
         return backing.getActualParameters();
     }
 

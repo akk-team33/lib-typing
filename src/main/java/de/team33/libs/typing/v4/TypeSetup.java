@@ -14,41 +14,41 @@ import java.util.stream.Stream;
 /**
  * Represents the setup of a definite type that can be based on a generic as well as a non-generic class.
  */
-public abstract class Setup {
+public abstract class TypeSetup {
 
     private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Setup (%s)";
 
     private final transient Lazy<Integer> hashView = new Lazy<>(() -> toList().hashCode());
 
     /**
-     * Returns the primary {@link Class} on which this {@link Setup} is based.
+     * Returns the primary {@link Class} on which this {@link TypeSetup} is based.
      */
     public abstract Class<?> getPrimeClass();
 
     /**
-     * Returns the formal type parameters of the (generic) type underlying this {@link Setup}.
+     * Returns the formal type parameters of the (generic) type underlying this {@link TypeSetup}.
      *
      * @see #getActualParameters()
      */
     public abstract List<String> getFormalParameters();
 
     /**
-     * <p>Returns the actual parameters defining this {@link Setup}.</p>
+     * <p>Returns the actual parameters defining this {@link TypeSetup}.</p>
      * <p>The result may be empty even if the {@linkplain #getFormalParameters() formal parameter list} is not.
      * Otherwise the formal and actual parameter list are of the same size and corresponding order.</p>
      *
      * @see #getFormalParameters()
      */
-    public abstract List<Setup> getActualParameters();
+    public abstract List<TypeSetup> getActualParameters();
 
     /**
      * Returns a specific actual parameter based on the corresponding formal parameter.
      *
      * @throws IllegalArgumentException when {@code <formalParameter>} is invalid.
      */
-    public final Setup getActualParameter(final String formalParameter) throws IllegalArgumentException {
+    public final TypeSetup getActualParameter(final String formalParameter) throws IllegalArgumentException {
         final List<String> formalParameters = getFormalParameters();
-        final List<Setup> actualParameters = getActualParameters();
+        final List<TypeSetup> actualParameters = getActualParameters();
         final int index = formalParameters.indexOf(formalParameter);
         if (0 > index) {
             throw new IllegalArgumentException(String.format(
@@ -64,34 +64,34 @@ public abstract class Setup {
     }
 
     /**
-     * Returns the {@link Setup} from which this {@link Setup} is derived (if so).
+     * Returns the {@link TypeSetup} from which this {@link TypeSetup} is derived (if so).
      *
      * @see Class#getSuperclass()
      * @see Class#getGenericSuperclass()
      */
-    public final Optional<Setup> getSuperSetup() {
+    public final Optional<TypeSetup> getSuperSetup() {
         return Optional.ofNullable(getPrimeClass().getGenericSuperclass())
                        .map(this::map);
     }
 
     /**
-     * Returns the interfaces as {@link Setup} from which this {@link Setup} is derived (if so).
+     * Returns the interfaces as {@link TypeSetup} from which this {@link TypeSetup} is derived (if so).
      *
      * @see Class#getInterfaces()
      * @see Class#getGenericInterfaces()
      */
-    public final Stream<Setup> getInterfaceSetups() {
+    public final Stream<TypeSetup> getInterfaceSetups() {
         return Stream.of(getPrimeClass().getGenericInterfaces())
                      .map(this::map);
     }
 
     /**
-     * Returns all the {@link Setup}s (superclass, interfaces) from which this {@link Setup} is derived (if so).
+     * Returns all the {@link TypeSetup}s (superclass, interfaces) from which this {@link TypeSetup} is derived (if so).
      *
      * @see #getSuperSetup()
      * @see #getInterfaceSetups()
      */
-    public final Stream<Setup> getSuperSetups() {
+    public final Stream<TypeSetup> getSuperSetups() {
         return Stream.concat(
                 getSuperSetup().map(Stream::of)
                                .orElseGet(Stream::empty),
@@ -99,60 +99,60 @@ public abstract class Setup {
     }
 
     /**
-     * Returns the {@link Setup} of a given {@link Field} if it is defined in the hierarchy of this {@link Setup}.
+     * Returns the {@link TypeSetup} of a given {@link Field} if it is defined in the hierarchy of this {@link TypeSetup}.
      *
      * @throws IllegalArgumentException if the given {@link Field} is not defined in the hierarchy of this
-     *                                  {@link Setup}.
+     *                                  {@link TypeSetup}.
      *
      * @see Field#getType()
      * @see Field#getGenericType()
      */
-    public final Setup setupOf(final Field field) {
+    public final TypeSetup setupOf(final Field field) {
         return Optional
                 .ofNullable(nullableSetupOf(field, Field::getGenericType))
                 .orElseThrow(() -> illegalMemberException(field));
     }
 
     /**
-     * Returns the return {@link Setup} of a given {@link Method} if it is defined in the hierarchy of this
-     * {@link Setup}.
+     * Returns the return {@link TypeSetup} of a given {@link Method} if it is defined in the hierarchy of this
+     * {@link TypeSetup}.
      *
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
-     *                                  {@link Setup}.
+     *                                  {@link TypeSetup}.
      *
      * @see Method#getReturnType()
      * @see Method#getGenericReturnType()
      */
-    public final Setup returnSetupOf(final Method method) {
+    public final TypeSetup returnSetupOf(final Method method) {
         return Optional
                 .ofNullable(nullableSetupOf(method, Method::getGenericReturnType))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
     /**
-     * Returns the parameter {@link Setup}s of a given {@link Method} if it is defined in the hierarchy of this
-     * {@link Setup}.
+     * Returns the parameter {@link TypeSetup}s of a given {@link Method} if it is defined in the hierarchy of this
+     * {@link TypeSetup}.
      *
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
-     *                                  {@link Setup}.
+     *                                  {@link TypeSetup}.
      *
      * @see Method#getParameterTypes()
      * @see Method#getGenericParameterTypes()
      */
-    public final List<Setup> parameterSetupsOf(final Method method) {
+    public final List<TypeSetup> parameterSetupsOf(final Method method) {
         return Optional
                 .ofNullable(nullableSetupsOf(method, Method::getGenericParameterTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
     /**
-     * Returns the exception {@link Setup}s of a given {@link Method} if it is defined in the hierarchy of this
-     * {@link Setup}.
+     * Returns the exception {@link TypeSetup}s of a given {@link Method} if it is defined in the hierarchy of this
+     * {@link TypeSetup}.
      *
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
-     *                                  {@link Setup}.
+     *                                  {@link TypeSetup}.
      */
-    public final List<Setup> exceptionSetupsOf(final Method method) {
+    public final List<TypeSetup> exceptionSetupsOf(final Method method) {
         return Optional
                 .ofNullable(nullableSetupsOf(method, Method::getGenericExceptionTypes))
                 .orElseThrow(() -> illegalMemberException(method));
@@ -162,8 +162,8 @@ public abstract class Setup {
         return new IllegalArgumentException(String.format(NOT_DECLARED_IN_THIS, member, this));
     }
 
-    private List<Setup> nullableSetupsOf(final Method member,
-                                         final Function<Method, Type[]> toGenericTypes) {
+    private List<TypeSetup> nullableSetupsOf(final Method member,
+                                             final Function<Method, Type[]> toGenericTypes) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
                          .map(this::map)
@@ -177,8 +177,8 @@ public abstract class Setup {
         }
     }
 
-    private <M extends Member> Setup nullableSetupOf(final M member,
-                                                     final Function<M, Type> toGenericType) {
+    private <M extends Member> TypeSetup nullableSetupOf(final M member,
+                                                         final Function<M, Type> toGenericType) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return map(toGenericType.apply(member));
         } else {
@@ -190,7 +190,7 @@ public abstract class Setup {
         }
     }
 
-    private Setup map(final Type type) {
+    private TypeSetup map(final Type type) {
         return TypeMapper.map(type, this);
     }
 
@@ -201,14 +201,14 @@ public abstract class Setup {
 
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof Setup) && toList().equals(((Setup) obj).toList()));
+        return (this == obj) || ((obj instanceof TypeSetup) && toList().equals(((TypeSetup) obj).toList()));
     }
 
     @Override
     public abstract String toString();
 
     /**
-     * Returns a list view of this {@link Setup} consisting of two elements:
+     * Returns a list view of this {@link TypeSetup} consisting of two elements:
      * <ol>
      *     <li>the {@linkplain #getPrimeClass() prime class}</li>
      *     <li>the {@linkplain #getActualParameters() actual parameters}</li>

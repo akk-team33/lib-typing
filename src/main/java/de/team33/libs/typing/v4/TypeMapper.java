@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 enum TypeMapper {
 
-    CLASS(
+    SIMPLE_CLASS(
             type -> type instanceof Class<?>,
             (type, context) -> ClassMapper.map((Class<?>) type)),
 
@@ -29,28 +29,48 @@ enum TypeMapper {
             type -> type instanceof TypeVariable,
             (type, context) -> typeVariableSetup((TypeVariable<?>) type, context));
 
-    private static final Map<Setup, Setup> CACHE = new ConcurrentHashMap<>(0);
-    private static final Function<Setup, Setup> SELF = key -> key;
+    private static final Map<TypeSetup, TypeSetup> CACHE = new ConcurrentHashMap<>(0);
+    private static final Function<TypeSetup, TypeSetup> KEY_IS_VALUE = key -> key;
 
     private final Predicate<Type> matching;
-    private final BiFunction<Type, Setup, Setup> mapping;
+    private final BiFunction<Type, TypeSetup, TypeSetup> mapping;
 
-    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, Setup, Setup> mapping) {
+    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, TypeSetup, TypeSetup> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    private static Setup typeVariableSetup(final TypeVariable<?> type, final Setup context) {
+    private static TypeSetup typeVariableSetup(final TypeVariable<?> type, final TypeSetup context) {
         return context.getActualParameter(type.getName());
     }
 
-    static Setup map(final Type type, final Setup context) {
+    static TypeSetup map(final Class<?> type) {
+        return map(type, null);
+    }
+
+    static TypeSetup map(final Type type, final TypeSetup context) {
         return CACHE.computeIfAbsent(
                 Stream.of(values())
-                      .filter(typeType -> typeType.matching.test(type))
+                      .filter(mapper -> mapper.matching.test(type))
                       .findAny()
-                      .map(typeType -> typeType.mapping.apply(type, context))
+                      .map(mapper -> mapper.mapping.apply(type, context))
                       .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type)),
-                SELF);
+                KEY_IS_VALUE);
+    }
+
+    private enum ClassMapper {
+
+        CLASS(PlainClassSetup::new),
+        ARRAY(PlainArraySetup::new);
+
+        private final Function<Class<?>, TypeSetup> mapping;
+
+        ClassMapper(final Function<Class<?>, TypeSetup> mapping) {
+            this.mapping = mapping;
+        }
+
+        static TypeSetup map(final Class<?> underlyingClass) {
+            return (underlyingClass.isArray() ? ARRAY : CLASS).mapping.apply(underlyingClass);
+        }
     }
 }
