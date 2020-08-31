@@ -60,7 +60,7 @@ import java.util.List;
  * @see #Type()
  * @see #of(Class)
  */
-public abstract class Type<T> extends TypeSetup {
+public class Type<T> extends TypeSetup {
 
     public final TypeSetup backing;
 
@@ -102,6 +102,16 @@ public abstract class Type<T> extends TypeSetup {
     @Override
     public final List<TypeSetup> getActualParameters() {
         return backing.getActualParameters();
+    }
+
+    @Override
+    public int hashCode() {
+        return backing.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        return (this == obj) || backing.equals(obj);
     }
 
     @Override

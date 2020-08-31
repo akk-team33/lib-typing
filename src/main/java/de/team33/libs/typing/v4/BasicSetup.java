@@ -8,6 +8,7 @@ import java.util.function.Function;
 abstract class BasicSetup extends TypeSetup {
 
     private final Consistence consistence;
+    private final transient Lazy<Integer> hashView = new Lazy<>(() -> toList().hashCode());
 
     BasicSetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
         this.consistence = new Consistence(primeClass, actualParameters);
@@ -21,6 +22,16 @@ abstract class BasicSetup extends TypeSetup {
     @Override
     public final List<TypeSetup> getActualParameters() {
         return consistence.actualParameters;
+    }
+
+    @Override
+    public final int hashCode() {
+        return hashView.get();
+    }
+
+    @Override
+    public final boolean equals(final Object obj) {
+        return (this == obj) || ((obj instanceof TypeSetup) && toList().equals(((TypeSetup) obj).toList()));
     }
 
     @Override

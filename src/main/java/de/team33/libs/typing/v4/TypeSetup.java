@@ -16,9 +16,7 @@ import java.util.stream.Stream;
  */
 public abstract class TypeSetup {
 
-    private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Setup (%s)";
-
-    private final transient Lazy<Integer> hashView = new Lazy<>(() -> toList().hashCode());
+    private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Type (%s)";
 
     /**
      * Returns the primary {@link Class} on which this {@link TypeSetup} is based.
@@ -195,14 +193,10 @@ public abstract class TypeSetup {
     }
 
     @Override
-    public final int hashCode() {
-        return hashView.get();
-    }
+    public abstract int hashCode();
 
     @Override
-    public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof TypeSetup) && toList().equals(((TypeSetup) obj).toList()));
-    }
+    public abstract boolean equals(final Object obj);
 
     @Override
     public abstract String toString();
