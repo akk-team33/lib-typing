@@ -39,10 +39,6 @@ enum TypeMapper {
         return context.getActualParameter(type.getName());
     }
 
-    static TypeSetup map(final Class<?> type) {
-        return map(type, null);
-    }
-
     static TypeSetup map(final Type type, final TypeSetup context) {
         return Stream.of(values())
                      .filter(mapper -> mapper.matching.test(type))

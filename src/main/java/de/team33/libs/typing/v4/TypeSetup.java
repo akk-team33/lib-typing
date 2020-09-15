@@ -27,6 +27,14 @@ public abstract class TypeSetup {
             getActualParameters()))));
     private final Lazy<Integer> hashValue = new Lazy<>(() -> listView.get().hashCode());
 
+    public static TypeSetup map(final Class<?> type) {
+        return map(type, null);
+    }
+
+    public static TypeSetup map(final Type type, final TypeSetup context) {
+        return TypeMapper.map(type, context);
+    }
+
     /**
      * Returns the primary {@link Class} on which this {@link TypeSetup} is based.
      */
@@ -78,7 +86,7 @@ public abstract class TypeSetup {
      */
     public final Optional<TypeSetup> getSuperSetup() {
         return Optional.ofNullable(getPrimeClass().getGenericSuperclass())
-                       .map(this::map);
+                       .map(type -> map(type, this));
     }
 
     /**
@@ -89,7 +97,7 @@ public abstract class TypeSetup {
      */
     public final Stream<TypeSetup> getInterfaceSetups() {
         return Stream.of(getPrimeClass().getGenericInterfaces())
-                     .map(this::map);
+                     .map(type -> map(type, this));
     }
 
     /**
@@ -106,7 +114,8 @@ public abstract class TypeSetup {
     }
 
     /**
-     * Returns the {@link TypeSetup} of a given {@link Field} if it is defined in the hierarchy of this {@link TypeSetup}.
+     * Returns the {@link TypeSetup} of a given {@link Field} if it is defined in the hierarchy of this
+     * {@link TypeSetup}.
      *
      * @throws IllegalArgumentException if the given {@link Field} is not defined in the hierarchy of this
      *                                  {@link TypeSetup}.
@@ -173,7 +182,7 @@ public abstract class TypeSetup {
                                              final Function<Method, Type[]> toGenericTypes) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
-                         .map(this::map)
+                         .map(type -> map(type, this))
                          .collect(Collectors.toList());
         } else {
             return getSuperSetups()
@@ -187,7 +196,7 @@ public abstract class TypeSetup {
     private <M extends Member> TypeSetup nullableSetupOf(final M member,
                                                          final Function<M, Type> toGenericType) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
-            return map(toGenericType.apply(member));
+            return map(toGenericType.apply(member), this);
         } else {
             return getSuperSetups()
                     .map(st -> st.nullableSetupOf(member, toGenericType))
@@ -195,10 +204,6 @@ public abstract class TypeSetup {
                     .findAny()
                     .orElse(null);
         }
-    }
-
-    private TypeSetup map(final Type type) {
-        return TypeMapper.map(type, this);
     }
 
     @Override

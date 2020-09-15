@@ -5,6 +5,6 @@ import static java.util.Collections.singletonList;
 class PlainArraySetup extends ArraySetup {
 
     PlainArraySetup(final Class<?> rawClass) {
-        super(rawClass, singletonList(TypeMapper.map(rawClass.getComponentType())));
+        super(rawClass, singletonList(map(rawClass.getComponentType())));
     }
 }

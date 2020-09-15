@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
+@SuppressWarnings("ClassWithTooManyMethods")
 public class TypeTest {
 
     private static final Type<List<String>> LIST_OF_STRING_TYPE =
@@ -39,7 +40,7 @@ public class TypeTest {
             new Type<Generic<String, List<String>, Map<String, List<String>>>[]>() {
             };
 
-    class Incomplete<T> extends Type<Map<String, List<T>>> {
+    private class Incomplete<T> extends Type<Map<String, List<T>>> {
     }
 
     @Test(expected = RuntimeException.class)
@@ -251,7 +252,7 @@ public class TypeTest {
         assertArrayType(stringArrayType, String[].class, TypeTest::assertStringType);
     }
 
-    public static void assertStringListType(final TypeSetup stringListType) {
+    private static void assertStringListType(final TypeSetup stringListType) {
         assertSame(List.class, stringListType.getPrimeClass());
 
         final List<TypeSetup> parameters = stringListType.getActualParameters();
@@ -261,7 +262,7 @@ public class TypeTest {
         assertEquals(LIST_OF_STRING_TYPE, stringListType);
     }
 
-    public static void assertStringListArrayType(final TypeSetup stringListArrayType) {
+    private static void assertStringListArrayType(final TypeSetup stringListArrayType) {
         assertArrayType(stringListArrayType, List[].class, TypeTest::assertStringListType);
     }
 
@@ -280,7 +281,7 @@ public class TypeTest {
 
     private static void assertArrayType(final TypeSetup arrayType,
                                         final Class<?> underlying,
-                                        final Consumer<TypeSetup> assertComponentType) {
+                                        final Consumer<? super TypeSetup> assertComponentType) {
         assertSame(underlying, arrayType.getPrimeClass());
         assertEquals(1, arrayType.getActualParameters().size());
         assertComponentType.accept(arrayType.getActualParameters().get(0));
