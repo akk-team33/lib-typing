@@ -4,8 +4,6 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -29,9 +27,6 @@ enum TypeMapper {
             type -> type instanceof TypeVariable,
             (type, context) -> typeVariableSetup((TypeVariable<?>) type, context));
 
-    private static final Map<TypeSetup, TypeSetup> CACHE = new ConcurrentHashMap<>(0);
-    private static final Function<TypeSetup, TypeSetup> KEY_IS_VALUE = key -> key;
-
     private final Predicate<Type> matching;
     private final BiFunction<Type, TypeSetup, TypeSetup> mapping;
 
@@ -49,13 +44,11 @@ enum TypeMapper {
     }
 
     static TypeSetup map(final Type type, final TypeSetup context) {
-        return CACHE.computeIfAbsent(
-                Stream.of(values())
-                      .filter(mapper -> mapper.matching.test(type))
-                      .findAny()
-                      .map(mapper -> mapper.mapping.apply(type, context))
-                      .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type)),
-                KEY_IS_VALUE);
+        return Stream.of(values())
+                     .filter(mapper -> mapper.matching.test(type))
+                     .findAny()
+                     .map(mapper -> mapper.mapping.apply(type, context))
+                     .orElseThrow(() -> new IllegalArgumentException("Unknown type of Type: " + type));
     }
 
     private enum ClassMapper {
@@ -63,9 +56,9 @@ enum TypeMapper {
         CLASS(PlainClassSetup::new),
         ARRAY(PlainArraySetup::new);
 
-        private final Function<Class<?>, TypeSetup> mapping;
+        private final Function<? super Class<?>, ? extends TypeSetup> mapping;
 
-        ClassMapper(final Function<Class<?>, TypeSetup> mapping) {
+        ClassMapper(final Function<? super Class<?>, ? extends TypeSetup> mapping) {
             this.mapping = mapping;
         }
 
