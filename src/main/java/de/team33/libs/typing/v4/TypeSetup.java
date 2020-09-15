@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,12 +12,20 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+
 /**
  * Represents the setup of a definite type that can be based on a generic as well as a non-generic class.
  */
 public abstract class TypeSetup {
 
     private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Type (%s)";
+
+    private final Lazy<List<Object>> listView = new Lazy<>(() -> unmodifiableList(new ArrayList<>(asList(
+            getPrimeClass(),
+            getActualParameters()))));
+    private final Lazy<Integer> hashValue = new Lazy<>(() -> listView.get().hashCode());
 
     /**
      * Returns the primary {@link Class} on which this {@link TypeSetup} is based.
@@ -193,20 +202,19 @@ public abstract class TypeSetup {
     }
 
     @Override
-    public abstract int hashCode();
+    public final int hashCode() {
+        return hashValue.get();
+    }
 
     @Override
-    public abstract boolean equals(final Object obj);
+    public final boolean equals(final Object obj) {
+        return (this == obj) || ((obj instanceof TypeSetup) && equals_((TypeSetup) obj));
+    }
+
+    private boolean equals_(final TypeSetup other) {
+        return listView.get().equals(other.listView.get());
+    }
 
     @Override
     public abstract String toString();
-
-    /**
-     * Returns a list view of this {@link TypeSetup} consisting of two elements:
-     * <ol>
-     *     <li>the {@linkplain #getPrimeClass() prime class}</li>
-     *     <li>the {@linkplain #getActualParameters() actual parameters}</li>
-     * </ol>
-     */
-    abstract List<?> toList();
 }

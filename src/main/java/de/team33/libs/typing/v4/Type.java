@@ -105,22 +105,7 @@ public class Type<T> extends TypeSetup {
     }
 
     @Override
-    public int hashCode() {
-        return backing.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        return (this == obj) || backing.equals(obj);
-    }
-
-    @Override
     public final String toString() {
         return backing.toString();
-    }
-
-    @Override
-    final List<?> toList() {
-        return backing.toList();
     }
 }
