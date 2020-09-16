@@ -2,12 +2,12 @@ package de.team33.libs.typing.v4;
 
 import java.util.List;
 
-abstract class BasicSetup extends TypeSetup {
+abstract class BasicType extends RawType {
 
     private final Class<?> primeClass;
-    private final List<TypeSetup> actualParameters;
+    private final List<RawType> actualParameters;
 
-    BasicSetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
+    BasicType(final Class<?> primeClass, final List<RawType> actualParameters) {
         this.primeClass = primeClass;
         this.actualParameters = actualParameters;
     }
@@ -18,7 +18,7 @@ abstract class BasicSetup extends TypeSetup {
     }
 
     @Override
-    public final List<TypeSetup> getActualParameters() {
+    public final List<RawType> getActualParameters() {
         return actualParameters;
     }
 }

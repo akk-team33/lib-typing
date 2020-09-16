@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
-abstract class DiscreteSetup extends BasicSetup {
+abstract class DiscreteType extends BasicType {
 
     private final transient Lazy<String> stringView =
             new Lazy<>(() -> getPrimeClass().getSimpleName() + newActualParametersView());
@@ -19,7 +19,7 @@ abstract class DiscreteSetup extends BasicSetup {
                                                     .map(TypeVariable::getName)
                                                     .collect(Collectors.toList())));
 
-    DiscreteSetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
+    DiscreteType(final Class<?> primeClass, final List<RawType> actualParameters) {
         super(primeClass, actualParameters);
     }
 
@@ -27,7 +27,7 @@ abstract class DiscreteSetup extends BasicSetup {
         return Optional.of(getActualParameters())
                        .filter(list -> 0 < list.size())
                        .map(list -> list.stream()
-                                        .map(TypeSetup::toString)
+                                        .map(RawType::toString)
                                         .collect(joining(", ", "<", ">")))
                        .orElse("");
     }

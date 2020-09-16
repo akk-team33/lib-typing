@@ -1,7 +1,7 @@
 package de.team33.test.random2;
 
 import de.team33.libs.typing.v4.Type;
-import de.team33.libs.typing.v4.TypeSetup;
+import de.team33.libs.typing.v4.RawType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,18 +29,18 @@ public class Dispenser {
 
     public final <R> R any(final Type<R> rType) {
         //noinspection unchecked
-        return (R) any((TypeSetup) rType);
+        return (R) any((RawType) rType);
     }
 
-    public final Object any(final TypeSetup setup) {
+    public final Object any(final RawType setup) {
         return getMethod(setup).apply(this);
     }
 
-    private Function<Dispenser, ?> getMethod(final TypeSetup setup) {
+    private Function<Dispenser, ?> getMethod(final RawType setup) {
         return stage.methods.computeIfAbsent(setup, this::newMethod);
     }
 
-    private Function<Dispenser, ?> newMethod(final TypeSetup setup) {
+    private Function<Dispenser, ?> newMethod(final RawType setup) {
         return DefaultMethods.map(setup);
     }
 
@@ -49,15 +49,15 @@ public class Dispenser {
             throw new IllegalArgumentException("no method specified to get an instance of " + type);
         });
 
-        private final Predicate<TypeSetup> filter;
-        private final Function<TypeSetup, Function<Dispenser, ?>> mapping;
+        private final Predicate<RawType> filter;
+        private final Function<RawType, Function<Dispenser, ?>> mapping;
 
-        DefaultMethods(final Predicate<TypeSetup> filter, final Function<TypeSetup, Function<Dispenser, ?>> mapping) {
+        DefaultMethods(final Predicate<RawType> filter, final Function<RawType, Function<Dispenser, ?>> mapping) {
             this.filter = filter;
             this.mapping = mapping;
         }
 
-        public static Function<Dispenser, ?> map(final TypeSetup setup) {
+        public static Function<Dispenser, ?> map(final RawType setup) {
             return Stream.of(values())
                          .findAny()
                          .orElse(UNKNOWN).mapping.apply(setup);
@@ -66,7 +66,7 @@ public class Dispenser {
 
     private static class Stage implements Supplier<Dispenser> {
 
-        private final Map<TypeSetup, Function<Dispenser, ?>> methods;
+        private final Map<RawType, Function<Dispenser, ?>> methods;
 
         private Stage(final Builder builder) {
             methods = new ConcurrentHashMap<>(builder.methods);
@@ -80,7 +80,7 @@ public class Dispenser {
 
     public static class Builder {
 
-        public Map<TypeSetup, Function<Dispenser, ?>> methods = new HashMap<>(0);
+        public Map<RawType, Function<Dispenser, ?>> methods = new HashMap<>(0);
 
         private Builder() {
         }

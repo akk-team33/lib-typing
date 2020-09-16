@@ -2,9 +2,9 @@ package de.team33.libs.typing.v4;
 
 import static java.util.Collections.emptyList;
 
-class PlainClassSetup extends DiscreteSetup {
+class PlainClassType extends DiscreteType {
 
-    PlainClassSetup(final Class<?> rawClass) {
+    PlainClassType(final Class<?> rawClass) {
         super(rawClass, emptyList());
     }
 }

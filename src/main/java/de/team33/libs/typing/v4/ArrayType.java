@@ -3,13 +3,13 @@ package de.team33.libs.typing.v4;
 import java.util.Collections;
 import java.util.List;
 
-abstract class ArraySetup extends BasicSetup {
+abstract class ArrayType extends BasicType {
 
     private static final List<String> FORMAL_PARAMETERS = Collections.singletonList("E");
 
     private final transient Lazy<String> stringView = new Lazy<>(() -> getActualParameters().get(0) + "[]");
 
-    ArraySetup(final Class<?> primeClass, final List<TypeSetup> actualParameters) {
+    ArrayType(final Class<?> primeClass, final List<RawType> actualParameters) {
         super(primeClass, actualParameters);
     }
 

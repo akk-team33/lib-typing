@@ -60,9 +60,9 @@ import java.util.List;
  * @see #Type()
  * @see #of(Class)
  */
-public abstract class Type<T> extends TypeSetup {
+public abstract class Type<T> extends RawType {
 
-    private final TypeSetup backing;
+    private final RawType backing;
 
     /**
      * Initializes a {@link Type} based on its well-defined derivative.
@@ -75,7 +75,7 @@ public abstract class Type<T> extends TypeSetup {
                 map(thisClass));
     }
 
-    private Type(final TypeSetup backing) {
+    private Type(final RawType backing) {
         this.backing = backing;
     }
 
@@ -100,7 +100,7 @@ public abstract class Type<T> extends TypeSetup {
     }
 
     @Override
-    public final List<TypeSetup> getActualParameters() {
+    public final List<RawType> getActualParameters() {
         return backing.getActualParameters();
     }
 

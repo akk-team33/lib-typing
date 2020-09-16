@@ -1,6 +1,6 @@
 package de.team33.test.typing.v4;
 
-import de.team33.libs.typing.v4.TypeSetup;
+import de.team33.libs.typing.v4.RawType;
 import de.team33.libs.typing.v4.Type;
 import de.team33.test.typing.shared.Fixed;
 import de.team33.test.typing.shared.Generic;
@@ -71,7 +71,7 @@ public class TypeTest {
 
     @Test
     public final void getActualParameters() {
-        final List<TypeSetup> actualParameters = GENERIC_TYPE.getActualParameters();
+        final List<RawType> actualParameters = GENERIC_TYPE.getActualParameters();
         assertEquals(3, actualParameters.size());
         assertStringType(actualParameters.get(0));
         assertStringListType(actualParameters.get(1));
@@ -231,57 +231,57 @@ public class TypeTest {
         );
     }
 
-    private static void assertIntType(final TypeSetup intType) {
+    private static void assertIntType(final RawType intType) {
         assertSame(Integer.TYPE, intType.getPrimeClass());
         assertEquals(0, intType.getActualParameters().size());
         assertEquals(intType, Type.of(Integer.TYPE));
     }
 
-    private static void assertIntArrayType(final TypeSetup intArrayType) {
+    private static void assertIntArrayType(final RawType intArrayType) {
         assertArrayType(intArrayType, int[].class, TypeTest::assertIntType);
     }
 
-    private static void assertStringType(final TypeSetup stringType) {
+    private static void assertStringType(final RawType stringType) {
         assertSame(String.class, stringType.getPrimeClass());
         assertEquals(0, stringType.getActualParameters().size());
         assertEquals(stringType, new Type<String>() {
         });
     }
 
-    private static void assertStringArrayType(final TypeSetup stringArrayType) {
+    private static void assertStringArrayType(final RawType stringArrayType) {
         assertArrayType(stringArrayType, String[].class, TypeTest::assertStringType);
     }
 
-    private static void assertStringListType(final TypeSetup stringListType) {
+    private static void assertStringListType(final RawType stringListType) {
         assertSame(List.class, stringListType.getPrimeClass());
 
-        final List<TypeSetup> parameters = stringListType.getActualParameters();
+        final List<RawType> parameters = stringListType.getActualParameters();
         assertEquals(1, parameters.size());
         assertStringType(parameters.get(0));
 
         assertEquals(LIST_OF_STRING_TYPE, stringListType);
     }
 
-    private static void assertStringListArrayType(final TypeSetup stringListArrayType) {
+    private static void assertStringListArrayType(final RawType stringListArrayType) {
         assertArrayType(stringListArrayType, List[].class, TypeTest::assertStringListType);
     }
 
-    private static void assertMapStringToListOfString(final TypeSetup mapType) {
+    private static void assertMapStringToListOfString(final RawType mapType) {
         assertSame(Map.class, mapType.getPrimeClass());
 
-        final List<TypeSetup> parameters = mapType.getActualParameters();
+        final List<RawType> parameters = mapType.getActualParameters();
         assertEquals(2, parameters.size());
         assertStringType(parameters.get(0));
         assertStringListType(parameters.get(1));
     }
 
-    private static void assertMapStringToListArrayType(final TypeSetup mapArrayType) {
+    private static void assertMapStringToListArrayType(final RawType mapArrayType) {
         assertArrayType(mapArrayType, Map[].class, TypeTest::assertMapStringToListOfString);
     }
 
-    private static void assertArrayType(final TypeSetup arrayType,
+    private static void assertArrayType(final RawType arrayType,
                                         final Class<?> underlying,
-                                        final Consumer<? super TypeSetup> assertComponentType) {
+                                        final Consumer<? super RawType> assertComponentType) {
         assertSame(underlying, arrayType.getPrimeClass());
         assertEquals(1, arrayType.getActualParameters().size());
         assertComponentType.accept(arrayType.getActualParameters().get(0));

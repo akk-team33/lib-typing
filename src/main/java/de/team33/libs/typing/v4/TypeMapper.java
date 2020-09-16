@@ -1,7 +1,5 @@
 package de.team33.libs.typing.v4;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.function.BiFunction;
@@ -16,30 +14,30 @@ enum TypeMapper {
             (type, context) -> ClassMapper.map((Class<?>) type)),
 
     GENERIC_ARRAY(
-            type -> type instanceof GenericArrayType,
-            ((type, context) -> new GenericArraySetup((GenericArrayType) type, context))),
+            type -> type instanceof java.lang.reflect.GenericArrayType,
+            ((type, context) -> new GenericArrayType((java.lang.reflect.GenericArrayType) type, context))),
 
     PARAMETERIZED_TYPE(
-            type -> type instanceof ParameterizedType,
-            (type, context) -> new ParameterizedSetup((ParameterizedType) type, context)),
+            type -> type instanceof java.lang.reflect.ParameterizedType,
+            (type, context) -> new ParameterizedType((java.lang.reflect.ParameterizedType) type, context)),
 
     TYPE_VARIABLE(
             type -> type instanceof TypeVariable,
             (type, context) -> typeVariableSetup((TypeVariable<?>) type, context));
 
     private final Predicate<Type> matching;
-    private final BiFunction<Type, TypeSetup, TypeSetup> mapping;
+    private final BiFunction<Type, RawType, RawType> mapping;
 
-    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, TypeSetup, TypeSetup> mapping) {
+    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, RawType, RawType> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    private static TypeSetup typeVariableSetup(final TypeVariable<?> type, final TypeSetup context) {
+    private static RawType typeVariableSetup(final TypeVariable<?> type, final RawType context) {
         return context.getActualParameter(type.getName());
     }
 
-    static TypeSetup map(final Type type, final TypeSetup context) {
+    static RawType map(final Type type, final RawType context) {
         return Stream.of(values())
                      .filter(mapper -> mapper.matching.test(type))
                      .findAny()
@@ -49,16 +47,16 @@ enum TypeMapper {
 
     private enum ClassMapper {
 
-        CLASS(PlainClassSetup::new),
-        ARRAY(PlainArraySetup::new);
+        CLASS(PlainClassType::new),
+        ARRAY(PlainArrayType::new);
 
-        private final Function<? super Class<?>, ? extends TypeSetup> mapping;
+        private final Function<? super Class<?>, ? extends RawType> mapping;
 
-        ClassMapper(final Function<? super Class<?>, ? extends TypeSetup> mapping) {
+        ClassMapper(final Function<? super Class<?>, ? extends RawType> mapping) {
             this.mapping = mapping;
         }
 
-        static TypeSetup map(final Class<?> underlyingClass) {
+        static RawType map(final Class<?> underlyingClass) {
             return (underlyingClass.isArray() ? ARRAY : CLASS).mapping.apply(underlyingClass);
         }
     }

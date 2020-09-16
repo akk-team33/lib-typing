@@ -1,25 +1,24 @@
 package de.team33.libs.typing.v4;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 
 import static java.util.Collections.singletonList;
 
-class GenericArraySetup extends ArraySetup {
+class GenericArrayType extends ArrayType {
 
-    GenericArraySetup(final GenericArrayType type, final TypeSetup context) {
+    GenericArrayType(final java.lang.reflect.GenericArrayType type, final RawType context) {
         this(getActualParameter(type, context));
     }
 
-    private GenericArraySetup(final TypeSetup actualParameter) {
+    private GenericArrayType(final RawType actualParameter) {
         super(getPrimeClass(actualParameter), singletonList(actualParameter));
     }
 
-    private static TypeSetup getActualParameter(final GenericArrayType type, final TypeSetup context) {
+    private static RawType getActualParameter(final java.lang.reflect.GenericArrayType type, final RawType context) {
         return TypeMapper.map(type.getGenericComponentType(), context);
     }
 
-    private static Class<?> getPrimeClass(final TypeSetup actualParameter) {
+    private static Class<?> getPrimeClass(final RawType actualParameter) {
         return Array.newInstance(actualParameter.getPrimeClass(), 0).getClass();
     }
 }

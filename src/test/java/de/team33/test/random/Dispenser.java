@@ -1,6 +1,6 @@
 package de.team33.test.random;
 
-import de.team33.libs.typing.v4.TypeSetup;
+import de.team33.libs.typing.v4.RawType;
 import de.team33.libs.typing.v4.Type;
 
 import java.util.Collections;
@@ -57,15 +57,15 @@ public final class Dispenser {
 
     public final <R> R any(final Type<R> rType) {
         //noinspection unchecked
-        return (R) any((TypeSetup) rType);
+        return (R) any((RawType) rType);
     }
 
-    public final Object any(final TypeSetup setup) {
+    public final Object any(final RawType setup) {
         final Function<Dispenser, ?> method = getMethod(setup);
         return method.apply(this);
     }
 
-    private Function<Dispenser, ?> getMethod(final TypeSetup setup) {
+    private Function<Dispenser, ?> getMethod(final RawType setup) {
         return stage.methods.computeIfAbsent(setup, GenericMethod::get);
     }
 
@@ -77,16 +77,16 @@ public final class Dispenser {
         STREAM(Filter.STREAM, NewMethod.STREAM),
         FALLBACK(Filter.FALLBACK, NewMethod.FALLBACK);
 
-        private final Function<TypeSetup, Function<Dispenser, ?>> newMethod;
-        private final Predicate<TypeSetup> filter;
+        private final Function<RawType, Function<Dispenser, ?>> newMethod;
+        private final Predicate<RawType> filter;
 
-        GenericMethod(final Predicate<TypeSetup> filter,
-                      final Function<TypeSetup, Function<Dispenser, ?>> newMethod) {
+        GenericMethod(final Predicate<RawType> filter,
+                      final Function<RawType, Function<Dispenser, ?>> newMethod) {
             this.filter = filter;
             this.newMethod = newMethod;
         }
 
-        private static Function<Dispenser, ?> get(final TypeSetup setup) {
+        private static Function<Dispenser, ?> get(final RawType setup) {
             return Stream.of(values())
                          .filter(value -> value.filter.test(setup))
                          .findAny()
@@ -95,7 +95,7 @@ public final class Dispenser {
                     .apply(setup);
         }
 
-        private interface Filter extends Predicate<TypeSetup> {
+        private interface Filter extends Predicate<RawType> {
             Filter ENUM = model -> model.getPrimeClass().isEnum();
             Filter ARRAY = model -> model.getPrimeClass().isArray();
             Filter STRING = model -> model.getPrimeClass().isAssignableFrom(String.class);
@@ -103,7 +103,7 @@ public final class Dispenser {
             Filter FALLBACK = model -> false;
         }
 
-        private interface NewMethod extends Function<TypeSetup, Function<Dispenser, ?>> {
+        private interface NewMethod extends Function<RawType, Function<Dispenser, ?>> {
             NewMethod ENUM = EnumMethod::new;
             NewMethod ARRAY = model -> new ArrayMethod<>(model, dsp -> dsp.stage.arrayBounds);
             NewMethod STRING = ignored -> new StringMethod(dsp -> dsp.stage.stringBounds);
@@ -160,7 +160,7 @@ public final class Dispenser {
 
     private static final class Stage implements Supplier<Dispenser> {
 
-        private final Map<TypeSetup, Function<Dispenser, ?>> methods;
+        private final Map<RawType, Function<Dispenser, ?>> methods;
         private final Function<String, Basics> newBasics;
         private final Function<Basics, Selector> newSelector;
         private final String defaultCharset;
@@ -190,7 +190,7 @@ public final class Dispenser {
         private static final String DEFAULT_CHARSET =
                 "abcdefghijklmnopqrstuvwxyzäöüß-ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ_0123456789 ,.;:@$!?";
 
-        private final Map<TypeSetup, Function<Dispenser, ?>> methods = new HashMap<>(0);
+        private final Map<RawType, Function<Dispenser, ?>> methods = new HashMap<>(0);
 
         private Function<String, Basics> newBasics = DefaultBasics::new;
         private Function<Basics, Selector> newSelector = DefaultSelector::new;
