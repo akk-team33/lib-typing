@@ -60,13 +60,13 @@ public final class Dispenser {
         return (R) any((RawType) rType);
     }
 
-    public final Object any(final RawType setup) {
-        final Function<Dispenser, ?> method = getMethod(setup);
+    public final Object any(final RawType type) {
+        final Function<Dispenser, ?> method = getMethod(type);
         return method.apply(this);
     }
 
-    private Function<Dispenser, ?> getMethod(final RawType setup) {
-        return stage.methods.computeIfAbsent(setup, GenericMethod::get);
+    private Function<Dispenser, ?> getMethod(final RawType type) {
+        return stage.methods.computeIfAbsent(type, GenericMethod::get);
     }
 
     private enum GenericMethod {
@@ -86,13 +86,13 @@ public final class Dispenser {
             this.newMethod = newMethod;
         }
 
-        private static Function<Dispenser, ?> get(final RawType setup) {
+        private static Function<Dispenser, ?> get(final RawType type) {
             return Stream.of(values())
-                         .filter(value -> value.filter.test(setup))
+                         .filter(value -> value.filter.test(type))
                          .findAny()
                          .orElse(FALLBACK)
                     .newMethod
-                    .apply(setup);
+                    .apply(type);
         }
 
         private interface Filter extends Predicate<RawType> {

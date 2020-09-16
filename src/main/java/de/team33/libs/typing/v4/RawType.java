@@ -16,7 +16,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Represents the setup of a definite type that can be based on a generic as well as a non-generic class.
+ * Represents the composition of a definite type that can be based on a generic as well as a non-generic class.
  */
 public abstract class RawType {
 
@@ -84,7 +84,7 @@ public abstract class RawType {
      * @see Class#getSuperclass()
      * @see Class#getGenericSuperclass()
      */
-    public final Optional<RawType> getSuperSetup() {
+    public final Optional<RawType> getSuperType() {
         return Optional.ofNullable(getPrimeClass().getGenericSuperclass())
                        .map(type -> map(type, this));
     }
@@ -95,7 +95,7 @@ public abstract class RawType {
      * @see Class#getInterfaces()
      * @see Class#getGenericInterfaces()
      */
-    public final Stream<RawType> getInterfaceSetups() {
+    public final Stream<RawType> getInterfaceTypes() {
         return Stream.of(getPrimeClass().getGenericInterfaces())
                      .map(type -> map(type, this));
     }
@@ -103,14 +103,14 @@ public abstract class RawType {
     /**
      * Returns all the {@link RawType}s (superclass, interfaces) from which this {@link RawType} is derived (if so).
      *
-     * @see #getSuperSetup()
-     * @see #getInterfaceSetups()
+     * @see #getSuperType()
+     * @see #getInterfaceTypes()
      */
-    public final Stream<RawType> getSuperSetups() {
+    public final Stream<RawType> getSuperTypes() {
         return Stream.concat(
-                getSuperSetup().map(Stream::of)
-                               .orElseGet(Stream::empty),
-                getInterfaceSetups());
+                getSuperType().map(Stream::of)
+                              .orElseGet(Stream::empty),
+                getInterfaceTypes());
     }
 
     /**
@@ -123,9 +123,9 @@ public abstract class RawType {
      * @see Field#getType()
      * @see Field#getGenericType()
      */
-    public final RawType setupOf(final Field field) {
+    public final RawType typeOf(final Field field) {
         return Optional
-                .ofNullable(nullableSetupOf(field, Field::getGenericType))
+                .ofNullable(nullableTypeOf(field, Field::getGenericType))
                 .orElseThrow(() -> illegalMemberException(field));
     }
 
@@ -139,9 +139,9 @@ public abstract class RawType {
      * @see Method#getReturnType()
      * @see Method#getGenericReturnType()
      */
-    public final RawType returnSetupOf(final Method method) {
+    public final RawType returnTypeOf(final Method method) {
         return Optional
-                .ofNullable(nullableSetupOf(method, Method::getGenericReturnType))
+                .ofNullable(nullableTypeOf(method, Method::getGenericReturnType))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -155,9 +155,9 @@ public abstract class RawType {
      * @see Method#getParameterTypes()
      * @see Method#getGenericParameterTypes()
      */
-    public final List<RawType> parameterSetupsOf(final Method method) {
+    public final List<RawType> parameterTypesOf(final Method method) {
         return Optional
-                .ofNullable(nullableSetupsOf(method, Method::getGenericParameterTypes))
+                .ofNullable(nullableTypesOf(method, Method::getGenericParameterTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -168,9 +168,9 @@ public abstract class RawType {
      * @throws IllegalArgumentException if the given {@link Method} is not defined in the hierarchy of this
      *                                  {@link RawType}.
      */
-    public final List<RawType> exceptionSetupsOf(final Method method) {
+    public final List<RawType> exceptionTypesOf(final Method method) {
         return Optional
-                .ofNullable(nullableSetupsOf(method, Method::getGenericExceptionTypes))
+                .ofNullable(nullableTypesOf(method, Method::getGenericExceptionTypes))
                 .orElseThrow(() -> illegalMemberException(method));
     }
 
@@ -178,28 +178,28 @@ public abstract class RawType {
         return new IllegalArgumentException(String.format(NOT_DECLARED_IN_THIS, member, this));
     }
 
-    private List<RawType> nullableSetupsOf(final Method member,
-                                           final Function<Method, Type[]> toGenericTypes) {
+    private List<RawType> nullableTypesOf(final Method member,
+                                          final Function<Method, Type[]> toGenericTypes) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
                          .map(type -> map(type, this))
                          .collect(Collectors.toList());
         } else {
-            return getSuperSetups()
-                    .map(st -> st.nullableSetupsOf(member, toGenericTypes))
+            return getSuperTypes()
+                    .map(st -> st.nullableTypesOf(member, toGenericTypes))
                     .filter(Objects::nonNull)
                     .findAny()
                     .orElse(null);
         }
     }
 
-    private <M extends Member> RawType nullableSetupOf(final M member,
-                                                       final Function<M, Type> toGenericType) {
+    private <M extends Member> RawType nullableTypeOf(final M member,
+                                                      final Function<M, Type> toGenericType) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return map(toGenericType.apply(member), this);
         } else {
-            return getSuperSetups()
-                    .map(st -> st.nullableSetupOf(member, toGenericType))
+            return getSuperTypes()
+                    .map(st -> st.nullableTypeOf(member, toGenericType))
                     .filter(Objects::nonNull)
                     .findAny()
                     .orElse(null);

@@ -23,7 +23,7 @@ enum TypeMapper {
 
     TYPE_VARIABLE(
             type -> type instanceof TypeVariable,
-            (type, context) -> typeVariableSetup((TypeVariable<?>) type, context));
+            (type, context) -> typeVariableType((TypeVariable<?>) type, context));
 
     private final Predicate<Type> matching;
     private final BiFunction<Type, RawType, RawType> mapping;
@@ -33,7 +33,7 @@ enum TypeMapper {
         this.mapping = mapping;
     }
 
-    private static RawType typeVariableSetup(final TypeVariable<?> type, final RawType context) {
+    private static RawType typeVariableType(final TypeVariable<?> type, final RawType context) {
         return context.getActualParameter(type.getName());
     }
 

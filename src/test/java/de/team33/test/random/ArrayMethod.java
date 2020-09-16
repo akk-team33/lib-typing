@@ -10,8 +10,8 @@ class ArrayMethod<A> implements Function<Dispenser, A> {
     private final Class<?> componentType;
     private final Function<Dispenser, Bounds> getBounds;
 
-    ArrayMethod(final RawType setup, final Function<Dispenser, Bounds> getBounds) {
-        this.componentType = setup.getPrimeClass().getComponentType();
+    ArrayMethod(final RawType type, final Function<Dispenser, Bounds> getBounds) {
+        this.componentType = type.getPrimeClass().getComponentType();
         this.getBounds = getBounds;
     }
 

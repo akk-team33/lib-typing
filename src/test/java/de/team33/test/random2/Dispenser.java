@@ -32,16 +32,16 @@ public class Dispenser {
         return (R) any((RawType) rType);
     }
 
-    public final Object any(final RawType setup) {
-        return getMethod(setup).apply(this);
+    public final Object any(final RawType type) {
+        return getMethod(type).apply(this);
     }
 
-    private Function<Dispenser, ?> getMethod(final RawType setup) {
-        return stage.methods.computeIfAbsent(setup, this::newMethod);
+    private Function<Dispenser, ?> getMethod(final RawType type) {
+        return stage.methods.computeIfAbsent(type, this::newMethod);
     }
 
-    private Function<Dispenser, ?> newMethod(final RawType setup) {
-        return DefaultMethods.map(setup);
+    private Function<Dispenser, ?> newMethod(final RawType type) {
+        return DefaultMethods.map(type);
     }
 
     private enum DefaultMethods {
@@ -57,10 +57,10 @@ public class Dispenser {
             this.mapping = mapping;
         }
 
-        public static Function<Dispenser, ?> map(final RawType setup) {
+        public static Function<Dispenser, ?> map(final RawType type) {
             return Stream.of(values())
                          .findAny()
-                         .orElse(UNKNOWN).mapping.apply(setup);
+                         .orElse(UNKNOWN).mapping.apply(type);
         }
     }
 

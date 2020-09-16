@@ -8,9 +8,9 @@ class EnumMethod<E extends Enum<E>> implements Function<Dispenser, E> {
 
     private final E[] values;
 
-    EnumMethod(final RawType setup) {
+    EnumMethod(final RawType type) {
         //noinspection unchecked
-        values = ((Class<E>) setup.getPrimeClass()).getEnumConstants();
+        values = ((Class<E>) type.getPrimeClass()).getEnumConstants();
     }
 
     @Override

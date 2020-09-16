@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 
 class StreamMethod implements Function<Dispenser, Stream> {
 
-    private final RawType elementSetup;
+    private final RawType elementType;
     private final Function<Dispenser, Bounds> getBounds;
 
-    StreamMethod(final RawType setup, final Function<Dispenser, Bounds> getBounds) {
-        this.elementSetup = setup.getActualParameters().stream()
-                                 .findAny()
-                                 .orElseGet(() -> Type.of(Object.class));
+    StreamMethod(final RawType type, final Function<Dispenser, Bounds> getBounds) {
+        this.elementType = type.getActualParameters().stream()
+                               .findAny()
+                               .orElseGet(() -> Type.of(Object.class));
         this.getBounds = getBounds;
     }
 
@@ -28,7 +28,7 @@ class StreamMethod implements Function<Dispenser, Stream> {
 
     @SuppressWarnings("rawtypes")
     private Stream newStream(final Dispenser dispenser, final int size) {
-        return Stream.generate(() -> dispenser.any(elementSetup))
+        return Stream.generate(() -> dispenser.any(elementType))
                      .limit(size);
     }
 }

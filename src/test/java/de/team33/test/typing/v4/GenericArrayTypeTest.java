@@ -9,7 +9,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertSame;
 
-public class GenericArraySetupTest {
+public class GenericArrayTypeTest {
 
     private static final Type<Map<String, List<Set<String>>>[]> SAMPLE_TYPE = new Type<Map<String, List<Set<String>>>[]>() {};
 
