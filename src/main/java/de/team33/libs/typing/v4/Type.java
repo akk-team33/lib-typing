@@ -106,4 +106,9 @@ public abstract class Type<T> extends RawType {
     public final String toString() {
         return backing.toString();
     }
+
+    @Override
+    final Comparative comparative() {
+        return backing.comparative();
+    }
 }

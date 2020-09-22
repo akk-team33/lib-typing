@@ -22,11 +22,6 @@ public abstract class RawType {
 
     private static final String NOT_DECLARED_IN_THIS = "Member (%s) is not declared in the context of this Type (%s)";
 
-    private final Lazy<List<Object>> listView = new Lazy<>(() -> unmodifiableList(new ArrayList<>(asList(
-            getPrimeClass(),
-            getActualParameters()))));
-    private final Lazy<Integer> hashValue = new Lazy<>(() -> listView.get().hashCode());
-
     /**
      * Returns the primary {@link Class} on which this {@link RawType} is based.
      */
@@ -198,18 +193,16 @@ public abstract class RawType {
         }
     }
 
+    abstract Comparative comparative();
+
     @Override
     public final int hashCode() {
-        return hashValue.get();
+        return comparative().relativeHashCode();
     }
 
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof RawType) && equals_((RawType) obj));
-    }
-
-    private boolean equals_(final RawType other) {
-        return listView.get().equals(other.listView.get());
+        return (this == obj) || ((obj instanceof RawType) && comparative().relativeEquals((RawType) obj));
     }
 
     @Override
