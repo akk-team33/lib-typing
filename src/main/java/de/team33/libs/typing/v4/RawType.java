@@ -27,14 +27,6 @@ public abstract class RawType {
             getActualParameters()))));
     private final Lazy<Integer> hashValue = new Lazy<>(() -> listView.get().hashCode());
 
-    public static RawType map(final Class<?> type) {
-        return map(type, null);
-    }
-
-    public static RawType map(final Type type, final RawType context) {
-        return TypeMapper.map(type, context);
-    }
-
     /**
      * Returns the primary {@link Class} on which this {@link RawType} is based.
      */
@@ -86,7 +78,7 @@ public abstract class RawType {
      */
     public final Optional<RawType> getSuperType() {
         return Optional.ofNullable(getPrimeClass().getGenericSuperclass())
-                       .map(type -> map(type, this));
+                       .map(type -> TypeMapper.map(type, this::getActualParameter));
     }
 
     /**
@@ -97,7 +89,7 @@ public abstract class RawType {
      */
     public final Stream<RawType> getInterfaceTypes() {
         return Stream.of(getPrimeClass().getGenericInterfaces())
-                     .map(type -> map(type, this));
+                     .map(type -> TypeMapper.map(type, this::getActualParameter));
     }
 
     /**
@@ -182,7 +174,7 @@ public abstract class RawType {
                                           final Function<Method, Type[]> toGenericTypes) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
             return Stream.of(toGenericTypes.apply(member))
-                         .map(type -> map(type, this))
+                         .map(type -> TypeMapper.map(type, this::getActualParameter))
                          .collect(Collectors.toList());
         } else {
             return getSuperTypes()
@@ -196,7 +188,7 @@ public abstract class RawType {
     private <M extends Member> RawType nullableTypeOf(final M member,
                                                       final Function<M, Type> toGenericType) {
         if (getPrimeClass().equals(member.getDeclaringClass())) {
-            return map(toGenericType.apply(member), this);
+            return TypeMapper.map(toGenericType.apply(member), this::getActualParameter);
         } else {
             return getSuperTypes()
                     .map(st -> st.nullableTypeOf(member, toGenericType))

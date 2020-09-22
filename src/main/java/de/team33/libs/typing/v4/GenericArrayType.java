@@ -6,7 +6,7 @@ import static java.util.Collections.singletonList;
 
 class GenericArrayType extends ArrayType {
 
-    GenericArrayType(final java.lang.reflect.GenericArrayType type, final RawType context) {
+    GenericArrayType(final java.lang.reflect.GenericArrayType type, final Context context) {
         this(getActualParameter(type, context));
     }
 
@@ -14,7 +14,7 @@ class GenericArrayType extends ArrayType {
         super(getPrimeClass(actualParameter), singletonList(actualParameter));
     }
 
-    private static RawType getActualParameter(final java.lang.reflect.GenericArrayType type, final RawType context) {
+    private static RawType getActualParameter(final java.lang.reflect.GenericArrayType type, final Context context) {
         return TypeMapper.map(type.getGenericComponentType(), context);
     }
 

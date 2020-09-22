@@ -2,6 +2,7 @@ package de.team33.libs.typing.v4;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,18 +27,22 @@ enum TypeMapper {
             (type, context) -> typeVariableType((TypeVariable<?>) type, context));
 
     private final Predicate<Type> matching;
-    private final BiFunction<Type, RawType, RawType> mapping;
+    private final BiFunction<Type, Context, RawType> mapping;
 
-    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, RawType, RawType> mapping) {
+    TypeMapper(final Predicate<Type> matching, final BiFunction<Type, Context, RawType> mapping) {
         this.matching = matching;
         this.mapping = mapping;
     }
 
-    private static RawType typeVariableType(final TypeVariable<?> type, final RawType context) {
-        return context.getActualParameter(type.getName());
+    private static RawType typeVariableType(final TypeVariable<?> type, final Context context) {
+        return context.getActual(type.getName());
     }
 
-    static RawType map(final Type type, final RawType context) {
+    static RawType map(final Type type) {
+        return map(type, Context.NULL);
+    }
+
+    static RawType map(final Type type, final Context context) {
         return Stream.of(values())
                      .filter(mapper -> mapper.matching.test(type))
                      .findAny()
