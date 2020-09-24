@@ -108,7 +108,7 @@ public abstract class Type<T> extends RawType {
     }
 
     @Override
-    final Comparative comparative() {
-        return backing.comparative();
+    final Core getCore() {
+        return backing.getCore();
     }
 }

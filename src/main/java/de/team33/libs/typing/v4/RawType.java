@@ -4,16 +4,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
 
 /**
  * Represents the composition of a definite type that can be based on a generic as well as a non-generic class.
@@ -193,16 +189,16 @@ public abstract class RawType {
         }
     }
 
-    abstract Comparative comparative();
+    abstract Core getCore();
 
     @Override
     public final int hashCode() {
-        return comparative().relativeHashCode();
+        return getCore().hashCode();
     }
 
     @Override
     public final boolean equals(final Object obj) {
-        return (this == obj) || ((obj instanceof RawType) && comparative().relativeEquals((RawType) obj));
+        return (this == obj) || ((obj instanceof RawType) && getCore().equals(((RawType) obj).getCore()));
     }
 
     @Override

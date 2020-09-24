@@ -1,22 +1,24 @@
 package de.team33.libs.typing.v4;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
-class Setup extends AbstractList<Object> {
+class Core extends AbstractList<Object> {
 
-    private static final List<Function<Setup, Object>> PROPERTIES = unmodifiableList(new ArrayList<>(asList(
-            setup -> setup.primeClass,
-            setup -> setup.actualParameters
+    private static final List<Function<Core, Object>> PROPERTIES = unmodifiableList(new ArrayList<>(asList(
+            core -> core.primeClass,
+            core -> core.actualParameters
     )));
 
     final Class<?> primeClass;
     final List<RawType> actualParameters;
 
-    Setup(final Class<?> primeClass, final List<RawType> actualParameters) {
+    Core(final Class<?> primeClass, final List<RawType> actualParameters) {
         this.primeClass = primeClass;
         this.actualParameters = unmodifiableList(new ArrayList<>(actualParameters));
     }
