@@ -8,14 +8,12 @@ import de.team33.test.typing.shared.Interface;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
@@ -89,7 +87,7 @@ public class TypeTest {
     }
 
     @Test
-    public final void modelOf() throws NoSuchFieldException {
+    public final void typeOf() throws NoSuchFieldException {
         assertIntType(GENERIC_TYPE.typeOf(Generic.class.getField("intField")));
         assertIntArrayType(GENERIC_TYPE.typeOf(Generic.class.getField("intArray")));
 
@@ -116,7 +114,7 @@ public class TypeTest {
     }
 
     @Test
-    public final void getSuperModel() {
+    public final void getSuperType() {
         assertEquals(Optional.of(GENERIC_TYPE), Type.of(Fixed.class).getSuperType());
     }
 
@@ -128,13 +126,13 @@ public class TypeTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public final void modelOfIllegal() throws NoSuchFieldException {
+    public final void typeOfIllegal() throws NoSuchFieldException {
         final Field field = ArrayList.class.getDeclaredField("elementData");
         fail("Should fail but was " + Type.of(Fixed.class).typeOf(field));
     }
 
     @Test
-    public final void returnModelOf() throws NoSuchMethodException {
+    public final void returnTypeOf() throws NoSuchMethodException {
         final Method method1 = Fixed.class.getMethod("toString");
         assertEquals(
                 Type.of(String.class),
@@ -153,7 +151,7 @@ public class TypeTest {
     }
 
     @Test
-    public final void parameterModelsOf() throws NoSuchMethodException {
+    public final void parameterTypesOf() throws NoSuchMethodException {
         final Method method = Interface.class.getMethod("setTArray", Object[].class);
         assertEquals(
                 singletonList(Type.of(String[].class)),
@@ -161,11 +159,61 @@ public class TypeTest {
     }
 
     @Test
-    public final void exceptionModelsOf() throws NoSuchMethodException {
+    public final void exceptionTypesOf() throws NoSuchMethodException {
         final Method method = Interface.class.getMethod("setTArray", Object[].class);
         assertEquals(
                 Arrays.asList(Type.of(IOException.class), Type.of(NullPointerException.class)),
                 Type.of(Fixed.class).exceptionTypesOf(method));
+    }
+
+    @Test
+    public final void getInterfaceTypes() {
+        assertEquals(
+                Arrays.asList(
+                        new Type<List<String>>() {},
+                        Type.of(RandomAccess.class),
+                        Type.of(Cloneable.class),
+                        Type.of(Serializable.class)
+                ),
+                new Type<ArrayList<String>>() {}.getInterfaceTypes()
+                                                .collect(Collectors.toList())
+        );
+        assertEquals(
+                Arrays.asList(
+                        Type.of(Serializable.class),
+                        new Type<Comparable<String>>() {},
+                        Type.of(CharSequence.class)
+                ),
+                Type.of(String.class)
+                    .getInterfaceTypes()
+                    .collect(Collectors.toList())
+        );
+    }
+
+    @Test
+    public final void getSuperTypes() {
+        assertEquals(
+                Arrays.asList(
+                        new Type<AbstractList<String>>() {},
+                        new Type<List<String>>() {},
+                        Type.of(RandomAccess.class),
+                        Type.of(Cloneable.class),
+                        Type.of(Serializable.class)
+                ),
+                new Type<ArrayList<String>>() {}.getSuperTypes()
+                                                .collect(Collectors.toList())
+        );
+        assertEquals(
+                Arrays.asList(
+                        Type.of(Object.class),
+                        Type.of(Serializable.class),
+                        new Type<Comparable<String>>() {},
+                        Type.of(CharSequence.class)
+                ),
+                Type.of(String.class)
+                    .getSuperTypes()
+                    .collect(Collectors.toList())
+        );
     }
 
     @Test
