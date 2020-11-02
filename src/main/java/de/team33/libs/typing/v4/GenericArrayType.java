@@ -15,7 +15,7 @@ class GenericArrayType extends ArrayType {
     }
 
     private static RawType getActualParameter(final java.lang.reflect.GenericArrayType type, final Context context) {
-        return TypeMapper.map(type.getGenericComponentType(), context);
+        return RawTypes.map(type.getGenericComponentType(), context);
     }
 
     private static Class<?> getPrimeClass(final RawType actualParameter) {

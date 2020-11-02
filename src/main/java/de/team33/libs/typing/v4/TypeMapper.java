@@ -38,11 +38,11 @@ enum TypeMapper {
         return context.getActual(type.getName());
     }
 
-    static RawType map(final Type type) {
-        return map(type, Context.NULL);
+    static RawType map_(final Type type) {
+        return map_(type, Context.NULL);
     }
 
-    static RawType map(final Type type, final Context context) {
+    static RawType map_(final Type type, final Context context) {
         return Stream.of(values())
                      .filter(mapper -> mapper.matching.test(type))
                      .findAny()

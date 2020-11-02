@@ -9,7 +9,7 @@ class ParameterizedType extends DiscreteType {
     ParameterizedType(final java.lang.reflect.ParameterizedType type, final Context context) {
         super((Class<?>) type.getRawType(), Collections.unmodifiableList(
                 Stream.of(type.getActualTypeArguments())
-                      .map(argument -> TypeMapper.map(argument, context))
+                      .map(argument -> RawTypes.map(argument, context))
                       .collect(Collectors.toList())));
     }
 }

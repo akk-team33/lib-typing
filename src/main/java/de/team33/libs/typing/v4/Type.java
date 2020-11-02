@@ -70,7 +70,7 @@ public abstract class Type<T> extends RawType {
     protected Type() {
         final Class<?> thisClass = getClass();
         final ParameterizedType genericSuperclass = (ParameterizedType) thisClass.getGenericSuperclass();
-        this.backing = TypeMapper.map(genericSuperclass.getActualTypeArguments()[0]);
+        this.backing = RawTypes.map(genericSuperclass.getActualTypeArguments()[0]);
     }
 
     private Type(final RawType backing) {
@@ -83,7 +83,7 @@ public abstract class Type<T> extends RawType {
      * {@linkplain #getFormalParameters() formal parameters}.</p>
      */
     public static <T> Type<T> of(final Class<T> simpleClass) {
-        return new Type<T>(TypeMapper.map(simpleClass)) {
+        return new Type<T>(RawTypes.map(simpleClass)) {
         };
     }
 

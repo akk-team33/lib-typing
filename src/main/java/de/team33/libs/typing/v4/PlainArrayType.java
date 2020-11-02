@@ -5,6 +5,6 @@ import static java.util.Collections.singletonList;
 class PlainArrayType extends ArrayType {
 
     PlainArrayType(final Class<?> rawClass) {
-        super(rawClass, singletonList(TypeMapper.map(rawClass.getComponentType())));
+        super(rawClass, singletonList(RawTypes.map(rawClass.getComponentType())));
     }
 }
