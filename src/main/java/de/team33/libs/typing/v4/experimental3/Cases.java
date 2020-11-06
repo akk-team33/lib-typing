@@ -49,8 +49,8 @@ public class Cases<I, R> implements Function<I, R> {
         return INITIAL;
     }
 
-    public static <I, R> Builder<I, R> check(final Case<I, R> base) {
-        return new Builder<I, R>(initial()).on(initial()).check(base);
+    public static <I, R> Builder<I, R> assume(final Case<I, R> base) {
+        return new Builder<I, R>(initial()).on(initial()).assume(base);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class Cases<I, R> implements Function<I, R> {
 
         Builder<I, R> apply(Function<I, R> function);
 
-        Builder<I, R> check(Case<I, R> next);
+        Builder<I, R> assume(Case<I, R> next);
     }
 
     public interface Condition<I, R> {
@@ -167,7 +167,7 @@ public class Cases<I, R> implements Function<I, R> {
             }
 
             @Override
-            public Builder<I, R> check(final Case<I, R> next) {
+            public Builder<I, R> assume(final Case<I, R> next) {
                 final Builder<I, R> result = when(next::isMatching).then(next).orElse(Cases.not(next));
                 next.getPositive().ifPresent(function -> result.on(next).apply(function));
                 next.getNegative().ifPresent(function -> result.not(next).apply(function));
@@ -209,6 +209,11 @@ public class Cases<I, R> implements Function<I, R> {
         @Override
         public Optional<Function<I, R>> getNegative() {
             return original.getPositive();
+        }
+
+        @Override
+        public String toString() {
+            return "~" + original;
         }
     }
 }
