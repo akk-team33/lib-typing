@@ -1,12 +1,6 @@
 package de.team33.libs.typing.v4.experimental2;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -87,6 +81,7 @@ public class Cases<I, R> implements Function<I, R> {
 
         private Builder<I, R> add(final Case<I, R> base,
                                   final Function<I, R> function) {
+            Objects.requireNonNull(function);
             backing.put(base, ignored -> function);
             return addDefined(base);
         }
