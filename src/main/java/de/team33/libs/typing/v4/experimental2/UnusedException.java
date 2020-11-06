@@ -4,7 +4,7 @@ import java.util.Set;
 
 public class UnusedException extends IllegalStateException {
 
-    UnusedException(final Set<Object> unused) {
+    public UnusedException(final Set<Object> unused) {
         super("Some cases are defined but not used: " + unused);
     }
 }

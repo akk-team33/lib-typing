@@ -4,7 +4,7 @@ import java.util.Set;
 
 public class UndefinedException extends IllegalStateException {
 
-    UndefinedException(final Set<Object> undefined) {
+    public UndefinedException(final Set<Object> undefined) {
         super("Some cases are used but not defined: " + undefined);
     }
 }
