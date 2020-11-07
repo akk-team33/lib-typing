@@ -48,8 +48,8 @@ public class Cases<I, R> implements Function<I, R> {
         return INITIAL;
     }
 
-    public static <I, R> Builder<I, R> assume(final Case<I, R> base) {
-        return new Builder<I, R>(initial()).on(initial()).assume(base);
+    public static <I, R> Builder<I, R> check(final Case<I, R> base) {
+        return new Builder<I, R>(initial()).on(initial()).check(base);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class Cases<I, R> implements Function<I, R> {
 
         Builder<I, R> apply(Function<I, R> function);
 
-        Builder<I, R> assume(Case<I, R> next);
+        Builder<I, R> check(Case<I, R> next);
     }
 
     public interface Condition<I, R> {
@@ -113,10 +113,6 @@ public class Cases<I, R> implements Function<I, R> {
 
         public final Initial<I, R> on(final Case<I, R> base) {
             return new Stage(base);
-        }
-
-        public final Initial<I, R> not(final Case<I, R> base) {
-            return on(base.opposite());
         }
 
         private Builder<I, R> add(final Case<I, R> base,
@@ -166,7 +162,7 @@ public class Cases<I, R> implements Function<I, R> {
             }
 
             @Override
-            public Builder<I, R> assume(final Case<I, R> next) {
+            public Builder<I, R> check(final Case<I, R> next) {
                 final Case<I, R> opposite = next.opposite();
                 final Builder<I, R> result = when(next::isMatching).then(next).orElse(opposite);
                 next.getPositive().ifPresent(positive -> result.on(next).apply(positive));

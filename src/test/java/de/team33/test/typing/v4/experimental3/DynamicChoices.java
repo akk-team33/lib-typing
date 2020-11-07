@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static de.team33.libs.typing.v4.experimental3.Case.*;
+
 enum DynamicChoices implements Case<Input, String> {
 
     CASE_0___(input -> 0 == input.a),
@@ -26,24 +28,24 @@ enum DynamicChoices implements Case<Input, String> {
     CASE_1110(input -> 0 == input.d, "1110", "1111");
 
     private static final Cases<Input, String> CASES = Cases
-            .assume(CASE_0___)
+            .check(CASE_0___)
 
-            .on(CASE_0___).assume(CASE_00__)
-            .not(CASE_0___).assume(CASE_10__)
+            .on(CASE_0___).check(CASE_00__)
+            .on(not(CASE_0___)).check(CASE_10__)
 
-            .on(CASE_00__).assume(CASE_000_)
-            .not(CASE_00__).assume(CASE_010_)
-            .on(CASE_10__).assume(CASE_100_)
-            .not(CASE_10__).assume(CASE_110_)
+            .on(CASE_00__).check(CASE_000_)
+            .on(not(CASE_00__)).check(CASE_010_)
+            .on(CASE_10__).check(CASE_100_)
+            .on(not(CASE_10__)).check(CASE_110_)
 
-            .on(CASE_000_).assume(CASE_0000)
-            .not(CASE_000_).assume(CASE_0010)
-            .on(CASE_010_).assume(CASE_0100)
-            .not(CASE_010_).assume(CASE_0110)
-            .on(CASE_100_).assume(CASE_1000)
-            .not(CASE_100_).assume(CASE_1010)
-            .on(CASE_110_).assume(CASE_1100)
-            .not(CASE_110_).assume(CASE_1110)
+            .on(CASE_000_).check(CASE_0000)
+            .on(not(CASE_000_)).check(CASE_0010)
+            .on(CASE_010_).check(CASE_0100)
+            .on(not(CASE_010_)).check(CASE_0110)
+            .on(CASE_100_).check(CASE_1000)
+            .on(not(CASE_100_)).check(CASE_1010)
+            .on(CASE_110_).check(CASE_1100)
+            .on(not(CASE_110_)).check(CASE_1110)
 
             .build();
 
