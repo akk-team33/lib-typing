@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -117,7 +116,7 @@ public class Cases<I, R> implements Function<I, R> {
         }
 
         public final Initial<I, R> not(final Case<I, R> base) {
-            return on(Cases.not(base));
+            return on(base.opposite());
         }
 
         private Builder<I, R> add(final Case<I, R> base,
@@ -168,52 +167,12 @@ public class Cases<I, R> implements Function<I, R> {
 
             @Override
             public Builder<I, R> assume(final Case<I, R> next) {
-                final Builder<I, R> result = when(next::isMatching).then(next).orElse(Cases.not(next));
-                next.getPositive().ifPresent(function -> result.on(next).apply(function));
-                next.getNegative().ifPresent(function -> result.not(next).apply(function));
+                final Case<I, R> opposite = next.opposite();
+                final Builder<I, R> result = when(next::isMatching).then(next).orElse(opposite);
+                next.getPositive().ifPresent(positive -> result.on(next).apply(positive));
+                next.getNegative().ifPresent(negative -> result.on(opposite).apply(negative));
                 return result;
             }
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static final Map<Case, Opposite> OPPOSITES = new ConcurrentHashMap<>(0);
-
-    @SuppressWarnings("unchecked")
-    private static <I, R> Case<I, R> not(final Case<I, R> original) {
-        if (original instanceof Opposite) {
-            return ((Opposite<I, R>) original).original;
-        } else {
-            return (Case<I, R>) OPPOSITES.computeIfAbsent(original, Opposite::new);
-        }
-    }
-
-    private static final class Opposite<I, R> implements Case<I, R> {
-
-        private final Case<I, R> original;
-
-        private Opposite(final Case<I, R> original) {
-            this.original = original;
-        }
-
-        @Override
-        public final boolean isMatching(final I input) {
-            return !original.isMatching(input);
-        }
-
-        @Override
-        public Optional<Function<I, R>> getPositive() {
-            return original.getNegative();
-        }
-
-        @Override
-        public Optional<Function<I, R>> getNegative() {
-            return original.getPositive();
-        }
-
-        @Override
-        public String toString() {
-            return "~" + original;
         }
     }
 }
