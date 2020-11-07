@@ -16,6 +16,10 @@ class Input {
 
     @Override
     public final String toString() {
-        return "" + a + b + c + d;
+        if ((a == 1) && (c == 0)) {
+            return "" + a + "_" + c + d;
+        } else {
+            return "" + a + b + c + d;
+        }
     }
 }

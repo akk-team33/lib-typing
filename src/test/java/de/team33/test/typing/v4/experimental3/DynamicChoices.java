@@ -19,11 +19,12 @@ enum DynamicChoices implements Case<Input, String> {
     CASE_010_(input -> 0 == input.c),
     CASE_0100(input -> 0 == input.d, "0100", "0101"),
     CASE_0110(input -> 0 == input.d, "0110", "0111"),
-    CASE_10__(input -> 0 == input.b),
-    CASE_100_(input -> 0 == input.c),
-    CASE_1000(input -> 0 == input.d, "1000", "1001"),
+
+    CASE_1_0_(input -> 0 == input.c),
+    CASE_1_00(input -> 0 == input.d, "1_00", "1_01"),
+    CASE_101_(input -> 0 == input.b),
+
     CASE_1010(input -> 0 == input.d, "1010", "1011"),
-    CASE_110_(input -> 0 == input.c),
     CASE_1100(input -> 0 == input.d, "1100", "1101"),
     CASE_1110(input -> 0 == input.d, "1110", "1111");
 
@@ -31,21 +32,20 @@ enum DynamicChoices implements Case<Input, String> {
             .check(CASE_0___)
 
             .on(CASE_0___).check(CASE_00__)
-            .on(not(CASE_0___)).check(CASE_10__)
+            .on(not(CASE_0___)).check(CASE_1_0_)
+
+            .on(CASE_1_0_).check(CASE_1_00)
+            .on(not(CASE_1_0_)).check(CASE_101_)
+            .on(CASE_101_).check(CASE_1010)
+            .on(not(CASE_101_)).check(CASE_1110)
 
             .on(CASE_00__).check(CASE_000_)
             .on(not(CASE_00__)).check(CASE_010_)
-            .on(CASE_10__).check(CASE_100_)
-            .on(not(CASE_10__)).check(CASE_110_)
 
             .on(CASE_000_).check(CASE_0000)
             .on(not(CASE_000_)).check(CASE_0010)
             .on(CASE_010_).check(CASE_0100)
             .on(not(CASE_010_)).check(CASE_0110)
-            .on(CASE_100_).check(CASE_1000)
-            .on(not(CASE_100_)).check(CASE_1010)
-            .on(CASE_110_).check(CASE_1100)
-            .on(not(CASE_110_)).check(CASE_1110)
 
             .build();
 

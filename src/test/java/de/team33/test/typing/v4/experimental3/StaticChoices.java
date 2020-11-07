@@ -34,19 +34,17 @@ class StaticChoices {
                 }
             }
         } else {
-            if (0 == input.b) {
-                if (0 == input.c) {
-                    if (0 == input.d) {
-                        return "1000";
-                    } else {
-                        return "1001";
-                    }
+            if (0 == input.c) {
+                if (0 == input.d) {
+                    return "1_00";
                 } else {
-                    if (0 == input.d) {
-                        return "1010";
-                    } else {
-                        return "1011";
-                    }
+                    return "1_01";
+                }
+            } else if (0 == input.b) {
+                if (0 == input.d) {
+                    return "1010";
+                } else {
+                    return "1011";
                 }
             } else {
                 if (0 == input.c) {

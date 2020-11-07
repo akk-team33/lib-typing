@@ -1,24 +1,45 @@
 package de.team33.libs.typing.v4;
 
-import de.team33.libs.typing.v4.experimental.Choices;
+import de.team33.libs.typing.v4.experimental3.Case;
+import de.team33.libs.typing.v4.experimental3.Cases;
 
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-enum RawTypes implements Choices.Id<TypeContext, RawType> {
+enum RawTypes implements Case<TypeContext, RawType> {
 
-    UNKNOWN,
-    CLASS,
-    PLAIN_CLASS,
-    ARRAY_CLASS,
-    GENERIC,
-    UNUSED,
-    PARAMETERIZED,
-    OTHER_GENERIC,
-    GENERIC_ARRAY,
-    VARIABLE_TYPE,
-    TYPE_VARIABLE;
+    CLASS(type -> type instanceof Class, null, null),
+
+    ARRAY_CLASS(type -> ((Class<?>) type).isArray(),
+                ctx -> new PlainArrayType((Class<?>) ctx.type),
+                ctx -> new PlainClassType((Class<?>) ctx.type)),
+
+    PARAMETERIZED(type -> type instanceof java.lang.reflect.ParameterizedType,
+                  ctx -> new ParameterizedType((java.lang.reflect.ParameterizedType) ctx.type, ctx.context),
+                  null),
+
+    GENERIC_ARRAY(type -> type instanceof java.lang.reflect.GenericArrayType,
+                  ctx -> new GenericArrayType((java.lang.reflect.GenericArrayType) ctx.type, ctx.context),
+                  null),
+
+    TYPE_VARIABLE(type -> type instanceof java.lang.reflect.TypeVariable,
+                  ctx -> typeVariableType((TypeVariable<?>) ctx.type, ctx.context),
+                  RawTypes::fail);
+
+    private final Predicate<Type> predicate;
+    private final Function<TypeContext, RawType> positive;
+    private final Function<TypeContext, RawType> negative;
+
+    RawTypes(final Predicate<Type> predicate,
+             final Function<TypeContext, RawType> positive,
+             final Function<TypeContext, RawType> negative) {
+        this.predicate = predicate;
+        this.positive = positive;
+        this.negative = negative;
+    }
 
     static RawType map(final Type type) {
         return map(type, Context.NULL);
@@ -32,20 +53,30 @@ enum RawTypes implements Choices.Id<TypeContext, RawType> {
         return context.getActual(type.getName());
     }
 
-    private static final Choices<TypeContext, RawType> choices = Choices
-            .add(UNKNOWN, input -> input.type instanceof Class<?>, CLASS, GENERIC)
-            .add(CLASS, input -> ((Class<?>)input.type).isArray(), ARRAY_CLASS, PLAIN_CLASS)
-            .add(PLAIN_CLASS, input -> new PlainClassType((Class<?>) input.type))
-            .add(ARRAY_CLASS, input -> new PlainArrayType((Class<?>) input.type))
-            .add(GENERIC, input -> input.type instanceof java.lang.reflect.ParameterizedType,
-                 PARAMETERIZED, OTHER_GENERIC)
-            .add(PARAMETERIZED, input -> new ParameterizedType((java.lang.reflect.ParameterizedType) input.type,
-                                                               input.context))
-            .add(OTHER_GENERIC, input -> input.type instanceof GenericArrayType, GENERIC_ARRAY, VARIABLE_TYPE)
-            .add(GENERIC_ARRAY, input -> new de.team33.libs.typing.v4.GenericArrayType((GenericArrayType) input.type,
-                                                                                       input.context))
-            .add(VARIABLE_TYPE, input -> input.type instanceof TypeVariable<?>, TYPE_VARIABLE, null)
-            .add(TYPE_VARIABLE, input -> typeVariableType((TypeVariable<?>) input.type, input.context))
-            .orElseThrow(IllegalArgumentException::new);
+    private static final Cases<TypeContext, RawType> choices = Cases
+            .check(CLASS)
+            .on(CLASS).check(ARRAY_CLASS)
+            .on(CLASS.opposite()).check(PARAMETERIZED)
+            .on(PARAMETERIZED.opposite()).check(GENERIC_ARRAY)
+            .on(GENERIC_ARRAY.opposite()).check(TYPE_VARIABLE)
+            .build();
 
+    private static RawType fail(final TypeContext typeContext) {
+        throw new IllegalArgumentException("unknown type of type: " + typeContext.type.getClass());
+    }
+
+    @Override
+    public final boolean isMatching(final TypeContext input) {
+        return predicate.test(input.type);
+    }
+
+    @Override
+    public final Optional<Function<TypeContext, RawType>> getPositive() {
+        return Optional.ofNullable(positive);
+    }
+
+    @Override
+    public final Optional<Function<TypeContext, RawType>> getNegative() {
+        return Optional.ofNullable(negative);
+    }
 }
