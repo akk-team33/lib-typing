@@ -9,21 +9,21 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static de.team33.libs.typing.v4.experimental3.Case.*;
+
 enum RawTypes implements Case<TypeContext, RawType> {
 
-    CLASS(type -> type instanceof Class, null, null),
+    CLASS(type -> type instanceof Class),
 
     ARRAY_CLASS(type -> ((Class<?>) type).isArray(),
                 ctx -> new PlainArrayType((Class<?>) ctx.type),
                 ctx -> new PlainClassType((Class<?>) ctx.type)),
 
     PARAMETERIZED(type -> type instanceof java.lang.reflect.ParameterizedType,
-                  ctx -> new ParameterizedType((java.lang.reflect.ParameterizedType) ctx.type, ctx.context),
-                  null),
+                  ctx -> new ParameterizedType((java.lang.reflect.ParameterizedType) ctx.type, ctx.context)),
 
     GENERIC_ARRAY(type -> type instanceof java.lang.reflect.GenericArrayType,
-                  ctx -> new GenericArrayType((java.lang.reflect.GenericArrayType) ctx.type, ctx.context),
-                  null),
+                  ctx -> new GenericArrayType((java.lang.reflect.GenericArrayType) ctx.type, ctx.context)),
 
     TYPE_VARIABLE(type -> type instanceof java.lang.reflect.TypeVariable,
                   ctx -> typeVariableType((TypeVariable<?>) ctx.type, ctx.context),
@@ -32,6 +32,15 @@ enum RawTypes implements Case<TypeContext, RawType> {
     private final Predicate<Type> predicate;
     private final Function<TypeContext, RawType> positive;
     private final Function<TypeContext, RawType> negative;
+
+    RawTypes(final Predicate<Type> predicate) {
+        this(predicate, null, null);
+    }
+
+    RawTypes(final Predicate<Type> predicate,
+             final Function<TypeContext, RawType> positive) {
+        this(predicate, positive, null);
+    }
 
     RawTypes(final Predicate<Type> predicate,
              final Function<TypeContext, RawType> positive,
@@ -56,9 +65,9 @@ enum RawTypes implements Case<TypeContext, RawType> {
     private static final Cases<TypeContext, RawType> choices = Cases
             .check(CLASS)
             .on(CLASS).check(ARRAY_CLASS)
-            .on(CLASS.opposite()).check(PARAMETERIZED)
-            .on(PARAMETERIZED.opposite()).check(GENERIC_ARRAY)
-            .on(GENERIC_ARRAY.opposite()).check(TYPE_VARIABLE)
+            .on(not(CLASS)).check(PARAMETERIZED)
+            .on(not(PARAMETERIZED)).check(GENERIC_ARRAY)
+            .on(not(GENERIC_ARRAY)).check(TYPE_VARIABLE)
             .build();
 
     private static RawType fail(final TypeContext typeContext) {
