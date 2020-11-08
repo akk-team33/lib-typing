@@ -64,10 +64,10 @@ enum RawTypes implements Case<TypeContext, RawType> {
 
     private static final Cases<TypeContext, RawType> choices = Cases
             .check(CLASS)
-            .on(CLASS).check(ARRAY_CLASS)
-            .on(not(CLASS)).check(PARAMETERIZED)
-            .on(not(PARAMETERIZED)).check(GENERIC_ARRAY)
-            .on(not(GENERIC_ARRAY)).check(TYPE_VARIABLE)
+            .when(CLASS).check(ARRAY_CLASS)
+            .when(not(CLASS)).check(PARAMETERIZED)
+            .when(not(PARAMETERIZED)).check(GENERIC_ARRAY)
+            .when(not(GENERIC_ARRAY)).check(TYPE_VARIABLE)
             .build();
 
     private static RawType fail(final TypeContext typeContext) {

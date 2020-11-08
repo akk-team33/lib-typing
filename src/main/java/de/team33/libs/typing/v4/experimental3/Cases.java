@@ -1,7 +1,6 @@
 package de.team33.libs.typing.v4.experimental3;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,6 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static de.team33.libs.typing.v4.experimental3.Case.not;
 import static java.util.Collections.unmodifiableMap;
 
 @SuppressWarnings("ClassWithOnlyPrivateConstructors")
@@ -35,11 +35,9 @@ public class Cases<I, R> implements Function<I, R> {
     };
 
     private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing;
-    private final Case<I, R> initial;
 
     private Cases(final Builder<I, R> builder) {
         this.backing = unmodifiableMap(new HashMap<>(builder.backing));
-        this.initial = builder.initial;
     }
 
     @SuppressWarnings("unchecked")
@@ -48,12 +46,12 @@ public class Cases<I, R> implements Function<I, R> {
     }
 
     public static <I, R> Builder<I, R> check(final Case<I, R> base) {
-        return new Builder<I, R>(initial()).on(initial()).check(base);
+        return new Stage<I, R>(new Builder<>(), initial()).check(base);
     }
 
     @Override
     public final R apply(final I input) {
-        return apply(initial, input);
+        return apply(initial(), input);
     }
 
     private R apply(final Case<I, R> base, final I input) {
@@ -68,11 +66,9 @@ public class Cases<I, R> implements Function<I, R> {
         private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing = new HashMap<>(0);
         private final Set<Object> defined = new HashSet<>(0);
         private final Set<Object> used = new HashSet<>(0);
-        private final Case<I, R> initial;
 
-        private Builder(final Case<I, R> initial) {
-            this.initial = initial;
-            addUsed(initial);
+        private Builder() {
+            addUsed(initial());
         }
 
         public final Cases<I, R> build() {
@@ -91,7 +87,11 @@ public class Cases<I, R> implements Function<I, R> {
             return new Cases<>(this);
         }
 
-        public final Stage<I, R> on(final Case<I, R> base) {
+        public final Stage<I, R> whenNot(final Case<I, R> base) {
+            return when(not(base));
+        }
+
+        public final Stage<I, R> when(final Case<I, R> base) {
             return new Stage<>(this, base);
         }
 

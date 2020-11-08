@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static de.team33.libs.typing.v4.experimental3.Case.*;
-
 enum DynamicChoices implements Case<Input, String> {
 
     CASE_0___(input -> 0 == input.a),
@@ -31,21 +29,21 @@ enum DynamicChoices implements Case<Input, String> {
     private static final Cases<Input, String> CASES = Cases
             .check(CASE_0___)
 
-            .on(CASE_0___).check(CASE_00__)
-            .on(not(CASE_0___)).check(CASE_1_0_)
+            .when(CASE_0___).check(CASE_00__)
+            .whenNot(CASE_0___).check(CASE_1_0_)
 
-            .on(CASE_1_0_).check(CASE_1_00)
-            .on(not(CASE_1_0_)).check(CASE_101_)
-            .on(CASE_101_).check(CASE_1010)
-            .on(not(CASE_101_)).check(CASE_1110)
+            .when(CASE_1_0_).check(CASE_1_00)
+            .whenNot(CASE_1_0_).check(CASE_101_)
+            .when(CASE_101_).check(CASE_1010)
+            .whenNot(CASE_101_).check(CASE_1110)
 
-            .on(CASE_00__).check(CASE_000_)
-            .on(not(CASE_00__)).check(CASE_010_)
+            .when(CASE_00__).check(CASE_000_)
+            .whenNot(CASE_00__).check(CASE_010_)
 
-            .on(CASE_000_).check(CASE_0000)
-            .on(not(CASE_000_)).check(CASE_0010)
-            .on(CASE_010_).check(CASE_0100)
-            .on(not(CASE_010_)).check(CASE_0110)
+            .when(CASE_000_).check(CASE_0000)
+            .whenNot(CASE_000_).check(CASE_0010)
+            .when(CASE_010_).check(CASE_0100)
+            .whenNot(CASE_010_).check(CASE_0110)
 
             .build();
 
@@ -62,8 +60,8 @@ enum DynamicChoices implements Case<Input, String> {
                    final String positive,
                    final String negative) {
         this.predicate = predicate;
-        this.positive = (null == positive) ? null : x -> positive;
-        this.negative = (null == negative) ? null : x -> negative;
+        this.positive = null == positive ? null : x -> positive;
+        this.negative = null == negative ? null : x -> negative;
     }
 
     static String map(final Input input) {
