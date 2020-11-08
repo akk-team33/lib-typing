@@ -1,37 +1,36 @@
 package de.team33.libs.typing.v4.experimental3;
 
-import de.team33.libs.typing.v4.experimental2.UndefinedException;
-import de.team33.libs.typing.v4.experimental2.UnusedException;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static java.util.Collections.unmodifiableMap;
+
+@SuppressWarnings("ClassWithOnlyPrivateConstructors")
 public class Cases<I, R> implements Function<I, R> {
 
-    private static final String NEVER_BE_CALLED = "this method should never be called";
     @SuppressWarnings("rawtypes")
     private static final Case INITIAL = new Case() {
+
         @Override
         public boolean isMatching(final Object input) {
-            throw new UnsupportedOperationException(NEVER_BE_CALLED);
+            return true;
         }
 
         @Override
         public Optional<Function> getPositive() {
-            throw new UnsupportedOperationException(NEVER_BE_CALLED);
+            return Optional.empty();
         }
 
         @Override
         public Optional<Function> getNegative() {
-            throw new UnsupportedOperationException(NEVER_BE_CALLED);
+            return Optional.empty();
         }
     };
 
@@ -39,7 +38,7 @@ public class Cases<I, R> implements Function<I, R> {
     private final Case<I, R> initial;
 
     private Cases(final Builder<I, R> builder) {
-        this.backing = Collections.unmodifiableMap(new HashMap<>(builder.backing));
+        this.backing = unmodifiableMap(new HashMap<>(builder.backing));
         this.initial = builder.initial;
     }
 
@@ -62,25 +61,6 @@ public class Cases<I, R> implements Function<I, R> {
                        .orElseThrow(() -> new IllegalStateException("unknown case: " + base))
                        .apply(this)
                        .apply(input);
-    }
-
-    public interface Initial<I, R> {
-
-        Condition<I, R> when(Predicate<? super I> predicate);
-
-        Builder<I, R> apply(Function<I, R> function);
-
-        Builder<I, R> check(Case<I, R> next);
-    }
-
-    public interface Condition<I, R> {
-
-        Consequence<I, R> then(Case<I, R> positive);
-    }
-
-    public interface Consequence<I, R> {
-
-        Builder<I, R> orElse(Case<I, R> negative);
     }
 
     public static class Builder<I, R> {
@@ -111,15 +91,17 @@ public class Cases<I, R> implements Function<I, R> {
             return new Cases<>(this);
         }
 
-        public final Initial<I, R> on(final Case<I, R> base) {
-            return new Stage(base);
+        public final Stage<I, R> on(final Case<I, R> base) {
+            return new Stage<>(this, base);
         }
 
-        private Builder<I, R> add(final Case<I, R> base,
-                                  final Function<I, R> function) {
-            Objects.requireNonNull(function);
-            backing.put(base, ignored -> function);
-            return addDefined(base);
+        private Builder<I, R> addMethod(final Case<I, R> base) {
+            return base.getPositive()
+                       .map(positive -> {
+                           backing.put(base, cases -> positive);
+                           return addDefined(base);
+                       })
+                       .orElse(this);
         }
 
         private Builder<I, R> add(final Case<I, R> base,
@@ -142,33 +124,23 @@ public class Cases<I, R> implements Function<I, R> {
             used.addAll(Arrays.asList(cases));
             return this;
         }
+    }
 
-        private final class Stage implements Initial<I, R> {
+    public static final class Stage<I, R> {
 
-            private final Case<I, R> base;
+        private final Builder<I, R> builder;
+        private final Case<I, R> base;
 
-            private Stage(final Case<I, R> base) {
-                this.base = base;
-            }
+        private Stage(final Builder<I, R> builder, final Case<I, R> base) {
+            this.builder = builder;
+            this.base = base;
+        }
 
-            @Override
-            public final Condition<I, R> when(final Predicate<? super I> predicate) {
-                return positive -> negative -> add(base, predicate, positive, negative);
-            }
-
-            @Override
-            public final Builder<I, R> apply(final Function<I, R> function) {
-                return add(base, function);
-            }
-
-            @Override
-            public Builder<I, R> check(final Case<I, R> next) {
-                final Case<I, R> opposite = next.opposite();
-                final Builder<I, R> result = when(next::isMatching).then(next).orElse(opposite);
-                next.getPositive().ifPresent(positive -> result.on(next).apply(positive));
-                next.getNegative().ifPresent(negative -> result.on(opposite).apply(negative));
-                return result;
-            }
+        public Builder<I, R> check(final Case<I, R> next) {
+            final Case<I, R> opposite = next.opposite();
+            return builder.add(base, next::isMatching, next, opposite)
+                          .addMethod(next)
+                          .addMethod(opposite);
         }
     }
 }
