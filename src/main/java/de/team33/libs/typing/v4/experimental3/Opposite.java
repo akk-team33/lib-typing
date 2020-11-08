@@ -17,13 +17,10 @@ final class Opposite<I, R> implements Case<I, R> {
     }
 
     @SuppressWarnings("unchecked")
-    static <I, R> Opposite<I, R> of(final Case<I, R> original) {
-        return CACHE.computeIfAbsent(original, Opposite::new);
-    }
-
-    @Override
-    public final Case<I, R> opposite() {
-        return original;
+    static <I, R> Case<I, R> of(final Case<I, R> original) {
+        return (original instanceof Opposite)
+                ? ((Opposite<I, R>) original).original
+                : CACHE.computeIfAbsent(original, Opposite::new);
     }
 
     @Override

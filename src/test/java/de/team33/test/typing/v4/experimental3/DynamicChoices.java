@@ -12,37 +12,31 @@ enum DynamicChoices implements Case<Input, String> {
     CASE_0___(input -> 0 == input.a),
     CASE_00__(input -> 0 == input.b),
     CASE_000_(input -> 0 == input.c),
-    CASE_0000(input -> 0 == input.d, "0000", "0001"),
-    CASE_0010(input -> 0 == input.d, "0010", "0011"),
-    CASE_010_(input -> 0 == input.c),
-    CASE_0100(input -> 0 == input.d, "0100", "0101"),
-    CASE_0110(input -> 0 == input.d, "0110", "0111"),
 
     CASE_1_0_(input -> 0 == input.c),
-    CASE_1_00(input -> 0 == input.d, "1_00", "1_01"),
     CASE_101_(input -> 0 == input.b),
+    CASE_010_(input -> 0 == input.c),
 
+    CASE_0000(input -> 0 == input.d, "0000", "0001"),
+    CASE_0010(input -> 0 == input.d, "0010", "0011"),
+    CASE_0100(input -> 0 == input.d, "0100", "0101"),
+    CASE_1_00(input -> 0 == input.d, "1_00", "1_01"),
+    CASE_0110(input -> 0 == input.d, "0110", "0111"),
     CASE_1010(input -> 0 == input.d, "1010", "1011"),
-    CASE_1100(input -> 0 == input.d, "1100", "1101"),
     CASE_1110(input -> 0 == input.d, "1110", "1111");
 
     private static final Cases<Input, String> CASES = Cases
-            .check(CASE_0___)
-
-            .when(CASE_0___).check(CASE_00__)
-            .whenNot(CASE_0___).check(CASE_1_0_)
-
-            .when(CASE_1_0_).check(CASE_1_00)
-            .whenNot(CASE_1_0_).check(CASE_101_)
-            .when(CASE_101_).check(CASE_1010)
-            .whenNot(CASE_101_).check(CASE_1110)
+            .checkAll(CASE_0___, CASE_00__)
 
             .when(CASE_00__).check(CASE_000_)
-            .whenNot(CASE_00__).check(CASE_010_)
-
             .when(CASE_000_).check(CASE_0000)
+
+            .whenNot(CASE_0___).checkAll(CASE_1_0_, CASE_1_00)
+            .whenNot(CASE_1_0_).checkAll(CASE_101_, CASE_1010)
+            .whenNot(CASE_00__).checkAll(CASE_010_, CASE_0100)
+
             .whenNot(CASE_000_).check(CASE_0010)
-            .when(CASE_010_).check(CASE_0100)
+            .whenNot(CASE_101_).check(CASE_1110)
             .whenNot(CASE_010_).check(CASE_0110)
 
             .build();

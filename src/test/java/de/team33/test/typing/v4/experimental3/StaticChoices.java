@@ -1,7 +1,11 @@
 package de.team33.test.typing.v4.experimental3;
 
-class StaticChoices {
+final class StaticChoices {
 
+    private StaticChoices() {
+    }
+
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     static String map(final Input input) {
         if (0 == input.a) {
             if (0 == input.b) {
@@ -47,18 +51,10 @@ class StaticChoices {
                     return "1011";
                 }
             } else {
-                if (0 == input.c) {
-                    if (0 == input.d) {
-                        return "1100";
-                    } else {
-                        return "1101";
-                    }
+                if (0 == input.d) {
+                    return "1110";
                 } else {
-                    if (0 == input.d) {
-                        return "1110";
-                    } else {
-                        return "1111";
-                    }
+                    return "1111";
                 }
             }
         }

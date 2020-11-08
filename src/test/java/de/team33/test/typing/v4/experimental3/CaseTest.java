@@ -1,5 +1,6 @@
 package de.team33.test.typing.v4.experimental3;
 
+import de.team33.libs.typing.v4.experimental3.Case;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 
 import static de.team33.libs.testing.v1.Attempts.tryParallel;
 import static de.team33.libs.testing.v1.Attempts.trySerial;
+import static de.team33.libs.typing.v4.experimental3.Case.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
@@ -21,19 +23,19 @@ public class CaseTest {
     public final void opposite() {
         Stream.of(DynamicChoices.values()).forEach(choice -> {
             // The opposite of an opposite should always be identical to the original ...
-            assertSame(choice, choice.opposite().opposite());
+            assertSame(choice, not(not(choice)));
 
             // The opposite of a certain case should always be the same, even if it is determined several times,
             // even in parallel ...
             final List<Object> results = Collections.synchronizedList(new LinkedList<>());
-            tryParallel(100, () -> results.add(choice.opposite()));
+            tryParallel(100, () -> results.add(not(choice)));
             assertEquals(100, results.size());
             results.forEach(expected -> results.forEach(result -> assertSame(expected, result)));
 
             // If a case matches a parameter, the opposite should not match and vice versa ...
             trySerial(100, () -> {
                 final Input input = new Input(random.nextInt());
-                assertEquals(!choice.isMatching(input), choice.opposite().isMatching(input));
+                assertEquals(!choice.isMatching(input), not(choice).isMatching(input));
             });
         });
     }

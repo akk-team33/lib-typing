@@ -3,6 +3,7 @@ package de.team33.libs.typing.v4.experimental3;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,8 +13,7 @@ import java.util.function.Predicate;
 import static de.team33.libs.typing.v4.experimental3.Case.not;
 import static java.util.Collections.unmodifiableMap;
 
-@SuppressWarnings("ClassWithOnlyPrivateConstructors")
-public class Cases<I, R> implements Function<I, R> {
+public final class Cases<I, R> implements Function<I, R> {
 
     @SuppressWarnings("rawtypes")
     private static final Case INITIAL = new Case() {
@@ -45,8 +45,17 @@ public class Cases<I, R> implements Function<I, R> {
         return INITIAL;
     }
 
+    private static <I, R> Stage<I, R> whenInitial() {
+        return new Stage<>(new Builder<>(), initial());
+    }
+
     public static <I, R> Builder<I, R> check(final Case<I, R> base) {
-        return new Stage<I, R>(new Builder<>(), initial()).check(base);
+        return Cases.<I, R>whenInitial().check(base);
+    }
+
+    @SafeVarargs
+    public static <I, R> Builder<I, R> checkAll(final Case<I, R>... cases) {
+        return Cases.<I, R>whenInitial().checkAll(cases);
     }
 
     @Override
@@ -61,7 +70,7 @@ public class Cases<I, R> implements Function<I, R> {
                        .apply(input);
     }
 
-    public static class Builder<I, R> {
+    public static final class Builder<I, R> {
 
         private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing = new HashMap<>(0);
         private final Set<Object> defined = new HashSet<>(0);
@@ -113,7 +122,7 @@ public class Cases<I, R> implements Function<I, R> {
         }
 
         private Builder<I, R> addDefined(final Case<I, R> base) {
-            if(!defined.add(base)) {
+            if (!defined.add(base)) {
                 throw new IllegalStateException("Already defined: " + base);
             }
             return this;
@@ -136,11 +145,25 @@ public class Cases<I, R> implements Function<I, R> {
             this.base = base;
         }
 
-        public Builder<I, R> check(final Case<I, R> next) {
-            final Case<I, R> opposite = next.opposite();
+        public final Builder<I, R> check(final Case<I, R> next) {
+            final Case<I, R> opposite = not(next);
             return builder.add(base, next::isMatching, next, opposite)
                           .addMethod(next)
                           .addMethod(opposite);
+        }
+
+        @SafeVarargs
+        public final Builder<I, R> checkAll(final Case<I, R>... cases) {
+            return checkList(Arrays.asList(cases));
+        }
+
+        private Builder<I, R> checkList(final List<Case<I, R>> cases) {
+            if (cases.isEmpty()) {
+                return builder;
+            } else {
+                final Case<I, R> next = cases.get(0);
+                return check(next).when(next).checkList(cases.subList(1, cases.size()));
+            }
         }
     }
 }

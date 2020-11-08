@@ -12,23 +12,16 @@ import java.util.function.Function;
 public interface Case<I, R> {
 
     /**
-     * Convenience method: returns the {@link #opposite() opposite} of a given {@link Case}.
+     * Returns the opposite of a given {@link Case}.
      */
     static <I, R> Case<I, R> not(final Case<I, R> original) {
-        return original.opposite();
-    }
-
-    /**
-     * Returns the opposite of this {@link Case}.
-     */
-    default Case<I, R> opposite() {
-        return Opposite.of(this);
+        return Opposite.of(original);
     }
 
     /**
      * Checks whether this {@link Case} applies based on a given parameter.
      * <p>
-     * Note 1: if not, it means its {@link #opposite() opposite} is occurring.
+     * Note 1: if not, it means its {@link #not(Case) opposite} is occurring.
      * <p>
      * Note 2: Certain requirements may have to be met in order for this test to be meaningful.
      * In particular, there may be higher-level cases, the occurrence of which must first be clarified.
