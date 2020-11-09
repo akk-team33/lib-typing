@@ -2,6 +2,7 @@ package de.team33.test.typing.v4.experimental3;
 
 import de.team33.libs.typing.v4.experimental3.Case;
 import de.team33.libs.typing.v4.experimental3.Cases;
+import de.team33.libs.typing.v4.experimental3.Choices;
 
 import java.util.Optional;
 import java.util.function.Function;
