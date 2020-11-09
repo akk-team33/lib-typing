@@ -19,6 +19,11 @@ public final class Cases<I, R> implements Function<I, R> {
     private static final Case INITIAL = new Case() {
 
         @Override
+        public Optional<Case> getPreCondition() {
+            return Optional.empty();
+        }
+
+        @Override
         public boolean isMatching(final Object input) {
             return true;
         }
@@ -56,6 +61,17 @@ public final class Cases<I, R> implements Function<I, R> {
     @SafeVarargs
     public static <I, R> Builder<I, R> checkAll(final Case<I, R>... cases) {
         return Cases.<I, R>whenInitial().checkAll(cases);
+    }
+
+    @SafeVarargs
+    public static <I, R> Cases<I, R> build(final Case<I, R>... cases) {
+        final Builder<I, R> builder = new Builder<>();
+        for (final Case<I, R> value : cases) {
+            final Case<I, R> preCondition = value.getPreCondition()
+                                                 .orElseGet(Cases::initial);
+            builder.when(preCondition).check(value);
+        }
+        return builder.build();
     }
 
     @Override

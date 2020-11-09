@@ -24,6 +24,11 @@ final class Opposite<I, R> implements Case<I, R> {
     }
 
     @Override
+    public final Optional<Case<I, R>> getPreCondition() {
+        return original.getPreCondition();
+    }
+
+    @Override
     public final boolean isMatching(final I input) {
         return !original.isMatching(input);
     }

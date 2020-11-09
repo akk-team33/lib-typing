@@ -10,11 +10,15 @@ import java.util.function.Function;
 
 import static de.team33.libs.testing.v1.Attempts.trySerial;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 public class CasesTest {
 
     private static final Case<Integer, String> SINGLE = new Case<Integer, String>() {
+        @Override
+        public Optional<Case<Integer, String>> getPreCondition() {
+            return Optional.empty();
+        }
+
         @Override
         public boolean isMatching(final Integer input) {
             return input > 0;

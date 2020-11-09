@@ -9,37 +9,38 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static de.team33.libs.typing.v4.experimental3.Case.not;
+
 enum RawTypes implements Case<TypeContext, RawType> {
 
-    CLASS(Filter.CLASS),
-    ARRAY_CLASS(Filter.ARRAY_CLASS, Method.ARRAY_CLASS, Method.PLAIN_CLASS),
-    PARAMETERIZED(Filter.PARAMETERIZED, Method.PARAMETERIZED),
-    GENERIC_ARRAY(Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY),
-    TYPE_VARIABLE(Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE, Method.FAIL);
+    CLASS(null, Filter.CLASS),
+    ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS, Method.PLAIN_CLASS),
+    PARAMETERIZED(not(CLASS), Filter.PARAMETERIZED, Method.PARAMETERIZED),
+    GENERIC_ARRAY(not(PARAMETERIZED), Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY),
+    TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE, Method.FAIL);
 
-    private static final Cases<TypeContext, RawType> CASES = Cases
-            .checkAll(CLASS, ARRAY_CLASS)
-            .whenNot(CLASS).check(PARAMETERIZED)
-            .whenNot(PARAMETERIZED).check(GENERIC_ARRAY)
-            .whenNot(GENERIC_ARRAY).check(TYPE_VARIABLE)
-            .build();
+    private static final Cases<TypeContext, RawType> CASES = Cases.build(values());
 
+    private final Case<TypeContext, RawType> preCondition;
     private final Predicate<Type> predicate;
     private final Function<TypeContext, RawType> positive;
     private final Function<TypeContext, RawType> negative;
 
-    RawTypes(final Predicate<Type> predicate) {
-        this(predicate, null, null);
+    RawTypes(final Case<TypeContext, RawType> preCondition, final Predicate<Type> predicate) {
+        this(preCondition, predicate, null, null);
     }
 
-    RawTypes(final Predicate<Type> predicate,
+    RawTypes(final Case<TypeContext, RawType> preCondition,
+             final Predicate<Type> predicate,
              final Function<TypeContext, RawType> positive) {
-        this(predicate, positive, null);
+        this(preCondition, predicate, positive, null);
     }
 
-    RawTypes(final Predicate<Type> predicate,
+    RawTypes(final Case<TypeContext, RawType> preCondition,
+             final Predicate<Type> predicate,
              final Function<TypeContext, RawType> positive,
              final Function<TypeContext, RawType> negative) {
+        this.preCondition = preCondition;
         this.predicate = predicate;
         this.positive = positive;
         this.negative = negative;
@@ -59,6 +60,11 @@ enum RawTypes implements Case<TypeContext, RawType> {
 
     private static RawType fail(final TypeContext typeContext) {
         throw new IllegalArgumentException("unknown type of type: " + typeContext.type.getClass());
+    }
+
+    @Override
+    public Optional<Case<TypeContext, RawType>> getPreCondition() {
+        return Optional.ofNullable(preCondition);
     }
 
     @Override

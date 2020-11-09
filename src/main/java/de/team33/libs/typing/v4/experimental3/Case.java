@@ -18,10 +18,12 @@ public interface Case<I, R> {
         return Opposite.of(original);
     }
 
+    Optional<Case<I, R>> getPreCondition();
+
     /**
      * Checks whether this {@link Case} applies based on a given parameter.
      * <p>
-     * Note 1: if not, it means its {@link #not(Case) opposite} is occurring.
+     * Note 1: if not, it means its {@link #not(Case) opposite} applies.
      * <p>
      * Note 2: Certain requirements may have to be met in order for this test to be meaningful.
      * In particular, there may be higher-level cases, the occurrence of which must first be clarified.
