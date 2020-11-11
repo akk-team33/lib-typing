@@ -1,13 +1,13 @@
 package de.team33.test.typing.v4.experimental3;
 
-class Input {
+public class Input {
 
-    final int a;
-    final int b;
-    final int c;
-    final int d;
+    public final int a;
+    public final int b;
+    public final int c;
+    public final int d;
 
-    Input(final int x) {
+    public Input(final int x) {
         this.a = (x >> 3) & 1;
         this.b = (x >> 2) & 1;
         this.c = (x >> 1) & 1;
