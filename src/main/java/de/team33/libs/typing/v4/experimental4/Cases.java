@@ -57,7 +57,7 @@ public final class Cases<I, R> implements Function<I, R> {
         }
 
         private void add(final Case<I, R> next) {
-            new Addition(next).put(next.getPreCondition());
+            new Addition(next).add(next.getPreCondition());
             next.getMethod()
                 .ifPresent(method -> {
                     backing.put(next, cases -> method);
@@ -66,7 +66,7 @@ public final class Cases<I, R> implements Function<I, R> {
         }
 
         private void addAll(final Collector<I, R> other) {
-            throw new UnsupportedOperationException("not yet implemented");
+            throw new UnsupportedOperationException("shouldn't be necessary here");
         }
 
         public Cases<I, R> build() {
@@ -96,13 +96,17 @@ public final class Cases<I, R> implements Function<I, R> {
                     usedHere = Collections.singletonList(next);
                 } else {
                     final Case<I, R> notNext = not(next);
-                    method = cases -> input -> cases.apply(condition.test(input) ? next : notNext, input);
+                    method = cases -> input -> {
+                        final Case<I, R> aCase = condition.test(input) ? next : notNext;
+                        return cases.apply(aCase, input);
+                    };
                     usedHere = Arrays.asList(next, notNext);
                 }
             }
 
-            private void put(final Case<I, R> base) {
-                backing.put(base, method);
+            private void add(final Case<I, R> base) {
+                if (null != backing.put(base, method))
+                    throw new IllegalArgumentException("already defined: " + base);
                 defined.add(base);
                 used.addAll(usedHere);
             }
