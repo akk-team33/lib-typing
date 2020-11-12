@@ -4,8 +4,10 @@ import de.team33.libs.typing.v4.experimental3.UndefinedException;
 import de.team33.libs.typing.v4.experimental3.UnusedException;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -24,16 +26,11 @@ public final class Cases<I, R> implements Function<I, R> {
         this.backing = unmodifiableMap(new HashMap<>(builder.backing));
     }
 
-    private static <I, R> Stage<I, R> whenInitial() {
-        return new Builder<I, R>().when(none());
-    }
-
     @SafeVarargs
     public static <I, R> Cases<I, R> build(final Case<I, R>... cases) {
         final Builder<I, R> builder = new Builder<>();
-        for (final Case<I, R> value : cases) {
-            final Case<I, R> preCondition = value.getPreCondition();
-            builder.when(preCondition).check(value);
+        for (final Case<I, R> next : cases) {
+            builder.add(next.getPreCondition(), next);
         }
         return builder.build();
     }
@@ -57,7 +54,7 @@ public final class Cases<I, R> implements Function<I, R> {
         private final Set<Object> used = new HashSet<>(0);
 
         private Builder() {
-            addUsed(none());
+            used.add(none());
         }
 
         public final Cases<I, R> build() {
@@ -76,79 +73,38 @@ public final class Cases<I, R> implements Function<I, R> {
             return new Cases<>(this);
         }
 
-        final Stage<I, R> when(final Case<I, R> base) {
-            return new Stage<>(this, base);
+        private void add(final Case<I, R> base,
+                         final Case<I, R> next) {
+            new Addition(next).put(base);
+            next.getMethod()
+                .ifPresent(method -> {
+                    backing.put(next, cases -> method);
+                    defined.add(next);
+                });
         }
 
-        private Builder<I, R> addMethod(final Case<I, R> base) {
-            return base.getMethod()
-                       .map(method -> {
-                           backing.put(base, cases -> method);
-                           return addDefined(base);
-                       })
-                       .orElse(this);
-        }
-
-        private Builder<I, R> add(final Case<I, R> base,
-                                  final Case<I, R> next) {
-            final Addition<I, R> addition = new Addition<>(next);
-            backing.put(base, addition.method);
-            return addDefined(base).addUsed(addition.used);
-        }
-
-        private static class Addition<I, R> {
+        private final class Addition {
 
             private final Function<Cases<I, R>, Function<I, R>> method;
-            private final Case<I, R>[] used;
+            private final List<Case<I, R>> usedHere;
 
             private Addition(final Case<I, R> next) {
                 final Predicate<I> condition = next.getCondition().orElse(null);
                 if (null == condition) {
                     method = cases -> input -> cases.apply(next, input);
-                    used = new Case[]{next};
+                    usedHere = Collections.singletonList(next);
                 } else {
                     final Case<I, R> notNext = not(next);
                     method = cases -> input -> cases.apply(condition.test(input) ? next : notNext, input);
-                    used = new Case[]{next, notNext};
+                    usedHere = Arrays.asList(next, notNext);
                 }
             }
-        }
 
-        private Builder<I, R> add(final Case<I, R> base,
-                                  final Predicate<? super I> predicate,
-                                  final Case<I, R> positive,
-                                  final Case<I, R> negative) {
-            backing.put(base, cases -> input -> cases.apply(predicate.test(input) ? positive : negative, input));
-            return addDefined(base).addUsed(positive, negative);
-        }
-
-        private Builder<I, R> addDefined(final Case<I, R> base) {
-            if (!defined.add(base)) {
-                throw new IllegalStateException("Already defined: " + base);
+            private void put(final Case<I, R> base) {
+                backing.put(base, method);
+                defined.add(base);
+                used.addAll(usedHere);
             }
-            return this;
-        }
-
-        @SafeVarargs
-        private final Builder<I, R> addUsed(final Case<I, R>... cases) {
-            used.addAll(Arrays.asList(cases));
-            return this;
-        }
-    }
-
-    public static final class Stage<I, R> {
-
-        private final Builder<I, R> builder;
-        private final Case<I, R> base;
-
-        private Stage(final Builder<I, R> builder, final Case<I, R> base) {
-            this.builder = builder;
-            this.base = base;
-        }
-
-        final Builder<I, R> check(final Case<I, R> next) {
-            return builder.add(base, next)
-                          .addMethod(next);
         }
     }
 }
