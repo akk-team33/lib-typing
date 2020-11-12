@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static de.team33.libs.typing.v4.experimental4.Case.none;
 import static de.team33.libs.typing.v4.experimental4.Case.not;
@@ -22,17 +23,15 @@ public final class Cases<I, R> implements Function<I, R> {
 
     private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing;
 
-    private Cases(final Builder<I, R> builder) {
-        this.backing = unmodifiableMap(new HashMap<>(builder.backing));
+    private Cases(final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing) {
+        this.backing = unmodifiableMap(backing);
     }
 
     @SafeVarargs
     public static <I, R> Cases<I, R> build(final Case<I, R>... cases) {
-        final Builder<I, R> builder = new Builder<>();
-        for (final Case<I, R> next : cases) {
-            builder.add(next.getPreCondition(), next);
-        }
-        return builder.build();
+        return Stream.of(cases)
+                     .collect(() -> new Collector<I, R>(none()), Collector::add, Collector::addAll)
+                     .build();
     }
 
     @Override
@@ -47,17 +46,30 @@ public final class Cases<I, R> implements Function<I, R> {
                        .apply(input);
     }
 
-    public static final class Builder<I, R> {
+    private static final class Collector<I, R> {
 
         private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing = new HashMap<>(0);
         private final Set<Object> defined = new HashSet<>(0);
         private final Set<Object> used = new HashSet<>(0);
 
-        private Builder() {
-            used.add(none());
+        private Collector(final Case<Object, Object> none) {
+            used.add(none);
         }
 
-        public final Cases<I, R> build() {
+        private void add(final Case<I, R> next) {
+            new Addition(next).put(next.getPreCondition());
+            next.getMethod()
+                .ifPresent(method -> {
+                    backing.put(next, cases -> method);
+                    defined.add(next);
+                });
+        }
+
+        private void addAll(final Collector<I, R> other) {
+            throw new UnsupportedOperationException("not yet implemented");
+        }
+
+        public Cases<I, R> build() {
             final Set<Object> undefined = new HashSet<>(used);
             undefined.removeAll(defined);
             if (!undefined.isEmpty()) {
@@ -69,18 +81,7 @@ public final class Cases<I, R> implements Function<I, R> {
             if (!unused.isEmpty()) {
                 throw new UnusedException(unused);
             }
-
-            return new Cases<>(this);
-        }
-
-        private void add(final Case<I, R> base,
-                         final Case<I, R> next) {
-            new Addition(next).put(base);
-            next.getMethod()
-                .ifPresent(method -> {
-                    backing.put(next, cases -> method);
-                    defined.add(next);
-                });
+            return new Cases<>(backing);
         }
 
         private final class Addition {
