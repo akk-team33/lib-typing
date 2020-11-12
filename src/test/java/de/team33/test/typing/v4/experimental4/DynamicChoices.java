@@ -4,6 +4,7 @@ import de.team33.libs.typing.v4.experimental4.Case;
 import de.team33.libs.typing.v4.experimental4.Cases;
 import de.team33.test.typing.v4.experimental3.Input;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -77,13 +78,8 @@ enum DynamicChoices implements Case<Input, String> {
     }
 
     @Override
-    public final boolean isDefinite() {
-        return null != method;
-    }
-
-    @Override
-    public final String apply(final Input input) {
-        return method.apply(input);
+    public final Optional<Function<Input, String>> getMethod() {
+        return Optional.ofNullable(method);
     }
 }
 

@@ -81,11 +81,12 @@ public final class Cases<I, R> implements Function<I, R> {
         }
 
         private Builder<I, R> addMethod(final Case<I, R> base) {
-            if (base.isDefinite()) {
-                backing.put(base, cases -> base::apply);
-                addDefined(base);
-            }
-            return this;
+            return base.getMethod()
+                       .map(method -> {
+                           backing.put(base, cases -> method);
+                           return addDefined(base);
+                       })
+                       .orElse(this);
         }
 
         private Builder<I, R> add(final Case<I, R> base,

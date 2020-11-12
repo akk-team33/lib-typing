@@ -5,7 +5,9 @@ import de.team33.libs.typing.v4.experimental4.Cases;
 import de.team33.test.typing.v4.experimental3.Input;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
 
 import static de.team33.libs.testing.v1.Attempts.tryParallel;
 import static de.team33.libs.testing.v1.Attempts.trySerial;
@@ -31,13 +33,8 @@ public class CasesTest {
         }
 
         @Override
-        public boolean isDefinite() {
-            return true;
-        }
-
-        @Override
-        public String apply(final Integer input) {
-            return String.valueOf(input);
+        public Optional<Function<Integer, String>> getMethod() {
+            return Optional.of(String::valueOf);
         }
 
         @Override
@@ -64,13 +61,8 @@ public class CasesTest {
         }
 
         @Override
-        public boolean isDefinite() {
-            return true;
-        }
-
-        @Override
-        public String apply(final Integer input) {
-            return String.valueOf(-input);
+        public Optional<Function<Integer, String>> getMethod() {
+            return Optional.of(input -> String.valueOf(-input));
         }
 
         @Override

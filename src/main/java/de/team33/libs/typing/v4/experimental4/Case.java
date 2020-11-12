@@ -1,7 +1,10 @@
 package de.team33.libs.typing.v4.experimental4;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 /**
- * Represents a case that can lead to the solution of a function or a further case distinction.
+ * Represents a case that can lead to an end result of a function or a further case distinction.
  *
  * @param <I> The type of function parameters to be expected
  * @param <R> The type of function result to be expected
@@ -57,7 +60,12 @@ public interface Case<I, R> {
      */
     boolean isMatching(I input);
 
-    boolean isDefinite();
-
-    R apply(I input);
+    /**
+     * Provides {@link Optional (indirectly)} a {@link Function method} that can deliver the final result for the
+     * appliance of this case, if no further case distinction is necessary.
+     * <p>
+     * Results in {@link Optional#empty()} if at least one further case distinction has to be made in order to arrive
+     * at the final result.
+     */
+    Optional<Function<I, R>> getMethod();
 }

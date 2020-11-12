@@ -1,14 +1,14 @@
 package de.team33.libs.typing.v4.experimental4;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 final class Opposite<I, R> implements Case<I, R> {
 
     @SuppressWarnings("rawtypes")
     private static final Map<Case, Opposite> CACHE = new ConcurrentHashMap<>(0);
-    private static final String INDEFINITE =
-            "this case (%s) is not definite, so this call cannot lead to a regular result";
 
     private final Case<I, R> original;
 
@@ -39,17 +39,12 @@ final class Opposite<I, R> implements Case<I, R> {
     }
 
     @Override
-    public final boolean isDefinite() {
-        return false;
-    }
-
-    @Override
-    public final R apply(final I input) {
-        throw new UnsupportedOperationException(String.format(INDEFINITE, this));
+    public final Optional<Function<I, R>> getMethod() {
+        return Optional.empty();
     }
 
     @Override
     public final String toString() {
-        return "~" + original;
+        return "not(" + original + ")";
     }
 }

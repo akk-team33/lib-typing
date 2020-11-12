@@ -5,6 +5,7 @@ import de.team33.libs.typing.v4.experimental4.Cases;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -66,13 +67,8 @@ enum RawTypes implements Case<TypeContext, RawType> {
     }
 
     @Override
-    public final boolean isDefinite() {
-        return null != method;
-    }
-
-    @Override
-    public final RawType apply(final TypeContext input) {
-        return method.apply(input);
+    public final Optional<Function<TypeContext, RawType>> getMethod() {
+        return Optional.ofNullable(method);
     }
 
     @SuppressWarnings("InnerClassFieldHidesOuterClassField")

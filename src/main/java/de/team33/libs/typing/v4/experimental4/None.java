@@ -1,5 +1,8 @@
 package de.team33.libs.typing.v4.experimental4;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 final class None<I, R> implements Case<I, R> {
 
     @SuppressWarnings("rawtypes")
@@ -29,17 +32,12 @@ final class None<I, R> implements Case<I, R> {
     }
 
     @Override
-    public final boolean isDefinite() {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public final R apply(final I input) {
-        throw new UnsupportedOperationException("not yet implemented");
+    public final Optional<Function<I, R>> getMethod() {
+        return Optional.empty();
     }
 
     @Override
     public final String toString() {
-        return "None";
+        return "NONE";
     }
 }
