@@ -1,5 +1,6 @@
 package de.team33.test.typing.v4.experimental4;
 
+import de.team33.libs.typing.v4.experimental4.Case;
 import de.team33.test.typing.v4.experimental3.Input;
 import org.junit.Test;
 
@@ -35,8 +36,14 @@ public class CaseTest {
             // If a case matches a parameter, the opposite should not match and vice versa ...
             trySerial(100, () -> {
                 final Input input = new Input(random.nextInt());
-                assertEquals(!choice.isMatching(input), not(choice).isMatching(input));
+                assertEquals(!isMatching(choice, input), isMatching(not(choice), input));
             });
         });
+    }
+
+    private static boolean isMatching(final Case<Input, String> choice, final Input input) {
+        return choice.getCondition()
+                     .map(condition -> condition.test(input))
+                     .orElse(true);
     }
 }

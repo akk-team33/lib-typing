@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static de.team33.libs.testing.v1.Attempts.tryParallel;
 import static de.team33.libs.testing.v1.Attempts.trySerial;
@@ -23,13 +24,8 @@ public class CasesTest {
         }
 
         @Override
-        public boolean isDefault() {
-            return false;
-        }
-
-        @Override
-        public boolean isMatching(final Integer input) {
-            return input > 0;
+        public Optional<Predicate<Integer>> getCondition() {
+            return Optional.of(input -> input > 0);
         }
 
         @Override
@@ -51,13 +47,8 @@ public class CasesTest {
         }
 
         @Override
-        public boolean isDefault() {
-            return true;
-        }
-
-        @Override
-        public boolean isMatching(final Integer input) {
-            return true;
+        public Optional<Predicate<Integer>> getCondition() {
+            return Optional.empty();
         }
 
         @Override

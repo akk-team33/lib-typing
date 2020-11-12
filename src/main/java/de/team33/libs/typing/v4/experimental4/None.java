@@ -2,6 +2,7 @@ package de.team33.libs.typing.v4.experimental4;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 final class None<I, R> implements Case<I, R> {
 
@@ -22,13 +23,8 @@ final class None<I, R> implements Case<I, R> {
     }
 
     @Override
-    public final boolean isDefault() {
-        return false;
-    }
-
-    @Override
-    public final boolean isMatching(final I input) {
-        return true;
+    public Optional<Predicate<I>> getCondition() {
+        return Optional.of(input -> true);
     }
 
     @Override

@@ -39,7 +39,6 @@ enum DynamicChoices implements Case<Input, String> {
     CASE_1111(NOT, CASE_1110, null, "1111");
 
     private static final Cases<Input, String> CASES = Cases.build(values());
-    private static final Predicate<Input> TRUE = input -> true;
 
     private final Case<Input, String> preCondition;
     private final Predicate<Input> predicate;
@@ -68,13 +67,8 @@ enum DynamicChoices implements Case<Input, String> {
     }
 
     @Override
-    public final boolean isDefault() {
-        return null == predicate;
-    }
-
-    @Override
-    public final boolean isMatching(final Input input) {
-        return (null == predicate ? TRUE : predicate).test(input);
+    public Optional<Predicate<Input>> getCondition() {
+        return Optional.ofNullable(predicate);
     }
 
     @Override

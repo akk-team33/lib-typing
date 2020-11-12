@@ -15,16 +15,16 @@ enum RawTypes implements Case<TypeContext, RawType> {
 
     CLASS(Case.none(), Filter.CLASS),
     ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS),
-    PLAIN_CLASS(not(ARRAY_CLASS), Filter.TRUE, Method.PLAIN_CLASS),
+    PLAIN_CLASS(not(ARRAY_CLASS), null, Method.PLAIN_CLASS),
     PARAMETERIZED(not(CLASS), Filter.PARAMETERIZED, Method.PARAMETERIZED),
     GENERIC_ARRAY(not(PARAMETERIZED), Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY),
     TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE),
-    FAIL(not(TYPE_VARIABLE), Filter.TRUE, Method.FAIL);
+    FAIL(not(TYPE_VARIABLE), null, Method.FAIL);
 
     private static final Cases<TypeContext, RawType> CASES = Cases.build(values());
 
     private final Case<TypeContext, RawType> preCondition;
-    private final Predicate<Type> predicate;
+    private final Predicate<TypeContext> predicate;
     private final Function<TypeContext, RawType> method;
 
     RawTypes(final Case<TypeContext, RawType> preCondition, final Predicate<Type> predicate) {
@@ -35,7 +35,7 @@ enum RawTypes implements Case<TypeContext, RawType> {
              final Predicate<Type> predicate,
              final Function<TypeContext, RawType> method) {
         this.preCondition = preCondition;
-        this.predicate = predicate;
+        this.predicate = (null == predicate) ? null : ctx -> predicate.test(ctx.type);
         this.method = method;
     }
 
@@ -57,13 +57,8 @@ enum RawTypes implements Case<TypeContext, RawType> {
     }
 
     @Override
-    public final boolean isDefault() {
-        return Filter.TRUE == predicate;
-    }
-
-    @Override
-    public final boolean isMatching(final TypeContext input) {
-        return predicate.test(input.type);
+    public Optional<Predicate<TypeContext>> getCondition() {
+        return Optional.ofNullable(predicate);
     }
 
     @Override
@@ -74,7 +69,6 @@ enum RawTypes implements Case<TypeContext, RawType> {
     @SuppressWarnings("InnerClassFieldHidesOuterClassField")
     @FunctionalInterface
     private interface Filter extends Predicate<Type> {
-        Filter TRUE = type -> true;
         Filter CLASS = type -> type instanceof Class;
         Filter ARRAY_CLASS = type -> ((Class<?>) type).isArray();
         Filter PARAMETERIZED = type -> type instanceof java.lang.reflect.ParameterizedType;

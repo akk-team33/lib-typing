@@ -102,12 +102,13 @@ public final class Cases<I, R> implements Function<I, R> {
             private final Case<I, R>[] used;
 
             private Addition(final Case<I, R> next) {
-                if (next.isDefault()) {
+                final Predicate<I> condition = next.getCondition().orElse(null);
+                if (null == condition) {
                     method = cases -> input -> cases.apply(next, input);
                     used = new Case[]{next};
                 } else {
                     final Case<I, R> notNext = not(next);
-                    method = cases -> input -> cases.apply(next.isMatching(input) ? next : notNext, input);
+                    method = cases -> input -> cases.apply(condition.test(input) ? next : notNext, input);
                     used = new Case[]{next, notNext};
                 }
             }

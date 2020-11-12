@@ -2,6 +2,7 @@ package de.team33.libs.typing.v4.experimental4;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Represents a case that can lead to an end result of a function or a further case distinction.
@@ -39,26 +40,24 @@ public interface Case<I, R> {
     /**
      * Returns the precondition for this {@link Case}.
      * <p>
-     * In order to {@link #isMatching(Object) clarify whether a certain case is met}, its precondition must be met.
+     * In order to {@link #getCondition() clarify whether a certain case applies}, its precondition must apply.
      * <p>
      * Within a decision chain or a decision tree, exactly one case typically has no real precondition.
      * Such a case should return the pseudo-case {@link #none()}.
      */
     Case<I, R> getPreCondition();
 
-    boolean isDefault();
-
     /**
-     * Checks whether this {@link Case} applies based on a given parameter.
+     * Provides {@link Optional (indirectly)} a {@link Predicate condition} that (in addition to the
+     * {@link #getPreCondition() precondition}) must be fulfilled for this {@link Case} to apply if such a condition
+     * exists. This implies the {@link #not(Case) opposite case}, in which the same precondition applies but this
+     * condition does exactly not apply.
      * <p>
-     * Note 1: if not, it means its {@link #not(Case) opposite} applies.
-     * <p>
-     * Note 2: Certain requirements may have to be met in order for this test to be meaningful.
-     * In particular, there may be higher-level cases, the occurrence of which must first be clarified.
-     * <p>
-     * Note 3: The same requirements apply to a specific case and its opposite!
+     * If no such condition exists (i.e. the result is {@link Optional#empty()}), this means that only the
+     * {@link #getPreCondition() precondition} must be fulfilled for this case to apply. This fact does not imply an
+     * opposite case (or an {@link #not(Case) opposite case} that can never apply).
      */
-    boolean isMatching(I input);
+    Optional<Predicate<I>> getCondition();
 
     /**
      * Provides {@link Optional (indirectly)} a {@link Function method} that can deliver the final result for the
