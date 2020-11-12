@@ -1,8 +1,5 @@
 package de.team33.libs.typing.v4.experimental4;
 
-import java.util.Optional;
-import java.util.function.Function;
-
 /**
  * Represents a case that can lead to the solution of a function or a further case distinction.
  *

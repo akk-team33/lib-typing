@@ -1,49 +1,41 @@
 package de.team33.libs.typing.v4;
 
-import de.team33.libs.typing.v4.experimental3.Case;
-import de.team33.libs.typing.v4.experimental3.Cases;
+import de.team33.libs.typing.v4.experimental4.Case;
+import de.team33.libs.typing.v4.experimental4.Cases;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static de.team33.libs.typing.v4.experimental3.Case.not;
+import static de.team33.libs.typing.v4.experimental4.Case.not;
 
 enum RawTypes implements Case<TypeContext, RawType> {
 
-    CLASS(null, Filter.CLASS),
-    ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS, Method.PLAIN_CLASS),
+    CLASS(Case.none(), Filter.CLASS),
+    ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS),
+    PLAIN_CLASS(not(ARRAY_CLASS), Filter.TRUE, Method.PLAIN_CLASS),
     PARAMETERIZED(not(CLASS), Filter.PARAMETERIZED, Method.PARAMETERIZED),
     GENERIC_ARRAY(not(PARAMETERIZED), Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY),
-    TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE, Method.FAIL);
+    TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE),
+    FAIL(not(TYPE_VARIABLE), Filter.TRUE, Method.FAIL);
 
     private static final Cases<TypeContext, RawType> CASES = Cases.build(values());
 
     private final Case<TypeContext, RawType> preCondition;
     private final Predicate<Type> predicate;
-    private final Function<TypeContext, RawType> positive;
-    private final Function<TypeContext, RawType> negative;
+    private final Function<TypeContext, RawType> method;
 
     RawTypes(final Case<TypeContext, RawType> preCondition, final Predicate<Type> predicate) {
-        this(preCondition, predicate, null, null);
+        this(preCondition, predicate, null);
     }
 
     RawTypes(final Case<TypeContext, RawType> preCondition,
              final Predicate<Type> predicate,
-             final Function<TypeContext, RawType> positive) {
-        this(preCondition, predicate, positive, null);
-    }
-
-    RawTypes(final Case<TypeContext, RawType> preCondition,
-             final Predicate<Type> predicate,
-             final Function<TypeContext, RawType> positive,
-             final Function<TypeContext, RawType> negative) {
+             final Function<TypeContext, RawType> method) {
         this.preCondition = preCondition;
         this.predicate = predicate;
-        this.positive = positive;
-        this.negative = negative;
+        this.method = method;
     }
 
     static RawType map(final Type type) {
@@ -58,13 +50,14 @@ enum RawTypes implements Case<TypeContext, RawType> {
         return context.getActual(type.getName());
     }
 
-    private static RawType fail(final TypeContext typeContext) {
-        throw new IllegalArgumentException("unknown type of type: " + typeContext.type.getClass());
+    @Override
+    public final Case<TypeContext, RawType> getPreCondition() {
+        return preCondition;
     }
 
     @Override
-    public Optional<Case<TypeContext, RawType>> getPreCondition() {
-        return Optional.ofNullable(preCondition);
+    public final boolean isDefault() {
+        return Filter.TRUE == predicate;
     }
 
     @Override
@@ -73,18 +66,19 @@ enum RawTypes implements Case<TypeContext, RawType> {
     }
 
     @Override
-    public final Optional<Function<TypeContext, RawType>> getPositive() {
-        return Optional.ofNullable(positive);
+    public final boolean isDefinite() {
+        return null != method;
     }
 
     @Override
-    public final Optional<Function<TypeContext, RawType>> getNegative() {
-        return Optional.ofNullable(negative);
+    public final RawType apply(final TypeContext input) {
+        return method.apply(input);
     }
 
     @SuppressWarnings("InnerClassFieldHidesOuterClassField")
     @FunctionalInterface
     private interface Filter extends Predicate<Type> {
+        Filter TRUE = type -> true;
         Filter CLASS = type -> type instanceof Class;
         Filter ARRAY_CLASS = type -> ((Class<?>) type).isArray();
         Filter PARAMETERIZED = type -> type instanceof java.lang.reflect.ParameterizedType;

@@ -1,14 +1,49 @@
 package de.team33.libs.typing.v4;
 
+import de.team33.libs.typing.v4.experimental3.Case;
+import de.team33.libs.typing.v4.experimental3.Cases;
+
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
-final class RawTypes_ {
+import static de.team33.libs.typing.v4.experimental3.Case.not;
 
-    private RawTypes_() {
+enum RawTypes_ implements Case<TypeContext, RawType> {
+
+    CLASS(null, Filter.CLASS),
+    ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS, Method.PLAIN_CLASS),
+    PARAMETERIZED(not(CLASS), Filter.PARAMETERIZED, Method.PARAMETERIZED),
+    GENERIC_ARRAY(not(PARAMETERIZED), Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY),
+    TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE, Method.FAIL);
+
+    private static final Cases<TypeContext, RawType> CASES = Cases.build(values());
+
+    private final Case<TypeContext, RawType> preCondition;
+    private final Predicate<Type> predicate;
+    private final Function<TypeContext, RawType> positive;
+    private final Function<TypeContext, RawType> negative;
+
+    RawTypes_(final Case<TypeContext, RawType> preCondition, final Predicate<Type> predicate) {
+        this(preCondition, predicate, null, null);
+    }
+
+    RawTypes_(final Case<TypeContext, RawType> preCondition,
+              final Predicate<Type> predicate,
+              final Function<TypeContext, RawType> positive) {
+        this(preCondition, predicate, positive, null);
+    }
+
+    RawTypes_(final Case<TypeContext, RawType> preCondition,
+              final Predicate<Type> predicate,
+              final Function<TypeContext, RawType> positive,
+              final Function<TypeContext, RawType> negative) {
+        this.preCondition = preCondition;
+        this.predicate = predicate;
+        this.positive = positive;
+        this.negative = negative;
     }
 
     static RawType map(final Type type) {
@@ -16,84 +51,57 @@ final class RawTypes_ {
     }
 
     static RawType map(final Type type, final Context context) {
-        return map(null, new Input(type, context));
+        return CASES.apply(new TypeContext(type, context));
     }
 
-    private static RawType map(final Id pred, final Input input) {
-        return Stream.of(Mapping.values())
-                     .filter(mapping -> mapping.isSuccessor(pred))
-                     .filter(mapping -> mapping.isMatching(input.type))
-                     .findFirst()
-                     .map(mapping -> mapping.mapper.apply(input))
-                     .orElseThrow(() -> new IllegalArgumentException("Unknown: " + input.type));
+    private static RawType typeVariableType(final TypeVariable<?> type, final Context context) {
+        return context.getActual(type.getName());
     }
 
-    private enum Id {
-
-        CLASS,
-        PLAIN_CLASS,
-        ARRAY_CLASS,
-        PARAMETERIZED,
-        TYPE_VARIABLE,
-        GENERIC_ARRAY;
+    private static RawType fail(final TypeContext typeContext) {
+        throw new IllegalArgumentException("unknown type of type: " + typeContext.type.getClass());
     }
 
-    private enum Mapping {
-
-        CLASS(null, Class.class::isInstance, input -> map(Id.CLASS, input)),
-
-        PLAIN_CLASS(Id.CLASS,
-                    type -> false == ((Class<?>) type).isArray(),
-                    input -> new PlainClassType((Class<?>) input.type)),
-
-        ARRAY_CLASS(Id.CLASS,
-                    type -> ((Class<?>) type).isArray(),
-                    input -> new PlainArrayType((Class<?>) input.type)),
-
-        PARAMETERIZED(null,
-                      java.lang.reflect.ParameterizedType.class::isInstance,
-                      input -> new ParameterizedType((java.lang.reflect.ParameterizedType) input.type, input.context)),
-
-        TYPE_VARIABLE(null,
-                      TypeVariable.class::isInstance,
-                      input -> typeVariableType((TypeVariable<?>) input.type, input.context)),
-
-        GENERIC_ARRAY(null,
-                      java.lang.reflect.GenericArrayType.class::isInstance,
-                      input -> new GenericArrayType((java.lang.reflect.GenericArrayType) input.type, input.context));
-
-        private final Id id;
-        private final Id pred;
-        private final Predicate<Type> match;
-        private final Function<Input, RawType> mapper;
-        Mapping(final Id pred, final Predicate<Type> match, final Function<Input, RawType> mapper) {
-            this.id = Id.valueOf(name());
-            this.pred = pred;
-            this.match = match;
-            this.mapper = mapper;
-        }
-
-        private static RawType typeVariableType(final TypeVariable<?> type, final Context context) {
-            return context.getActual(type.getName());
-        }
-
-        final boolean isSuccessor(final Id pred) {
-            return (pred == null) ? (this.pred == null) : (this.pred == pred);
-        }
-
-        final boolean isMatching(final Type type) {
-            return match.test(type);
-        }
+    @Override
+    public Optional<Case<TypeContext, RawType>> getPreCondition() {
+        return Optional.ofNullable(preCondition);
     }
 
-    private static final class Input {
+    @Override
+    public final boolean isMatching(final TypeContext input) {
+        return predicate.test(input.type);
+    }
 
-        private final Type type;
-        private final Context context;
+    @Override
+    public final Optional<Function<TypeContext, RawType>> getPositive() {
+        return Optional.ofNullable(positive);
+    }
 
-        private Input(final Type type, final Context context) {
-            this.type = type;
-            this.context = context;
-        }
+    @Override
+    public final Optional<Function<TypeContext, RawType>> getNegative() {
+        return Optional.ofNullable(negative);
+    }
+
+    @SuppressWarnings("InnerClassFieldHidesOuterClassField")
+    @FunctionalInterface
+    private interface Filter extends Predicate<Type> {
+        Filter CLASS = type -> type instanceof Class;
+        Filter ARRAY_CLASS = type -> ((Class<?>) type).isArray();
+        Filter PARAMETERIZED = type -> type instanceof java.lang.reflect.ParameterizedType;
+        Filter GENERIC_ARRAY = type -> type instanceof java.lang.reflect.GenericArrayType;
+        Filter TYPE_VARIABLE = type -> type instanceof TypeVariable;
+    }
+
+    @SuppressWarnings("InnerClassFieldHidesOuterClassField")
+    @FunctionalInterface
+    private interface Method extends Function<TypeContext, RawType> {
+        Method ARRAY_CLASS = ctx -> new PlainArrayType((Class<?>) ctx.type);
+        Method PLAIN_CLASS = ctx -> new PlainClassType((Class<?>) ctx.type);
+        Method PARAMETERIZED = ctx -> new ParameterizedType((java.lang.reflect.ParameterizedType) ctx.type, ctx.context);
+        Method GENERIC_ARRAY = ctx -> new GenericArrayType((java.lang.reflect.GenericArrayType) ctx.type, ctx.context);
+        Method TYPE_VARIABLE = ctx -> typeVariableType((TypeVariable<?>) ctx.type, ctx.context);
+        Method FAIL = ctx -> {
+            throw new IllegalArgumentException("unknown type of type: " + ctx.type.getClass());
+        };
     }
 }
