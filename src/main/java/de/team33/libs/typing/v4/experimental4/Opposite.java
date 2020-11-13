@@ -11,14 +11,16 @@ final class Opposite<I, R> implements Case<I, R> {
     @SuppressWarnings("rawtypes")
     private static final Map<Case, Opposite> CACHE = new ConcurrentHashMap<>(0);
     @SuppressWarnings("rawtypes")
-    private static final Predicate FALSE = input -> false;
+    private static final Predicate NEVER = input -> false;
 
     private final Case<I, R> original;
     private final Predicate<I> predicate;
 
     private Opposite(final Case<I, R> original) {
         this.original = original;
-        predicate = inverse(original.getCondition().orElse(null));
+        predicate = original.getCondition()
+                            .map(Opposite::inverse)
+                            .orElseGet(Opposite::never);
     }
 
     @SuppressWarnings("unchecked")
@@ -28,9 +30,13 @@ final class Opposite<I, R> implements Case<I, R> {
                 : CACHE.computeIfAbsent(original, Opposite::new);
     }
 
-    @SuppressWarnings("unchecked")
     private static <I> Predicate<I> inverse(final Predicate<I> predicate) {
-        return (null == predicate) ? FALSE : input -> !predicate.test(input);
+        return input -> !predicate.test(input);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <I> Predicate<I> never() {
+        return NEVER;
     }
 
     @Override
@@ -39,7 +45,7 @@ final class Opposite<I, R> implements Case<I, R> {
     }
 
     @Override
-    public Optional<Predicate<I>> getCondition() {
+    public final Optional<Predicate<I>> getCondition() {
         return Optional.of(predicate);
     }
 

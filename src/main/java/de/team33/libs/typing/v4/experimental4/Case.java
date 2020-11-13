@@ -14,6 +14,13 @@ public interface Case<I, R> {
 
     /**
      * Returns the opposite of a given {@link Case}.
+     * It has the following properties:
+     * <ul>
+     *     <li>it has the same precondition as the original</li>
+     *     <li>it has the inverse condition of the original
+     *     (if the original has no condition it makes no sense to get its opposite)</li>
+     *     <li>it never leads directly to a result</li>
+     * </ul>
      * <p>
      * The opposite of a {@link Case} is not a negation in the strictly boolean sense.
      * In fact, the opposite of a case has the same precondition as the original case.
