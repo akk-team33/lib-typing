@@ -1,15 +1,10 @@
 package de.team33.libs.typing.v4.experimental4;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static de.team33.libs.typing.v4.experimental4.Case.none;
@@ -18,16 +13,16 @@ import static java.util.Collections.unmodifiableMap;
 
 public final class Cases<I, R> implements Function<I, R> {
 
-    private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing;
+    private final Map<Case<I, R>, Case<I, R>> postConditions;
 
-    private Cases(final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing) {
-        this.backing = unmodifiableMap(backing);
+    private Cases(final Builder<I, R> builder) {
+        postConditions = unmodifiableMap(builder.postConditions);
     }
 
     @SafeVarargs
     public static <I, R> Cases<I, R> build(final Case<I, R>... cases) {
         return Stream.of(cases)
-                     .collect(() -> new Collector<I, R>(none()), Collector::add, Collector::addAll)
+                     .collect(() -> new Builder<I, R>(none()), Builder::add, Builder::addAll)
                      .build();
     }
 
@@ -37,32 +32,43 @@ public final class Cases<I, R> implements Function<I, R> {
     }
 
     private R apply(final Case<I, R> base, final I input) {
-        return Optional.ofNullable(backing.get(base))
-                       .orElseThrow(() -> new IllegalStateException("unknown case: " + base))
-                       .apply(this)
-                       .apply(input);
+        return base.getResult().orElseGet(() -> applyPost(base, input));
     }
 
-    private static final class Collector<I, R> {
+    private R applyPost(final Case<I, R> base, final I input) {
+        return apply(nextCase(postConditions.get(base), input), input);
+    }
 
-        private final Map<Case<I, R>, Function<Cases<I, R>, Function<I, R>>> backing = new HashMap<>(0);
+    private static <I, R> Case<I, R> nextCase(final Case<I, R> subject, final I input) {
+        return subject.getCondition()
+                      .map(condition -> condition.test(input) ? subject : not(subject))
+                      .orElse(subject);
+    }
+
+    private static final class Builder<I, R> {
+
+        private final Map<Case<I, R>, Case<I, R>> postConditions = new HashMap<>(0);
         private final Set<Object> defined = new HashSet<>(0);
         private final Set<Object> used = new HashSet<>(0);
 
-        private Collector(final Case<Object, Object> none) {
+        private Builder(final Case<Object, Object> none) {
             used.add(none);
         }
 
         private void add(final Case<I, R> next) {
-            new Addition(next).add(next.getPreCondition());
-            next.getResult()
-                .ifPresent(result -> {
-                    backing.put(next, cases -> input -> result);
-                    defined.add(next);
-                });
+            final Case<I, R> pre = next.getPreCondition();
+            postConditions.put(pre, next);
+            defined.add(pre);
+            if (next.getResult().isPresent()) {
+                defined.add(next);
+            }
+            used.add(next);
+            if (next.getCondition().isPresent()) {
+                used.add(not(next));
+            }
         }
 
-        private void addAll(final Collector<I, R> other) {
+        private void addAll(final Builder<I, R> other) {
             throw new UnsupportedOperationException("shouldn't be necessary here");
         }
 
@@ -78,35 +84,8 @@ public final class Cases<I, R> implements Function<I, R> {
             if (!unused.isEmpty()) {
                 throw new UnusedException(unused);
             }
-            return new Cases<>(backing);
-        }
 
-        private final class Addition {
-
-            private final Function<Cases<I, R>, Function<I, R>> method;
-            private final List<Case<I, R>> usedHere;
-
-            private Addition(final Case<I, R> next) {
-                final Predicate<I> condition = next.getCondition().orElse(null);
-                if (null == condition) {
-                    method = cases -> input -> cases.apply(next, input);
-                    usedHere = Collections.singletonList(next);
-                } else {
-                    final Case<I, R> notNext = not(next);
-                    method = cases -> input -> {
-                        final Case<I, R> aCase = condition.test(input) ? next : notNext;
-                        return cases.apply(aCase, input);
-                    };
-                    usedHere = Arrays.asList(next, notNext);
-                }
-            }
-
-            private void add(final Case<I, R> base) {
-                if (null != backing.put(base, method))
-                    throw new IllegalArgumentException("already defined: " + base);
-                defined.add(base);
-                used.addAll(usedHere);
-            }
+            return new Cases<I, R>(this);
         }
     }
 }

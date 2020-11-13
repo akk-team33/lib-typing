@@ -15,53 +15,62 @@ import static org.junit.Assert.assertEquals;
 
 public class CasesTest {
 
-    private static final Case<Integer, Function<Integer, String>> POSITIVE =
-            new Case<Integer, Function<Integer, String>>() {
+    private static final Case<Integer, Function<Integer, String>> POSITIVE;
 
-                @Override
-                public Case<Integer, Function<Integer, String>> getPreCondition() {
-                    return Case.none();
-                }
+    private static final Case<Integer, Function<Integer, String>> NEGATIVE;
 
-                @Override
-                public Optional<Predicate<Integer>> getCondition() {
-                    return Optional.of(input -> input > 0);
-                }
+    static {
+        POSITIVE = new Case<Integer, Function<Integer, String>>() {
 
-                @Override
-                public Optional<Function<Integer, String>> getResult() {
-                    return Optional.of(String::valueOf);
-                }
+            @Override
+            public Case<Integer, Function<Integer, String>> getPreCondition() {
+                //return null;
+                return Case.none();
+                //return Case.not(NEGATIVE);
+            }
 
-                @Override
-                public String toString() {
-                    return "POSITIVE";
-                }
-            };
+            @Override
+            public Optional<Predicate<Integer>> getCondition() {
+                return Optional.of(input -> input > 0);
+            }
 
-    private static final Case<Integer, Function<Integer, String>> NEGATIVE =
-            new Case<Integer, Function<Integer, String>>() {
+            @Override
+            public Optional<Function<Integer, String>> getResult() {
+                return Optional.of(String::valueOf);
+            }
 
-                @Override
-                public Case<Integer, Function<Integer, String>> getPreCondition() {
-                    return Case.not(POSITIVE);
-                }
+            @Override
+            public String toString() {
+                return "POSITIVE";
+            }
+        };
+        NEGATIVE = new Case<Integer, Function<Integer, String>>() {
 
-                @Override
-                public Optional<Predicate<Integer>> getCondition() {
-                    return Optional.empty();
-                }
+            @Override
+            public Case<Integer, Function<Integer, String>> getPreCondition() {
+                //return null;
+                //return Case.none();
+                return Case.not(POSITIVE);
+            }
 
-                @Override
-                public Optional<Function<Integer, String>> getResult() {
-                    return Optional.of(input -> String.valueOf(-input));
-                }
+            @Override
+            public Optional<Predicate<Integer>> getCondition() {
+                //return Optional.of(input -> input < 0);
+                return Optional.empty();
+            }
 
-                @Override
-                public String toString() {
-                    return "NEGATIVE";
-                }
-            };
+            @Override
+            public Optional<Function<Integer, String>> getResult() {
+                return Optional.of(input -> String.valueOf(-input));
+                //return Optional.empty();
+            }
+
+            @Override
+            public String toString() {
+                return "NEGATIVE";
+            }
+        };
+    }
 
     private final Random random = new Random();
 
