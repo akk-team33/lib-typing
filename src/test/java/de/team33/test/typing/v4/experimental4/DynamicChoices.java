@@ -22,20 +22,20 @@ enum DynamicChoices implements Case<Input, String> {
     CASE_010_(not(CASE_00__), input -> 0 == input.c),
 
     CASE_0000(CASE_000_, input -> 0 == input.d, "0000"),
-    CASE_0001(not(CASE_0000), null, "0001"),
+    CASE_0001(not(CASE_0000), "0001"),
     CASE_0100(CASE_010_, input -> 0 == input.d, "0100"),
-    CASE_0101(not(CASE_0100), null, "0101"),
+    CASE_0101(not(CASE_0100), "0101"),
     CASE_1_00(CASE_1_0_, input -> 0 == input.d, "1_00"),
-    CASE_1_01(not(CASE_1_00), null, "1_01"),
+    CASE_1_01(not(CASE_1_00), "1_01"),
     CASE_1010(CASE_101_, input -> 0 == input.d, "1010"),
-    CASE_1011(not(CASE_1010), null, "1011"),
+    CASE_1011(not(CASE_1010), "1011"),
 
     CASE_0010(not(CASE_000_), input -> 0 == input.d, "0010"),
-    CASE_0011(not(CASE_0010), null, "0011"),
+    CASE_0011(not(CASE_0010), "0011"),
     CASE_0110(not(CASE_010_), input -> 0 == input.d, "0110"),
-    CASE_0111(not(CASE_0110), null, "0111"),
+    CASE_0111(not(CASE_0110), "0111"),
     CASE_1110(not(CASE_101_), input -> 0 == input.d, "1110"),
-    CASE_1111(not(CASE_1110), null, "1111");
+    CASE_1111(not(CASE_1110), "1111");
 
     private static final Cases<Input, String> CASES = Cases.build(values());
 
@@ -45,6 +45,10 @@ enum DynamicChoices implements Case<Input, String> {
 
     DynamicChoices(final Case<Input, String> preCondition, final Predicate<Input> predicate) {
         this(preCondition, predicate, null);
+    }
+
+    DynamicChoices(final Case<Input, String> preCondition, final String result) {
+        this(preCondition, null, result);
     }
 
     @SuppressWarnings("AssignmentToNull")

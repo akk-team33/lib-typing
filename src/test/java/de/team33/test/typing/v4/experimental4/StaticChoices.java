@@ -7,7 +7,7 @@ final class StaticChoices {
     private StaticChoices() {
     }
 
-    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
+    @SuppressWarnings("OverlyComplexMethod")
     static String map(final Input input) {
         if (0 == input.a) {
             if (0 == input.b) {
