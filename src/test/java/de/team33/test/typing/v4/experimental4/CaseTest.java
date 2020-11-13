@@ -1,7 +1,6 @@
 package de.team33.test.typing.v4.experimental4;
 
 import de.team33.libs.typing.v4.experimental4.Case;
-import de.team33.test.typing.v4.experimental3.Input;
 import org.junit.Test;
 
 import java.util.Collections;

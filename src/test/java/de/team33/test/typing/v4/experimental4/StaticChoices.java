@@ -1,7 +1,5 @@
 package de.team33.test.typing.v4.experimental4;
 
-import de.team33.test.typing.v4.experimental3.Input;
-
 final class StaticChoices {
 
     private StaticChoices() {

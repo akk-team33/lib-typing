@@ -1,8 +1,5 @@
 package de.team33.libs.typing.v4.experimental4;
 
-import de.team33.libs.typing.v4.experimental3.UndefinedException;
-import de.team33.libs.typing.v4.experimental3.UnusedException;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
