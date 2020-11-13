@@ -7,8 +7,8 @@ import java.util.function.Predicate;
 /**
  * Represents a case that can lead to an end result of a function or a further case distinction.
  *
- * @param <I> The type of function parameters to be expected
- * @param <R> The type of function result to be expected
+ * @param <I> The type of parameters to be expected
+ * @param <R> The type of result to be expected
  */
 public interface Case<I, R> {
 
@@ -73,5 +73,5 @@ public interface Case<I, R> {
      * Results in {@link Optional#empty()} if at least one further case distinction has to be made in order to arrive
      * at the final result.
      */
-    Optional<Function<I, R>> getMethod();
+    Optional<R> getResult();
 }

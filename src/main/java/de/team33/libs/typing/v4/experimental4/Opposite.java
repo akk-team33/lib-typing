@@ -50,7 +50,7 @@ final class Opposite<I, R> implements Case<I, R> {
     }
 
     @Override
-    public final Optional<Function<I, R>> getMethod() {
+    public final Optional<R> getResult() {
         return Optional.empty();
     }
 

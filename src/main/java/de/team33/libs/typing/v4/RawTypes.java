@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 import static de.team33.libs.typing.v4.experimental4.Case.not;
 
-enum RawTypes implements Case<TypeContext, RawType> {
+enum RawTypes implements Case<TypeContext, Function<TypeContext, RawType>> {
 
     CLASS(Case.none(), Filter.CLASS),
     ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS),
@@ -21,17 +21,17 @@ enum RawTypes implements Case<TypeContext, RawType> {
     TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE),
     FAIL(not(TYPE_VARIABLE), null, Method.FAIL);
 
-    private static final Cases<TypeContext, RawType> CASES = Cases.build(values());
+    private static final Cases<TypeContext, Function<TypeContext, RawType>> CASES = Cases.build(values());
 
-    private final Case<TypeContext, RawType> preCondition;
+    private final Case<TypeContext, Function<TypeContext, RawType>> preCondition;
     private final Predicate<TypeContext> predicate;
     private final Function<TypeContext, RawType> method;
 
-    RawTypes(final Case<TypeContext, RawType> preCondition, final Predicate<Type> predicate) {
+    RawTypes(final Case<TypeContext, Function<TypeContext, RawType>> preCondition, final Predicate<Type> predicate) {
         this(preCondition, predicate, null);
     }
 
-    RawTypes(final Case<TypeContext, RawType> preCondition,
+    RawTypes(final Case<TypeContext, Function<TypeContext, RawType>> preCondition,
              final Predicate<Type> predicate,
              final Function<TypeContext, RawType> method) {
         this.preCondition = preCondition;
@@ -44,7 +44,12 @@ enum RawTypes implements Case<TypeContext, RawType> {
     }
 
     static RawType map(final Type type, final Context context) {
-        return CASES.apply(new TypeContext(type, context));
+        return map(new TypeContext(type, context));
+    }
+
+    private static RawType map(final TypeContext typeContext) {
+        return CASES.apply(typeContext)
+                    .apply(typeContext);
     }
 
     private static RawType typeVariableType(final TypeVariable<?> type, final Context context) {
@@ -52,7 +57,7 @@ enum RawTypes implements Case<TypeContext, RawType> {
     }
 
     @Override
-    public final Case<TypeContext, RawType> getPreCondition() {
+    public final Case<TypeContext, Function<TypeContext, RawType>> getPreCondition() {
         return preCondition;
     }
 
@@ -62,7 +67,7 @@ enum RawTypes implements Case<TypeContext, RawType> {
     }
 
     @Override
-    public final Optional<Function<TypeContext, RawType>> getMethod() {
+    public Optional<Function<TypeContext, RawType>> getResult() {
         return Optional.ofNullable(method);
     }
 

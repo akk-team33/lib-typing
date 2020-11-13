@@ -55,9 +55,9 @@ public final class Cases<I, R> implements Function<I, R> {
 
         private void add(final Case<I, R> next) {
             new Addition(next).add(next.getPreCondition());
-            next.getMethod()
-                .ifPresent(method -> {
-                    backing.put(next, cases -> method);
+            next.getResult()
+                .ifPresent(result -> {
+                    backing.put(next, cases -> input -> result);
                     defined.add(next);
                 });
         }

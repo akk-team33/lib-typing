@@ -1,7 +1,6 @@
 package de.team33.libs.typing.v4.experimental4;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 final class None<I, R> implements Case<I, R> {
@@ -28,7 +27,7 @@ final class None<I, R> implements Case<I, R> {
     }
 
     @Override
-    public final Optional<Function<I, R>> getMethod() {
+    public Optional<R> getResult() {
         return Optional.empty();
     }
 

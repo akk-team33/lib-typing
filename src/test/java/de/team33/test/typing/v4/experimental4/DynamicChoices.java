@@ -4,7 +4,6 @@ import de.team33.libs.typing.v4.experimental4.Case;
 import de.team33.libs.typing.v4.experimental4.Cases;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static de.team33.libs.typing.v4.experimental4.Case.none;
@@ -40,7 +39,7 @@ enum DynamicChoices implements Case<Input, String> {
 
     private final Case<Input, String> preCondition;
     private final Predicate<Input> predicate;
-    private final Function<Input, String> method;
+    private final String result;
 
     DynamicChoices(final Case<Input, String> preCondition, final Predicate<Input> predicate) {
         this(preCondition, predicate, null);
@@ -56,7 +55,7 @@ enum DynamicChoices implements Case<Input, String> {
                    final String result) {
         this.preCondition = preCondition;
         this.predicate = predicate;
-        this.method = null == result ? null : x -> result;
+        this.result = result;
     }
 
     static String map(final Input input) {
@@ -73,7 +72,7 @@ enum DynamicChoices implements Case<Input, String> {
     }
 
     @Override
-    public final Optional<Function<Input, String>> getMethod() {
-        return Optional.ofNullable(method);
+    public Optional<String> getResult() {
+        return Optional.ofNullable(result);
     }
 }
