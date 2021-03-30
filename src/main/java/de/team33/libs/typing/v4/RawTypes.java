@@ -1,42 +1,22 @@
 package de.team33.libs.typing.v4;
 
-import de.team33.libs.typing.v4.experimental4.Case;
-import de.team33.libs.typing.v4.experimental4.Cases;
-
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static de.team33.libs.typing.v4.experimental4.Case.not;
+enum RawTypes implements Function<TypeContext, RawType> {
 
-enum RawTypes implements Case<TypeContext, Function<TypeContext, RawType>> {
+    CLASS(on(Filter.ARRAY_CLASS, Method.ARRAY_CLASS, Method.PLAIN_CLASS)),
+    GENERIC_2(on(Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE, Method.FAIL)),
+    GENERIC_1(on(Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY, GENERIC_2)),
+    GENERIC(on(Filter.PARAMETERIZED, Method.PARAMETERIZED, GENERIC_1)),
+    UNKNOWN(on(Filter.CLASS, CLASS, GENERIC));
 
-    CLASS(Case.none(), Filter.CLASS),
-    ARRAY_CLASS(CLASS, Filter.ARRAY_CLASS, Method.ARRAY_CLASS),
-    PLAIN_CLASS(not(ARRAY_CLASS), null, Method.PLAIN_CLASS),
-    PARAMETERIZED(not(CLASS), Filter.PARAMETERIZED, Method.PARAMETERIZED),
-    GENERIC_ARRAY(not(PARAMETERIZED), Filter.GENERIC_ARRAY, Method.GENERIC_ARRAY),
-    TYPE_VARIABLE(not(GENERIC_ARRAY), Filter.TYPE_VARIABLE, Method.TYPE_VARIABLE),
-    FAIL(not(TYPE_VARIABLE), null, Method.FAIL);
+    private final Function<TypeContext, RawType> backing;
 
-    private static final Cases<TypeContext, Function<TypeContext, RawType>> CASES = Cases.build(values());
-
-    private final Case<TypeContext, Function<TypeContext, RawType>> preCondition;
-    private final Predicate<TypeContext> predicate;
-    private final Function<TypeContext, RawType> method;
-
-    RawTypes(final Case<TypeContext, Function<TypeContext, RawType>> preCondition, final Predicate<Type> predicate) {
-        this(preCondition, predicate, null);
-    }
-
-    RawTypes(final Case<TypeContext, Function<TypeContext, RawType>> preCondition,
-             final Predicate<Type> predicate,
-             final Function<TypeContext, RawType> method) {
-        this.preCondition = preCondition;
-        this.predicate = (null == predicate) ? null : ctx -> predicate.test(ctx.type);
-        this.method = method;
+    RawTypes(final Function<TypeContext, RawType> backing) {
+        this.backing = backing;
     }
 
     static RawType map(final Type type) {
@@ -48,8 +28,13 @@ enum RawTypes implements Case<TypeContext, Function<TypeContext, RawType>> {
     }
 
     private static RawType map(final TypeContext typeContext) {
-        return CASES.apply(typeContext)
-                    .apply(typeContext);
+        return UNKNOWN.apply(typeContext);
+    }
+
+    private static Function<TypeContext, RawType> on(final Predicate<Type> condition,
+                                                     final Function<TypeContext, RawType> positive,
+                                                     final Function<TypeContext, RawType> negative) {
+        return ctx -> condition.test(ctx.type) ? positive.apply(ctx) : negative.apply(ctx);
     }
 
     private static RawType typeVariableType(final TypeVariable<?> type, final Context context) {
@@ -57,18 +42,8 @@ enum RawTypes implements Case<TypeContext, Function<TypeContext, RawType>> {
     }
 
     @Override
-    public final Case<TypeContext, Function<TypeContext, RawType>> getPreCondition() {
-        return preCondition;
-    }
-
-    @Override
-    public Optional<Predicate<TypeContext>> getCondition() {
-        return Optional.ofNullable(predicate);
-    }
-
-    @Override
-    public Optional<Function<TypeContext, RawType>> getResult() {
-        return Optional.ofNullable(method);
+    public final RawType apply(final TypeContext typeContext) {
+        return backing.apply(typeContext);
     }
 
     @SuppressWarnings("InnerClassFieldHidesOuterClassField")
